@@ -24,10 +24,15 @@ namespace HerringORM.Solve
     {
         public FlatPredicateNode From;
         public FieldInfo Field;
+
+        public override string ToString()
+            => $"Sub ({From}) ({Field.Name})";
     }
     public class ConstantPredicate : FlatPredicateNode
     {
         public object Data;
         public Type Of;
+        public override string ToString()
+            => $"Constant {Data}";
     }
 }
