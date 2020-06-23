@@ -65,7 +65,7 @@ namespace HerringORM.Solve
             {
                 prefix = WriteSqlPredicate(tab, bin.Left, cmd, prefix, into);
                 if (bin.Type == BinaryPredicateType.Equal)
-                    into.Append(" == ");
+                    into.Append(" = ");
                 else if (bin.Type == BinaryPredicateType.NotEqual)
                     into.Append(" <> ");
                 else if (bin.Type == BinaryPredicateType.Greater)
