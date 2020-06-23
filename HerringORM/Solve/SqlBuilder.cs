@@ -68,6 +68,8 @@ namespace HerringORM.Solve
                     into.Append(" = ");
                 else if (bin.Type == BinaryPredicateType.NotEqual)
                     into.Append(" <> ");
+                else if (bin.Type == BinaryPredicateType.AndAlso)
+                    into.Append(" AND ");
                 else if (bin.Type == BinaryPredicateType.Greater)
                     into.Append(" > ");
                 else if (bin.Type == BinaryPredicateType.Less)

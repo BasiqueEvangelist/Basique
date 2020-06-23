@@ -59,7 +59,7 @@ namespace HerringORM.Tests
             Console.WriteLine(string.Join('\n', l));
 
             List<TestObject> lwhere = await tc.TestObjects
-                .Where(x => x.Value < 3)
+                .Where(x => x.Value < 3 && x.Value > 1)
                 .ToListAsync();
 
             Console.WriteLine(string.Join('\n', lwhere));
