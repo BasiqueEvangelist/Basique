@@ -1,0 +1,21 @@
+using System.Threading;
+using System;
+using System.Linq;
+using System.Reflection;
+using System.Collections.Generic;
+using System.Threading.Tasks;
+using HerringORM.Modeling;
+using System.Linq.Expressions;
+
+namespace HerringORM.Solve
+{
+    public static class KnownMethods
+    {
+        public static MethodInfo Where = new Func<IAsyncQueryable<object>, System.Linq.Expressions.Expression<System.Func<object, bool>>, IAsyncQueryable<object>>(AsyncQueryable.Where).GetMethodInfo().GetGenericMethodDefinition();
+        public static MethodInfo Select = new Func<IAsyncQueryable<object>, System.Linq.Expressions.Expression<System.Func<object, object>>, IAsyncQueryable<object>>(AsyncQueryable.Select).GetMethodInfo().GetGenericMethodDefinition();
+        public static MethodInfo ToListAsync = new Func<IAsyncQueryable<object>, CancellationToken, ValueTask<List<object>>>(AsyncQueryable.ToListAsync).GetMethodInfo().GetGenericMethodDefinition();
+        public static MethodInfo ToArrayAsync = new Func<IAsyncQueryable<object>, CancellationToken, ValueTask<object[]>>(AsyncQueryable.ToArrayAsync).GetMethodInfo().GetGenericMethodDefinition();
+
+        public static MethodInfo CreateAsync = new Func<Table<object>, Expression<Func<object>>, CancellationToken, ValueTask<object>>(TableExtensions.CreateAsync).GetMethodInfo().GetGenericMethodDefinition();
+    }
+}
