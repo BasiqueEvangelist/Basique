@@ -86,6 +86,16 @@ namespace HerringORM.Solve
                 prefix = WriteSqlPredicate(tab, bin.Right, cmd, prefix, into);
                 into.Append(")");
             }
+            else if (node is TernaryPredicate tern)
+            {
+                into.Append("CASE WHEN (");
+                prefix = WriteSqlPredicate(tab, tern.Condition, cmd, prefix, into);
+                into.Append(") THEN (");
+                prefix = WriteSqlPredicate(tab, tern.OnTrue, cmd, prefix, into);
+                into.Append(") ELSE (");
+                prefix = WriteSqlPredicate(tab, tern.OnFalse, cmd, prefix, into);
+                into.Append(") END");
+            }
             else if (node is ConstantPredicate con)
             {
                 string name = $"@constant{prefix++}";

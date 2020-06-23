@@ -47,6 +47,7 @@ namespace HerringORM.Tests
             await conn.NonQuery("CREATE TABLE testobjects (test TEXT, value INT);");
 
             TestContext tc = new TestContext(conn);
+            await tc.TestObjects.CreateAsync(() => new TestObject() { Value = 0, Test = "oof" });
             await tc.TestObjects.CreateAsync(() => new TestObject() { Value = 1, Test = "foo" });
             await tc.TestObjects.CreateAsync(() => new TestObject() { Value = 2, Test = "bar" });
             await tc.TestObjects.CreateAsync(() => new TestObject() { Value = 3, Test = "baz" });
@@ -59,7 +60,7 @@ namespace HerringORM.Tests
             Console.WriteLine(string.Join('\n', l));
 
             List<TestObject> lwhere = await tc.TestObjects
-                .Where(x => x.Value < 3 && x.Value > 1)
+                .Where(x => (x.Value > 4 ? true : x.Value < 3) && (x.Value > 1 ^ x.Value == 0))
                 .ToListAsync();
 
             Console.WriteLine(string.Join('\n', lwhere));

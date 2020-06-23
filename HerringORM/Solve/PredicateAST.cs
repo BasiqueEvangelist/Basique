@@ -20,6 +20,16 @@ namespace HerringORM.Solve
             => $"{Enum.GetName(typeof(BinaryPredicateType), Type)} ({Left}), ({Right})";
     }
 
+    public class TernaryPredicate : FlatPredicateNode
+    {
+        public FlatPredicateNode Condition;
+        public FlatPredicateNode OnTrue;
+        public FlatPredicateNode OnFalse;
+
+        public override string ToString()
+            => $"Ternary ({Condition}) ({OnTrue}) ({OnFalse})";
+    }
+
     public class ContextPredicate : FlatPredicateNode
     {
         public Type Of;

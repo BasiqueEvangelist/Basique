@@ -1,3 +1,4 @@
+using System.Runtime.CompilerServices;
 using System.ComponentModel;
 using System;
 using System.Linq.Expressions;
@@ -32,6 +33,8 @@ namespace HerringORM.Solve
                     throw new NotImplementedException();
                 return pred;
             }
+            else if (expr is ConditionalExpression cond)
+                return new TernaryPredicate() { Condition = Flatten(cond.Test), OnTrue = Flatten(cond.IfTrue), OnFalse = Flatten(cond.IfFalse) };
             else if (expr is MemberExpression mem)
             {
                 if (!(mem.Member is FieldInfo field))
