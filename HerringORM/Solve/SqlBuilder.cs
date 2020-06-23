@@ -63,20 +63,28 @@ namespace HerringORM.Solve
         {
             if (node is BinaryPredicate bin)
             {
+                into.Append("(");
                 prefix = WriteSqlPredicate(tab, bin.Left, cmd, prefix, into);
+                into.Append(")");
                 if (bin.Type == BinaryPredicateType.Equal)
                     into.Append(" = ");
                 else if (bin.Type == BinaryPredicateType.NotEqual)
                     into.Append(" <> ");
+                else if (bin.Type == BinaryPredicateType.ExclusiveOr)
+                    into.Append(" <> ");
                 else if (bin.Type == BinaryPredicateType.AndAlso)
                     into.Append(" AND ");
+                else if (bin.Type == BinaryPredicateType.OrElse)
+                    into.Append(" OR ");
                 else if (bin.Type == BinaryPredicateType.Greater)
                     into.Append(" > ");
                 else if (bin.Type == BinaryPredicateType.Less)
                     into.Append(" < ");
                 else
                     throw new NotImplementedException();
+                into.Append("(");
                 prefix = WriteSqlPredicate(tab, bin.Right, cmd, prefix, into);
+                into.Append(")");
             }
             else if (node is ConstantPredicate con)
             {

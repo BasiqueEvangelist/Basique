@@ -8,7 +8,7 @@ namespace HerringORM.Solve
     }
     public enum BinaryPredicateType
     {
-        Equal, NotEqual, Less, Greater, AndAlso
+        Equal, NotEqual, Less, Greater, AndAlso, OrElse, ExclusiveOr
     }
     public class BinaryPredicate : FlatPredicateNode
     {

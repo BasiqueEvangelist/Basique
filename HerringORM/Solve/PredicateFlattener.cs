@@ -22,6 +22,10 @@ namespace HerringORM.Solve
                     pred.Type = BinaryPredicateType.Less;
                 else if (bin.NodeType == ExpressionType.AndAlso)
                     pred.Type = BinaryPredicateType.AndAlso;
+                else if (bin.NodeType == ExpressionType.OrElse)
+                    pred.Type = BinaryPredicateType.OrElse;
+                else if (bin.NodeType == ExpressionType.ExclusiveOr)
+                    pred.Type = BinaryPredicateType.ExclusiveOr;
                 else if (bin.NodeType == ExpressionType.GreaterThan)
                     pred.Type = BinaryPredicateType.Greater;
                 else
