@@ -38,6 +38,16 @@ namespace HerringORM.Solve
         }
     }
 
+    public class LimitExpressionNode : ExpressionNode
+    {
+        public int Count;
+        public override void Dump()
+        {
+            Parent.Dump();
+            LOGGER.Trace("Take ({0})", Count);
+        }
+    }
+
     public class PullExpressionNode : ExpressionNode
     {
         public enum PullType

@@ -30,6 +30,11 @@ namespace HerringORM.Solve
                     else
                         data.Where = new BinaryPredicate() { Left = data.Where, Right = whereexpr.Condition, Type = BinaryPredicateType.AndAlso };
                 }
+                else if (node is LimitExpressionNode limit)
+                    if ((data.Limit ?? int.MaxValue) > limit.Count)
+                        data.Limit = limit.Count;
+                    else
+                        throw new NotImplementedException();
             }
             data.RequestedType = currentType;
             return data;
@@ -53,7 +58,8 @@ namespace HerringORM.Solve
                     s.Append($" {join.Type} join {join.To} on {join.On}");
                 }
             }
-
+            if (data.Limit != null)
+                s.Append($" limit {data.Limit}");
             cmd.CommandText = s.ToString();
         }
 
@@ -143,6 +149,7 @@ namespace HerringORM.Solve
         public FlatPredicateNode Where;
         public Type RequestedType;
         public ITable FromTable;
+        public int? Limit;
     }
 
     public abstract class SqlRule { }

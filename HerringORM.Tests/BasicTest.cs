@@ -55,6 +55,7 @@ namespace HerringORM.Tests
             await tc.TestObjects.CreateAsync(() => new TestObject() { Value = 5, Test = "quux" });
 
             List<TestObject> l = await tc.TestObjects
+                .Take(5)
                 .ToListAsync();
 
             Console.WriteLine(string.Join('\n', l));
