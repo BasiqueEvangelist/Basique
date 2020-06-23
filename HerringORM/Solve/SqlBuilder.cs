@@ -25,10 +25,10 @@ namespace HerringORM.Solve
                     continue; // Not our job.
                 else if (node is WhereExpressionNode whereexpr)
                 {
-                    data.Rules.Add(new WhereRule()
-                    {
-                        Condition = whereexpr.Condition
-                    });
+                    if (data.Where == null)
+                        data.Where = whereexpr.Condition;
+                    else
+                        data.Where = new BinaryPredicate() { Left = data.Where, Right = whereexpr.Condition, Type = BinaryPredicateType.AndAlso };
                 }
             }
             data.RequestedType = currentType;
@@ -43,14 +43,12 @@ namespace HerringORM.Solve
             s.AppendJoin(", ", data.RequestedType.GetTypeInfo().GetFields().Select(x => x.Name.ToLower()));
             s.Append(" from ");
             s.Append(data.FromTable.Name);
+            if (data.Where != null)
+                s.Append(" where ");
+            prefix = WriteSqlPredicate(data.FromTable, data.Where, cmd, prefix++, s);
             foreach (var rule in data.Rules)
             {
-                if (rule is WhereRule where)
-                {
-                    s.Append(" where ");
-                    prefix = WriteSqlPredicate(data.FromTable, where.Condition, cmd, prefix++, s);
-                }
-                else if (rule is JoinRule join)
+                if (rule is JoinRule join)
                 {
                     s.Append($" {join.Type} join {join.To} on {join.On}");
                 }
@@ -142,15 +140,12 @@ namespace HerringORM.Solve
     public class SqlSelectData
     {
         public List<SqlRule> Rules = new List<SqlRule>();
+        public FlatPredicateNode Where;
         public Type RequestedType;
         public ITable FromTable;
     }
 
     public abstract class SqlRule { }
-    public class WhereRule : SqlRule
-    {
-        public FlatPredicateNode Condition;
-    }
     public class JoinRule : SqlRule
     {
         public string Type;
