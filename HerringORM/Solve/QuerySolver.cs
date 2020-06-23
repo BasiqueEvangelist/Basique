@@ -42,6 +42,16 @@ namespace HerringORM.Solve
                 throw new NotImplementedException();
         }
 
+        public static async ValueTask<object> SolveUpdateQuery(List<ExpressionNode> expr, CancellationToken token, ITable tab)
+        {
+            SqlUpdateData data = SqlBuilder.BuildUpdateData(expr);
+            DbCommand command = tab.Context.Connection.CreateCommand();
+            SqlBuilder.WriteSqlUpdate(data, command);
+            LOGGER.Debug("Running SQL: {0}", command.CommandText);
+            await command.ExecuteNonQueryAsync();
+            return null;
+        }
+
         public static async ValueTask<object> SolveCreateQuery(List<ExpressionNode> pn, CancellationToken token, ITable tab)
         {
             CreateExpressionNode create = pn.Last() as CreateExpressionNode;

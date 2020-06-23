@@ -40,6 +40,31 @@ namespace HerringORM.Solve
             return data;
         }
 
+        public static SqlUpdateData BuildUpdateData(List<ExpressionNode> nodes)
+        {
+            SqlUpdateData data = new SqlUpdateData();
+            data.FromTable = ((FinalExpressionNode)nodes[0]).Table;
+            data.Context = ((UpdateExpressionNode)nodes[^1]).Context;
+            Type currentType = data.FromTable.ElementType;
+            foreach (var node in nodes)
+            {
+                if (node is FinalExpressionNode)
+                    continue;
+                else if (node is UpdateExpressionNode)
+                    continue; // Not our job.
+                else if (node is WhereExpressionNode whereexpr)
+                {
+                    if (data.Where == null)
+                        data.Where = whereexpr.Condition;
+                    else
+                        data.Where = new BinaryPredicate() { Left = data.Where, Right = whereexpr.Condition, Type = BinaryPredicateType.AndAlso };
+                }
+                else
+                    throw new NotImplementedException();
+            }
+            return data;
+        }
+
         public static void WriteSqlSelect(SqlSelectData data, DbCommand cmd)
         {
             StringBuilder s = new StringBuilder();
@@ -51,7 +76,7 @@ namespace HerringORM.Solve
             if (data.Where != null)
             {
                 s.Append(" where ");
-            prefix = WriteSqlPredicate(data.FromTable, data.Where, cmd, prefix++, s);
+                prefix = WriteSqlPredicate(data.FromTable, data.Where, cmd, prefix++, s);
             }
             foreach (var rule in data.Rules)
             {
@@ -62,6 +87,36 @@ namespace HerringORM.Solve
             }
             if (data.Limit != null)
                 s.Append($" limit {data.Limit}");
+            cmd.CommandText = s.ToString();
+        }
+
+        public static void WriteSqlUpdate(SqlUpdateData data, DbCommand cmd)
+        {
+            StringBuilder s = new StringBuilder();
+            int prefix = 0;
+            s.Append("update ");
+            s.Append(data.FromTable.Name);
+            s.Append(" set ");
+            for (int i = 0; i < data.Context.Data.Count; i++)
+            {
+                var part = data.Context.Data[i];
+                s.Append($"{part.field.Name.ToLower()} = ");
+                prefix = WriteSqlPredicate(data.FromTable, part.factory, cmd, prefix, s);
+                if (i != data.Context.Data.Count - 1)
+                    s.Append(", ");
+            }
+            if (data.Where != null)
+            {
+                s.Append(" where ");
+                prefix = WriteSqlPredicate(data.FromTable, data.Where, cmd, prefix++, s);
+            }
+            foreach (var rule in data.Rules)
+            {
+                if (rule is JoinRule join)
+                {
+                    s.Append($" {join.Type} join {join.To} on {join.On}");
+                }
+            }
             cmd.CommandText = s.ToString();
         }
 
@@ -152,6 +207,14 @@ namespace HerringORM.Solve
         public Type RequestedType;
         public ITable FromTable;
         public int? Limit;
+    }
+
+    public class SqlUpdateData
+    {
+        public List<SqlRule> Rules = new List<SqlRule>();
+        public FlatPredicateNode Where;
+        public ITable FromTable;
+        public UpdateContext Context;
     }
 
     public abstract class SqlRule { }

@@ -37,6 +37,8 @@ namespace HerringORM
                 return (TResult)await QuerySolver.SolvePullQuery(pn, token, tab);
             else if (pn.Last() is CreateExpressionNode)
                 return (TResult)await QuerySolver.SolveCreateQuery(pn, token, tab);
+            else if (pn.Last() is UpdateExpressionNode)
+                return (TResult)await QuerySolver.SolveUpdateQuery(pn, token, tab);
             else
                 throw new NotImplementedException();
         }

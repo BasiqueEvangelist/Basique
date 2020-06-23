@@ -75,4 +75,15 @@ namespace HerringORM.Solve
             LOGGER.Trace("Create {0} ({1})", OfType, Factory);
         }
     }
+
+    public class UpdateExpressionNode : ExpressionNode
+    {
+        public UpdateContext Context;
+
+        public override void Dump()
+        {
+            Parent.Dump();
+            LOGGER.Trace("Update");
+        }
+    }
 }

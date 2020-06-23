@@ -65,6 +65,17 @@ namespace HerringORM.Tests
                 .ToListAsync();
 
             Console.WriteLine(string.Join('\n', lwhere));
+
+            await tc.TestObjects
+                .Where(x => x.Value > 0)
+                .Update()
+                .Set(x => x.Test, x => "a")
+                .Commit();
+
+            List<TestObject> l2 = await tc.TestObjects
+                .ToListAsync();
+
+            Console.WriteLine(string.Join('\n', l2));
         }
     }
     public static class why

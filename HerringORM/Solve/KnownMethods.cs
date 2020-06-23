@@ -18,5 +18,6 @@ namespace HerringORM.Solve
         public static MethodInfo ToArrayAsync = new Func<IAsyncQueryable<object>, CancellationToken, ValueTask<object[]>>(AsyncQueryable.ToArrayAsync).GetMethodInfo().GetGenericMethodDefinition();
 
         public static MethodInfo CreateAsync = new Func<Table<object>, Expression<Func<object>>, CancellationToken, ValueTask<object>>(TableExtensions.CreateAsync).GetMethodInfo().GetGenericMethodDefinition();
+        public static MethodInfo Commit = new Func<IAsyncQueryable<object>, UpdateContext<object>, CancellationToken, ValueTask>(UpdateQueryableExtensions.Commit).GetMethodInfo().GetGenericMethodDefinition();
     }
 }
