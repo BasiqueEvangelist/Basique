@@ -1,11 +1,13 @@
 using System;
 using System.Linq.Expressions;
 using HerringORM.Modeling;
+using NLog;
 
 namespace HerringORM.Solve
 {
     public abstract class ExpressionNode
     {
+        internal static Logger LOGGER = LogManager.GetCurrentClassLogger();
         public ExpressionNode Parent;
         public abstract void Dump();
     }
@@ -22,7 +24,7 @@ namespace HerringORM.Solve
 
         public override void Dump()
         {
-            Console.WriteLine("Final");
+            LOGGER.Trace("Final");
         }
     }
 
@@ -32,7 +34,7 @@ namespace HerringORM.Solve
         public override void Dump()
         {
             Parent.Dump();
-            Console.WriteLine("Where ({0})", Condition);
+            LOGGER.Trace("Where ({0})", Condition);
         }
     }
 
@@ -48,7 +50,7 @@ namespace HerringORM.Solve
         public override void Dump()
         {
             Parent.Dump();
-            Console.WriteLine("Pull ({0})", Enum.GetName(typeof(PullType), Type));
+            LOGGER.Trace("Pull ({0})", Enum.GetName(typeof(PullType), Type));
         }
     }
 
@@ -60,7 +62,7 @@ namespace HerringORM.Solve
         public override void Dump()
         {
             Parent.Dump();
-            Console.WriteLine("Create {0} ({1})", OfType, Factory);
+            LOGGER.Trace("Create {0} ({1})", OfType, Factory);
         }
     }
 }

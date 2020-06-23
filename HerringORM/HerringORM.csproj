@@ -5,6 +5,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="NLog" Version="4.7.2" />
     <PackageReference Include="System.Data.Common" Version="4.3.0" />
     <PackageReference Include="System.Linq.Async" Version="4.1.1" />
     <PackageReference Include="System.Linq.Async.Queryable" Version="4.1.1" />

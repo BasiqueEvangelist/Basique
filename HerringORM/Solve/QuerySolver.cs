@@ -8,15 +8,19 @@ using System;
 using System.Reflection;
 using System.Data;
 using System.Linq;
+using NLog;
 
 namespace HerringORM.Solve
 {
     public static class QuerySolver
     {
+        private static Logger LOGGER = LogManager.GetCurrentClassLogger();
+
         public static async ValueTask<object> SolvePullQuery(List<ExpressionNode> expr, CancellationToken token, ITable table)
         {
             SqlSelectData data = SqlBuilder.BuildSelectData(expr);
             string sql = SqlBuilder.MakeSqlSelect(data);
+            LOGGER.Debug("Running SQL: {0}", sql);
             DbCommand command = table.Context.Connection.CreateCommand();
             command.CommandText = sql;
             var reader = await command.ExecuteReaderAsync(token);
@@ -44,6 +48,7 @@ namespace HerringORM.Solve
             CreateExpressionNode create = pn.Last() as CreateExpressionNode;
             DbCommand command = tab.Context.Connection.CreateCommand();
             SqlBuilder.WriteSqlCreate(create, tab, command);
+            LOGGER.Debug("Running SQL: {0}", command.CommandText);
             await command.ExecuteNonQueryAsync();
             object inst = Activator.CreateInstance(create.OfType);
             foreach (var binding in create.Factory.Bindings)

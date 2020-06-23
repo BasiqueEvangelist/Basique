@@ -9,11 +9,13 @@ using System.Threading;
 using System.Threading.Tasks;
 using HerringORM.Modeling;
 using HerringORM.Solve;
+using NLog;
 
 namespace HerringORM
 {
     public class HerringQueryProvider : IAsyncQueryProvider
     {
+        private static Logger LOGGER = LogManager.GetCurrentClassLogger();
         private ITable tab;
 
         public HerringQueryProvider(ITable tab)
@@ -28,7 +30,7 @@ namespace HerringORM
 
         public async ValueTask<TResult> ExecuteAsync<TResult>(Expression expression, CancellationToken token)
         {
-            Console.WriteLine("Expr: {0}", expression);
+            LOGGER.Trace("Expr: {0}", expression);
             List<ExpressionNode> pn = ToplevelExpressionFlattener.ParseAndFlatten(expression);
             pn.Last().Dump();
             if (pn.Last() is PullExpressionNode)
