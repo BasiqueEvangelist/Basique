@@ -49,8 +49,10 @@ namespace HerringORM.Solve
             s.Append(" from ");
             s.Append(data.FromTable.Name);
             if (data.Where != null)
+            {
                 s.Append(" where ");
             prefix = WriteSqlPredicate(data.FromTable, data.Where, cmd, prefix++, s);
+            }
             foreach (var rule in data.Rules)
             {
                 if (rule is JoinRule join)
