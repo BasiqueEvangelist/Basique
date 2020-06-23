@@ -19,10 +19,9 @@ namespace HerringORM.Solve
         public static async ValueTask<object> SolvePullQuery(List<ExpressionNode> expr, CancellationToken token, ITable table)
         {
             SqlSelectData data = SqlBuilder.BuildSelectData(expr);
-            string sql = SqlBuilder.MakeSqlSelect(data);
-            LOGGER.Debug("Running SQL: {0}", sql);
             DbCommand command = table.Context.Connection.CreateCommand();
-            command.CommandText = sql;
+            SqlBuilder.WriteSqlSelect(data, command);
+            LOGGER.Debug("Running SQL: {0}", command.CommandText);
             var reader = await command.ExecuteReaderAsync(token);
             List<object> res = new List<object>();
             if (reader.HasRows)

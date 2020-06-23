@@ -30,7 +30,7 @@ namespace HerringORM.Solve
 
     public class WhereExpressionNode : ExpressionNode
     {
-        public Expression Condition;
+        public FlatPredicateNode Condition;
         public override void Dump()
         {
             Parent.Dump();

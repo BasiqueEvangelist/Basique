@@ -13,10 +13,18 @@ namespace HerringORM.Solve
                 return new ConstantPredicate() { Of = con.Type, Data = con.Value };
             else if (expr is BinaryExpression bin)
             {
+                var pred = new BinaryPredicate() { Left = Flatten(bin.Left), Right = Flatten(bin.Right) };
                 if (bin.NodeType == ExpressionType.Equal)
-                    return new EqualPredicate() { Left = Flatten(bin.Left), Right = Flatten(bin.Right) };
+                    pred.Type = BinaryPredicateType.Equal;
+                else if (bin.NodeType == ExpressionType.NotEqual)
+                    pred.Type = BinaryPredicateType.NotEqual;
+                else if (bin.NodeType == ExpressionType.LessThan)
+                    pred.Type = BinaryPredicateType.Less;
+                else if (bin.NodeType == ExpressionType.GreaterThan)
+                    pred.Type = BinaryPredicateType.Greater;
                 else
                     throw new NotImplementedException();
+                return pred;
             }
             else if (expr is MemberExpression mem)
             {
@@ -25,7 +33,7 @@ namespace HerringORM.Solve
                 return new SubPredicate() { Field = field, From = Flatten(mem.Expression) };
             }
             else if (expr is ParameterExpression param)
-                return new VariablePredicate() { Of = param.Type };
+                return new ContextPredicate() { Of = param.Type };
             else
                 throw new NotImplementedException();
         }

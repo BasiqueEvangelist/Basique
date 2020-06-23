@@ -6,18 +6,25 @@ namespace HerringORM.Solve
     {
 
     }
-    public class EqualPredicate : FlatPredicateNode
+    public enum BinaryPredicateType
+    {
+        Equal, NotEqual, Less, Greater
+    }
+    public class BinaryPredicate : FlatPredicateNode
     {
         public FlatPredicateNode Left;
         public FlatPredicateNode Right;
+        public BinaryPredicateType Type;
 
         public override string ToString()
-            => $"Equal ({Left}), ({Right})";
+            => $"{Enum.GetName(typeof(BinaryPredicateType), Type)} ({Left}), ({Right})";
     }
 
-    public class VariablePredicate : FlatPredicateNode
+    public class ContextPredicate : FlatPredicateNode
     {
         public Type Of;
+        public override string ToString()
+            => $"Context";
     }
 
     public class SubPredicate : FlatPredicateNode

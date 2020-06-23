@@ -26,7 +26,7 @@ namespace HerringORM.Solve
                     if (!(quote.Operand is LambdaExpression lambda))
                         throw new NotImplementedException();
 
-                    return new WhereExpressionNode() { Condition = lambda.Body, Parent = Parse(call.Arguments[0]) };
+                    return new WhereExpressionNode() { Condition = PredicateFlattener.Flatten(lambda.Body), Parent = Parse(call.Arguments[0]) };
                 }
                 else if (call.Method.GetGenericMethodDefinition() == KnownMethods.ToListAsync)
                     return new PullExpressionNode() { Type = PullExpressionNode.PullType.List, Parent = Parse(call.Arguments[0]) };

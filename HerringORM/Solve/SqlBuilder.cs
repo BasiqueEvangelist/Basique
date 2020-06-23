@@ -25,10 +25,9 @@ namespace HerringORM.Solve
                     continue; // Not our job.
                 else if (node is WhereExpressionNode whereexpr)
                 {
-                    FlatPredicateNode pred = PredicateFlattener.Flatten(whereexpr.Condition);
                     data.Rules.Add(new WhereRule()
                     {
-                        Condition = whereexpr.Condition.ToString()
+                        Condition = whereexpr.Condition
                     });
                 }
             }
@@ -36,9 +35,10 @@ namespace HerringORM.Solve
             return data;
         }
 
-        public static string MakeSqlSelect(SqlSelectData data)
+        public static void WriteSqlSelect(SqlSelectData data, DbCommand cmd)
         {
             StringBuilder s = new StringBuilder();
+            int prefix = 0;
             s.Append("select ");
             s.AppendJoin(", ", data.RequestedType.GetTypeInfo().GetFields().Select(x => x.Name.ToLower()));
             s.Append(" from ");
@@ -47,7 +47,8 @@ namespace HerringORM.Solve
             {
                 if (rule is WhereRule where)
                 {
-                    s.Append($" where {where.Condition}");
+                    s.Append(" where ");
+                    prefix = WriteSqlPredicate(data.FromTable, where.Condition, cmd, prefix++, s);
                 }
                 else if (rule is JoinRule join)
                 {
@@ -55,7 +56,46 @@ namespace HerringORM.Solve
                 }
             }
 
-            return s.ToString();
+            cmd.CommandText = s.ToString();
+        }
+
+        private static int WriteSqlPredicate(ITable tab, FlatPredicateNode node, DbCommand cmd, int prefix, StringBuilder into)
+        {
+            if (node is BinaryPredicate bin)
+            {
+                prefix = WriteSqlPredicate(tab, bin.Left, cmd, prefix, into);
+                if (bin.Type == BinaryPredicateType.Equal)
+                    into.Append(" == ");
+                else if (bin.Type == BinaryPredicateType.NotEqual)
+                    into.Append(" <> ");
+                else if (bin.Type == BinaryPredicateType.Greater)
+                    into.Append(" > ");
+                else if (bin.Type == BinaryPredicateType.Less)
+                    into.Append(" < ");
+                else
+                    throw new NotImplementedException();
+                prefix = WriteSqlPredicate(tab, bin.Right, cmd, prefix, into);
+            }
+            else if (node is ConstantPredicate con)
+            {
+                string name = $"@constant{prefix++}";
+                into.Append(name);
+                var param = cmd.CreateParameter();
+                param.ParameterName = name;
+                param.Direction = ParameterDirection.Input;
+                param.Value = con.Data;
+                cmd.Parameters.Add(param);
+            }
+            else if (node is SubPredicate sub)
+            {
+                if (sub.From is ContextPredicate ctx)
+                {
+                    into.Append($"{tab.Name}.{sub.Field.Name.ToLower()}");
+                }
+                else
+                    throw new NotImplementedException(); // Joins and .Select() will come later.
+            }
+            return prefix;
         }
 
         public static void WriteSqlCreate(CreateExpressionNode create, ITable tab, DbCommand command)
@@ -89,7 +129,7 @@ namespace HerringORM.Solve
     public abstract class SqlRule { }
     public class WhereRule : SqlRule
     {
-        public string Condition;
+        public FlatPredicateNode Condition;
     }
     public class JoinRule : SqlRule
     {
