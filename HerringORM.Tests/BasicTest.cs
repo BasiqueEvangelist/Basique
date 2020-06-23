@@ -20,6 +20,8 @@ namespace HerringORM.Tests
         {
             public string Test;
             public int Value;
+
+            public override string ToString() => $"(\"{Test}\";{Value})";
         }
         class TestContext : DatabaseContext
         {
@@ -45,12 +47,16 @@ namespace HerringORM.Tests
             await conn.NonQuery("CREATE TABLE testobjects (test TEXT, value INT);");
 
             TestContext tc = new TestContext(conn);
-            await tc.TestObjects.CreateAsync(() => new TestObject() { Value = 1, Test = "beb" });
+            await tc.TestObjects.CreateAsync(() => new TestObject() { Value = 1, Test = "foo" });
+            await tc.TestObjects.CreateAsync(() => new TestObject() { Value = 2, Test = "bar" });
+            await tc.TestObjects.CreateAsync(() => new TestObject() { Value = 3, Test = "baz" });
+            await tc.TestObjects.CreateAsync(() => new TestObject() { Value = 4, Test = "qux" });
+            await tc.TestObjects.CreateAsync(() => new TestObject() { Value = 5, Test = "quux" });
 
             List<TestObject> l = await tc.TestObjects
                 .ToListAsync();
 
-            Console.WriteLine(string.Join(' ', l));
+            Console.WriteLine(string.Join('\n', l));
         }
     }
     public static class why
