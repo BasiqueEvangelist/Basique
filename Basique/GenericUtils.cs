@@ -2,7 +2,7 @@ using System.Collections.Generic;
 using System.Collections;
 using System;
 
-namespace HerringORM
+namespace Basique
 {
     public static class GenericUtils
     {

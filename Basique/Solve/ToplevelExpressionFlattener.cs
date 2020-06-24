@@ -2,10 +2,10 @@ using System.Collections.Specialized;
 using System.Collections.Generic;
 using System;
 using System.Linq.Expressions;
-using HerringORM.Modeling;
+using Basique.Modeling;
 using System.Diagnostics;
 
-namespace HerringORM.Solve
+namespace Basique.Solve
 {
     public static class ToplevelExpressionFlattener
     {

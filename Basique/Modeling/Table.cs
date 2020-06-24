@@ -5,7 +5,7 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Threading;
 
-namespace HerringORM.Modeling
+namespace Basique.Modeling
 {
     public interface ITable : IAsyncQueryable
     {
@@ -30,9 +30,9 @@ namespace HerringORM.Modeling
 
         public Expression Expression => Expression.Constant(this);
 
-        public IAsyncQueryProvider Provider => new HerringQueryProvider(this);
+        public IAsyncQueryProvider Provider => new BasiqueQueryProvider(this);
 
         public IAsyncEnumerator<T> GetAsyncEnumerator(CancellationToken cancellationToken = default)
-        => new HerringQueryable<T>(this, Expression).GetAsyncEnumerator(cancellationToken);
+        => new BasiqueQueryable<T>(this, Expression).GetAsyncEnumerator(cancellationToken);
     }
 }

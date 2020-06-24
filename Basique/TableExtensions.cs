@@ -2,10 +2,10 @@ using System.Threading;
 using System;
 using System.Linq.Expressions;
 using System.Threading.Tasks;
-using HerringORM.Modeling;
-using HerringORM.Solve;
+using Basique.Modeling;
+using Basique.Solve;
 
-namespace HerringORM
+namespace Basique
 {
     public static class TableExtensions
     {

@@ -4,15 +4,15 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Threading;
-using HerringORM.Modeling;
+using Basique.Modeling;
 
-namespace HerringORM
+namespace Basique
 {
-    public class HerringQueryable<T> : IAsyncQueryable<T>
+    public class BasiqueQueryable<T> : IAsyncQueryable<T>
     {
         private readonly ITable tab;
 
-        internal HerringQueryable(ITable tab, Expression expression)
+        internal BasiqueQueryable(ITable tab, Expression expression)
         {
             if (expression.Type != typeof(IAsyncQueryable<T>))
                 throw new ArgumentException("Expression must be of query type", nameof(expression));
@@ -24,8 +24,7 @@ namespace HerringORM
 
         public Expression Expression { get; }
 
-        public IAsyncQueryProvider Provider => new HerringQueryProvider(tab);
-        // public IAsyncQueryProvider Provider => new WorstQueryProvider();
+        public IAsyncQueryProvider Provider => new BasiqueQueryProvider(tab);
 
         public IAsyncEnumerator<T> GetAsyncEnumerator(CancellationToken cancellationToken = default)
             => new LazyAsyncEnumerable<T>(

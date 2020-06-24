@@ -1,9 +1,9 @@
 using System;
 using System.Linq.Expressions;
-using HerringORM.Modeling;
+using Basique.Modeling;
 using NLog;
 
-namespace HerringORM.Solve
+namespace Basique.Solve
 {
     public abstract class ExpressionNode
     {

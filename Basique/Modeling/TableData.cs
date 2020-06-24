@@ -1,5 +1,5 @@
 using System.Data.Common;
-namespace HerringORM.Modeling
+namespace Basique.Modeling
 {
     internal class TableData
     {

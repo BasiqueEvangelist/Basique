@@ -4,10 +4,10 @@ using System.Linq;
 using System.Reflection;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using HerringORM.Modeling;
+using Basique.Modeling;
 using System.Linq.Expressions;
 
-namespace HerringORM.Solve
+namespace Basique.Solve
 {
     public static class KnownMethods
     {

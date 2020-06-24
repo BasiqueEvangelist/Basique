@@ -4,7 +4,7 @@ using System;
 using System.Linq.Expressions;
 using System.Reflection;
 
-namespace HerringORM.Solve
+namespace Basique.Solve
 {
     public static class PredicateFlattener
     {

@@ -5,10 +5,10 @@ using System.Reflection;
 using System.Text;
 using System;
 using System.Collections.Generic;
-using HerringORM.Modeling;
+using Basique.Modeling;
 using System.Data.Common;
 
-namespace HerringORM.Solve
+namespace Basique.Solve
 {
     public static class SqlBuilder
     {

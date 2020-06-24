@@ -1,6 +1,6 @@
 using System.Reflection;
 using System;
-namespace HerringORM.Solve
+namespace Basique.Solve
 {
     public abstract class FlatPredicateNode
     {

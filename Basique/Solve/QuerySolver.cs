@@ -1,6 +1,6 @@
 using System.Threading;
 using System.Linq.Expressions;
-using HerringORM.Modeling;
+using Basique.Modeling;
 using System.Collections.Generic;
 using System.Data.Common;
 using System.Threading.Tasks;
@@ -10,7 +10,7 @@ using System.Data;
 using System.Linq;
 using NLog;
 
-namespace HerringORM.Solve
+namespace Basique.Solve
 {
     public static class QuerySolver
     {

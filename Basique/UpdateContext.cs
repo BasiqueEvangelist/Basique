@@ -4,10 +4,10 @@ using System.Linq;
 using System;
 using System.Collections.Generic;
 using System.Reflection;
-using HerringORM.Solve;
+using Basique.Solve;
 using System.Threading.Tasks;
 
-namespace HerringORM
+namespace Basique
 {
     public static class UpdateQueryableExtensions
     {

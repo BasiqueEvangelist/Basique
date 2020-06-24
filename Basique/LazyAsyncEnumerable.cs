@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace HerringORM
+namespace Basique
 {
     public class LazyAsyncEnumerable<T> : IAsyncEnumerable<T>
     {

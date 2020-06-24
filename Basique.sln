@@ -3,9 +3,9 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
 VisualStudioVersion = 15.0.26124.0
 MinimumVisualStudioVersion = 15.0.26124.0
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HerringORM.Tests", "HerringORM.Tests\HerringORM.Tests.csproj", "{A597602B-B389-424F-B62C-F8F77098570D}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Basique.Tests", "Basique.Tests\Basique.Tests.csproj", "{A597602B-B389-424F-B62C-F8F77098570D}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HerringORM", "HerringORM\HerringORM.csproj", "{C791D7A1-4697-467B-924E-3C6FBC560843}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Basique", "Basique\Basique.csproj", "{C791D7A1-4697-467B-924E-3C6FBC560843}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

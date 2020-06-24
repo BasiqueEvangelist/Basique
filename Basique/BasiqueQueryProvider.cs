@@ -7,25 +7,25 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Threading;
 using System.Threading.Tasks;
-using HerringORM.Modeling;
-using HerringORM.Solve;
+using Basique.Modeling;
+using Basique.Solve;
 using NLog;
 
-namespace HerringORM
+namespace Basique
 {
-    public class HerringQueryProvider : IAsyncQueryProvider
+    public class BasiqueQueryProvider : IAsyncQueryProvider
     {
         private static Logger LOGGER = LogManager.GetCurrentClassLogger();
         private ITable tab;
 
-        public HerringQueryProvider(ITable tab)
+        public BasiqueQueryProvider(ITable tab)
         {
             this.tab = tab;
         }
 
         public IAsyncQueryable<TElement> CreateQuery<TElement>(Expression expression)
         {
-            return new HerringQueryable<TElement>(tab, expression);
+            return new BasiqueQueryable<TElement>(tab, expression);
         }
 
         public async ValueTask<TResult> ExecuteAsync<TResult>(Expression expression, CancellationToken token)

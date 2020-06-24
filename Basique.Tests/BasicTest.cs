@@ -1,14 +1,14 @@
 using System;
-using HerringORM;
+using Basique;
 using System.Linq;
 // using Xunit;
 using Microsoft.Data.Sqlite;
 using System.Threading.Tasks;
-using HerringORM.Modeling;
+using Basique.Modeling;
 using System.Data.Common;
 using System.Collections.Generic;
 
-namespace HerringORM.Tests
+namespace Basique.Tests
 {
     public class Program
     {
