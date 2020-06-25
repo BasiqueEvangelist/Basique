@@ -79,7 +79,7 @@ namespace Basique.Solve
             StringBuilder s = new StringBuilder();
             int prefix = 0;
             s.Append("select ");
-            s.AppendJoin(", ", data.RequestedType.GetTypeInfo().GetFields().Select(x => x.Name.ToLower()));
+            s.AppendJoin(", ", data.FromTable.Context.Tables[data.RequestedType].Columns.Select(x => x.Value.Name));
             s.Append(" from ");
             s.Append(data.FromTable.Name);
             foreach (var rule in data.Rules)
@@ -108,7 +108,7 @@ namespace Basique.Solve
             StringBuilder s = new StringBuilder();
             int prefix = 0;
             s.Append("select ");
-            s.AppendJoin(", ", data.RequestedType.GetTypeInfo().GetFields().Select(x => x.Name.ToLower()));
+            s.AppendJoin(", ", data.FromTable.Context.Tables[data.RequestedType].Columns.Select(x => x.Value.Name));
             s.Append(" from ");
             s.Append(data.FromTable.Name);
             if (data.Where != null)
@@ -144,7 +144,7 @@ namespace Basique.Solve
             for (int i = 0; i < data.Context.Data.Count; i++)
             {
                 var part = data.Context.Data[i];
-                s.Append($"{part.field.Name.ToLower()} = ");
+                s.Append($"{data.FromTable.Context.Tables[data.RequestedType].Columns[part.field].Name} = ");
                 prefix = WriteSqlPredicate(data.FromTable, part.factory, cmd, prefix, s);
                 if (i != data.Context.Data.Count - 1)
                     s.Append(", ");
@@ -227,7 +227,7 @@ namespace Basique.Solve
             {
                 if (sub.From is ContextPredicate ctx)
                 {
-                    into.Append($"{tab.Name}.{sub.Field.Name.ToLower()}");
+                    into.Append($"{tab.Name}.{tab.Context.Tables[sub.Field.DeclaringType].Columns[sub.Field].Name}");
                 }
                 else
                     throw new NotImplementedException(); // Joins and .Select() will come later.

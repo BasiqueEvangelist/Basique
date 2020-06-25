@@ -33,6 +33,9 @@ namespace Basique.Tests
                 Table<TestObject>(build =>
                 {
                     build.RemoteName("testobjects");
+
+                    build.Field(x => x.Test);
+                    build.Field(x => x.Value);
                 });
             }
         }

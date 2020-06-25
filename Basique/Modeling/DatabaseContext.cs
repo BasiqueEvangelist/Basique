@@ -8,7 +8,7 @@ namespace Basique.Modeling
     public abstract class DatabaseContext
     {
         public DbConnection Connection { get; }
-        internal Dictionary<Type, TableData> tables = new Dictionary<Type, TableData>();
+        internal Dictionary<Type, TableData> Tables = new Dictionary<Type, TableData>();
         public DatabaseContext(DbConnection conn)
         {
             Connection = conn;
@@ -18,7 +18,7 @@ namespace Basique.Modeling
         {
             TableData d = new TableData();
             action(new TableBuilder<T>(d));
-            tables.Add(typeof(T), d);
+            Tables.Add(typeof(T), d);
         }
     }
 }

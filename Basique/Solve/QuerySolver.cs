@@ -28,9 +28,13 @@ namespace Basique.Solve
                 while (await reader.ReadAsync(token))
                 {
                     object obj = Activator.CreateInstance(data.RequestedType);
-                    foreach (FieldInfo field in data.RequestedType.GetTypeInfo().GetFields())
+                    foreach (var pair in table.Context.Tables[data.RequestedType].Columns)
                     {
-                        field.SetValue(obj, Convert.ChangeType(reader.GetValue(field.Name.ToLower()), field.FieldType));
+                        object val = Convert.ChangeType(reader.GetValue(pair.Value.Name), pair.Value.Of);
+                        if (pair.Key is FieldInfo field)
+                            field.SetValue(obj, val);
+                        else if (pair.Key is PropertyInfo prop)
+                            prop.SetValue(obj, val);
                     }
                     res.Add(obj);
                 }
@@ -69,9 +73,13 @@ namespace Basique.Solve
             }
             object res = Activator.CreateInstance(data.RequestedType);
             await reader.ReadAsync(token);
-            foreach (FieldInfo field in data.RequestedType.GetTypeInfo().GetFields())
+            foreach (var pair in tab.Context.Tables[data.RequestedType].Columns)
             {
-                field.SetValue(res, Convert.ChangeType(reader.GetValue(field.Name.ToLower()), field.FieldType));
+                object val = Convert.ChangeType(reader.GetValue(pair.Value.Name), pair.Value.Of);
+                if (pair.Key is FieldInfo field)
+                    field.SetValue(res, val);
+                else if (pair.Key is PropertyInfo prop)
+                    prop.SetValue(res, val);
             }
             if (await reader.ReadAsync(token) && node.Type == PullSingleExpressionNode.PullType.Single)
                 throw new InvalidOperationException("More than one element satisfies the condition in predicate.");

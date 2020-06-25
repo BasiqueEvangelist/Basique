@@ -21,7 +21,7 @@ namespace Basique.Modeling
         public Table(DatabaseContext conn)
         {
             Context = conn;
-            data = conn.tables[typeof(T)];
+            data = conn.Tables[typeof(T)];
         }
 
         public string Name => data.Name;
