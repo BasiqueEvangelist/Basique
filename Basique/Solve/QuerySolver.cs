@@ -18,7 +18,7 @@ namespace Basique.Solve
 
         public static async ValueTask<object> SolvePullQuery(List<ExpressionNode> expr, CancellationToken token, ITable table)
         {
-            SqlSelectData data = SqlBuilder.BuildSelectData(expr);
+            SqlSelectorData data = SqlBuilder.BuildSelectorData(expr, new SqlSelectorData());
             DbCommand command = table.Context.Connection.CreateCommand();
             SqlBuilder.WriteSqlSelect(data, command);
             LOGGER.Debug("Running SQL: {0}", command.CommandText);
@@ -54,7 +54,7 @@ namespace Basique.Solve
 
         public static async ValueTask<object> SolveDeleteQuery<T>(List<ExpressionNode> expr, CancellationToken token, Table<T> tab)
         {
-            SqlDeleteData data = SqlBuilder.BuildDeleteData(expr);
+            SqlSelectorData data = SqlBuilder.BuildSelectorData(expr, new SqlSelectorData());
             DbCommand command = tab.Context.Connection.CreateCommand();
             SqlBuilder.WriteSqlDelete(data, tab, command);
             LOGGER.Debug("Running SQL: {0}", command.CommandText);

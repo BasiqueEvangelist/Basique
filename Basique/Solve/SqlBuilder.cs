@@ -12,16 +12,17 @@ namespace Basique.Solve
 {
     public static class SqlBuilder
     {
-        public static SqlSelectData BuildSelectData(List<ExpressionNode> nodes)
+        public static SqlSelectorData BuildSelectorData(List<ExpressionNode> nodes, SqlSelectorData data)
         {
-            SqlSelectData data = new SqlSelectData();
             data.FromTable = ((FinalExpressionNode)nodes[0]).Table;
             Type currentType = data.FromTable.ElementType;
             foreach (var node in nodes)
             {
                 if (node is FinalExpressionNode)
                     continue;
-                else if (node is PullExpressionNode)
+                else if (node is PullExpressionNode
+                      || node is UpdateExpressionNode
+                      || node is DeleteExpressionNode)
                     continue; // Not our job.
                 else if (node is WhereExpressionNode whereexpr)
                 {
@@ -30,6 +31,8 @@ namespace Basique.Solve
                     else
                         data.Where = new BinaryPredicate() { Left = data.Where, Right = whereexpr.Condition, Type = BinaryPredicateType.AndAlso };
                 }
+                else if (node is OrderByExpressionNode orderby)
+                    data.OrderBy = orderby;
                 else if (node is LimitExpressionNode limit)
                     if ((data.Limit ?? int.MaxValue) > limit.Count)
                         data.Limit = limit.Count;
@@ -43,54 +46,15 @@ namespace Basique.Solve
         public static SqlUpdateData BuildUpdateData(List<ExpressionNode> nodes)
         {
             SqlUpdateData data = new SqlUpdateData();
-            data.FromTable = ((FinalExpressionNode)nodes[0]).Table;
-            data.Context = ((UpdateExpressionNode)nodes[^1]).Context;
-            Type currentType = data.FromTable.ElementType;
-            foreach (var node in nodes)
-            {
-                if (node is FinalExpressionNode)
-                    continue;
-                else if (node is UpdateExpressionNode)
-                    continue; // Not our job.
-                else if (node is WhereExpressionNode whereexpr)
-                {
-                    if (data.Where == null)
-                        data.Where = whereexpr.Condition;
-                    else
-                        data.Where = new BinaryPredicate() { Left = data.Where, Right = whereexpr.Condition, Type = BinaryPredicateType.AndAlso };
-                }
-                else
-                    throw new NotImplementedException();
-            }
+            BuildSelectorData(nodes, data);
+            data.Context = (nodes[^1] as UpdateExpressionNode).Context;
             return data;
         }
 
-        public static SqlDeleteData BuildDeleteData(List<ExpressionNode> nodes)
+        public static void WriteSqlDelete<T>(SqlSelectorData data, Table<T> tab, DbCommand cmd)
         {
-            SqlDeleteData data = new SqlDeleteData();
-            data.FromTable = ((FinalExpressionNode)nodes[0]).Table;
-            Type currentType = data.FromTable.ElementType;
-            foreach (var node in nodes)
-            {
-                if (node is FinalExpressionNode)
-                    continue;
-                else if (node is DeleteExpressionNode)
-                    continue; // Not our job.
-                else if (node is WhereExpressionNode whereexpr)
-                {
-                    if (data.Where == null)
-                        data.Where = whereexpr.Condition;
-                    else
-                        data.Where = new BinaryPredicate() { Left = data.Where, Right = whereexpr.Condition, Type = BinaryPredicateType.AndAlso };
-                }
-                else
-                    throw new NotImplementedException();
-            }
-            return data;
-        }
-
-        public static void WriteSqlDelete<T>(SqlDeleteData data, Table<T> tab, DbCommand cmd)
-        {
+            if (data.Limit != null)
+                throw new InvalidOperationException("Limits on Delete not allowed.");
             StringBuilder s = new StringBuilder();
             int prefix = 0;
             s.Append("delete from ");
@@ -109,7 +73,7 @@ namespace Basique.Solve
             cmd.CommandText = s.ToString();
         }
 
-        public static void WriteSqlSelect(SqlSelectData data, DbCommand cmd)
+        public static void WriteSqlSelect(SqlSelectorData data, DbCommand cmd)
         {
             StringBuilder s = new StringBuilder();
             int prefix = 0;
@@ -128,6 +92,12 @@ namespace Basique.Solve
                 {
                     s.Append($" {join.Type} join {join.To} on {join.On}");
                 }
+            }
+            if (data.OrderBy != null)
+            {
+                s.Append(" order by ");
+                prefix = WriteSqlPredicate(data.FromTable, data.OrderBy.Key, cmd, prefix++, s);
+                s.Append(data.OrderBy.Descending ? " desc" : " asc");
             }
             if (data.Limit != null)
                 s.Append($" limit {data.Limit}");
@@ -154,6 +124,7 @@ namespace Basique.Solve
                 s.Append(" where ");
                 prefix = WriteSqlPredicate(data.FromTable, data.Where, cmd, prefix++, s);
             }
+
             foreach (var rule in data.Rules)
             {
                 if (rule is JoinRule join)
@@ -244,26 +215,17 @@ namespace Basique.Solve
             }
         }
     }
-    public class SqlSelectData
+    public class SqlUpdateData : SqlSelectorData
     {
-        public List<SqlRule> Rules = new List<SqlRule>();
-        public FlatPredicateNode Where;
-        public Type RequestedType;
-        public ITable FromTable;
-        public int? Limit;
-    }
-
-    public class SqlUpdateData
-    {
-        public List<SqlRule> Rules = new List<SqlRule>();
-        public FlatPredicateNode Where;
-        public ITable FromTable;
         public UpdateContext Context;
     }
 
-    public class SqlDeleteData
+    public class SqlSelectorData
     {
+        public int? Limit;
+        public Type RequestedType;
         public List<SqlRule> Rules = new List<SqlRule>();
+        public OrderByExpressionNode OrderBy;
         public FlatPredicateNode Where;
         public ITable FromTable;
     }

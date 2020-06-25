@@ -38,6 +38,17 @@ namespace Basique.Solve
         }
     }
 
+    public class OrderByExpressionNode : ExpressionNode
+    {
+        public bool Descending;
+        public FlatPredicateNode Key;
+        public override void Dump()
+        {
+            Parent.Dump();
+            LOGGER.Trace("OrderBy{0} ({1})", Descending ? "Descending" : "", Key);
+        }
+    }
+
     public class LimitExpressionNode : ExpressionNode
     {
         public int Count;

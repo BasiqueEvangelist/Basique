@@ -16,6 +16,8 @@ namespace Basique.Solve
         public static MethodInfo Select = new Func<IAsyncQueryable<object>, System.Linq.Expressions.Expression<System.Func<object, object>>, IAsyncQueryable<object>>(AsyncQueryable.Select).GetMethodInfo().GetGenericMethodDefinition();
         public static MethodInfo ToListAsync = new Func<IAsyncQueryable<object>, CancellationToken, ValueTask<List<object>>>(AsyncQueryable.ToListAsync).GetMethodInfo().GetGenericMethodDefinition();
         public static MethodInfo ToArrayAsync = new Func<IAsyncQueryable<object>, CancellationToken, ValueTask<object[]>>(AsyncQueryable.ToArrayAsync).GetMethodInfo().GetGenericMethodDefinition();
+        public static MethodInfo OrderBy = new Func<IAsyncQueryable<object>, Expression<Func<object, object>>, IAsyncQueryable<object>>(AsyncQueryable.OrderBy).GetMethodInfo().GetGenericMethodDefinition();
+        public static MethodInfo OrderByDescending = new Func<IAsyncQueryable<object>, Expression<Func<object, object>>, IAsyncQueryable<object>>(AsyncQueryable.OrderByDescending).GetMethodInfo().GetGenericMethodDefinition();
 
         public static MethodInfo CreateAsync = new Func<Table<object>, Expression<Func<object>>, CancellationToken, ValueTask<object>>(BasiqueExtensions.CreateAsync).GetMethodInfo().GetGenericMethodDefinition();
         public static MethodInfo DeleteAsync = new Func<IAsyncQueryable<object>, CancellationToken, ValueTask>(BasiqueExtensions.DeleteAsync).GetMethodInfo().GetGenericMethodDefinition();

@@ -28,6 +28,20 @@ namespace Basique.Solve
 
                     return new WhereExpressionNode() { Condition = PredicateFlattener.Flatten(lambda.Body), Parent = Parse(call.Arguments[0]) };
                 }
+                else if (call.Method.GetGenericMethodDefinition() == KnownMethods.OrderBy
+                      || call.Method.GetGenericMethodDefinition() == KnownMethods.OrderByDescending)
+                {
+                    if (!(call.Arguments[1] is UnaryExpression quote))
+                        throw new NotImplementedException();
+                    if (!(quote.NodeType == ExpressionType.Quote))
+                        throw new NotImplementedException();
+                    if (!(quote.Operand is LambdaExpression lambda))
+                        throw new NotImplementedException();
+
+                    bool isDescending = call.Method.GetGenericMethodDefinition() == KnownMethods.OrderByDescending;
+
+                    return new OrderByExpressionNode() { Key = PredicateFlattener.Flatten(lambda.Body), Descending = isDescending, Parent = Parse(call.Arguments[0]) };
+                }
                 else if (call.Method.GetGenericMethodDefinition() == KnownMethods.Take)
                     return new LimitExpressionNode() { Count = (int)(call.Arguments[1] as ConstantExpression).Value, Parent = Parse(call.Arguments[0]) };
                 else if (call.Method.GetGenericMethodDefinition() == KnownMethods.ToListAsync)

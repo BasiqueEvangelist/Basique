@@ -56,6 +56,7 @@ namespace Basique.Tests
 
             List<TestObject> l = await tc.TestObjects
                 .Take(5)
+                .OrderBy(x => x.Test)
                 .ToListAsync();
 
             Console.WriteLine(string.Join('\n', l));
@@ -82,6 +83,7 @@ namespace Basique.Tests
                 .DeleteAsync();
 
             List<TestObject> l3 = await tc.TestObjects
+                .OrderByDescending(x => x.Test)
                 .ToListAsync();
 
             Console.WriteLine(string.Join('\n', l3));

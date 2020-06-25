@@ -8,14 +8,12 @@ using Basique.Modeling;
 
 namespace Basique
 {
-    public class BasiqueQueryable<T> : IAsyncQueryable<T>
+    public class BasiqueQueryable<T> : IAsyncQueryable<T>, IOrderedAsyncQueryable<T>
     {
         private readonly ITable tab;
 
         internal BasiqueQueryable(ITable tab, Expression expression)
         {
-            if (expression.Type != typeof(IAsyncQueryable<T>))
-                throw new ArgumentException("Expression must be of query type", nameof(expression));
             this.tab = tab;
             Expression = expression;
         }
