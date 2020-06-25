@@ -24,7 +24,7 @@ namespace Basique
 
         public Expression Expression { get; }
 
-        public IAsyncQueryProvider Provider => new BasiqueQueryProvider(tab);
+        public IAsyncQueryProvider Provider => tab;
 
         public IAsyncEnumerator<T> GetAsyncEnumerator(CancellationToken cancellationToken = default)
             => new LazyAsyncEnumerable<T>(
