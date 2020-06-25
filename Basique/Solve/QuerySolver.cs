@@ -52,6 +52,32 @@ namespace Basique.Solve
             return null;
         }
 
+        public static async ValueTask<object> SolvePullSingleQuery<T>(List<ExpressionNode> expr, CancellationToken token, Table<T> tab)
+        {
+            SqlSelectorData data = SqlBuilder.BuildSelectorData(expr, new SqlSelectorData());
+            PullSingleExpressionNode node = expr[^1] as PullSingleExpressionNode;
+            DbCommand command = tab.Context.Connection.CreateCommand();
+            SqlBuilder.WriteSqlPullSingle(data, node, command);
+            LOGGER.Debug("Running SQL: {0}", command.CommandText);
+            var reader = await command.ExecuteReaderAsync(token);
+            if (!reader.HasRows)
+            {
+                if (node.IncludeDefault)
+                    return null;
+                else
+                    throw new InvalidOperationException("The source sequence is empty.");
+            }
+            object res = Activator.CreateInstance(data.RequestedType);
+            await reader.ReadAsync(token);
+            foreach (FieldInfo field in data.RequestedType.GetTypeInfo().GetFields())
+            {
+                field.SetValue(res, Convert.ChangeType(reader.GetValue(field.Name.ToLower()), field.FieldType));
+            }
+            if (await reader.ReadAsync(token) && node.Type == PullSingleExpressionNode.PullType.Single)
+                throw new InvalidOperationException("More than one element satisfies the condition in predicate.");
+            return res;
+        }
+
         public static async ValueTask<object> SolveDeleteQuery<T>(List<ExpressionNode> expr, CancellationToken token, Table<T> tab)
         {
             SqlSelectorData data = SqlBuilder.BuildSelectorData(expr, new SqlSelectorData());

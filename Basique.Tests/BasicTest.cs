@@ -1,3 +1,4 @@
+using System.Net.Sockets;
 using System;
 using Basique;
 using System.Linq;
@@ -87,6 +88,8 @@ namespace Basique.Tests
                 .ToListAsync();
 
             Console.WriteLine(string.Join('\n', l3));
+
+            Console.WriteLine(await tc.TestObjects.FirstAsync());
         }
     }
     public static class why

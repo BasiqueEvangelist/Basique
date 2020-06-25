@@ -1,3 +1,4 @@
+using System.Linq;
 using System.Collections.Specialized;
 using System.Collections.Generic;
 using System;
@@ -41,6 +42,23 @@ namespace Basique.Solve
                     bool isDescending = call.Method.GetGenericMethodDefinition() == KnownMethods.OrderByDescending;
 
                     return new OrderByExpressionNode() { Key = PredicateFlattener.Flatten(lambda.Body), Descending = isDescending, Parent = Parse(call.Arguments[0]) };
+                }
+                else if (KnownMethods.PullSingleVariants.Contains(call.Method.GetGenericMethodDefinition()))
+                {
+                    var method = call.Method.GetGenericMethodDefinition();
+
+                    PullSingleExpressionNode pullSingle = new PullSingleExpressionNode() { Parent = Parse(call.Arguments[0]) };
+
+                    pullSingle.By = KnownMethods.PullSinglePredicated.Contains(method) ? PredicateFlattener.Flatten(call.Arguments[1]) : new ConstantPredicate() { Of = typeof(bool), Data = true };
+                    pullSingle.IncludeDefault = KnownMethods.PullSingleDefault.Contains(method);
+                    if (KnownMethods.PullSingleFirst.Contains(method))
+                        pullSingle.Type = PullSingleExpressionNode.PullType.First;
+                    else if (KnownMethods.PullSingleSingle.Contains(method))
+                        pullSingle.Type = PullSingleExpressionNode.PullType.Single;
+                    else
+                        throw new NotImplementedException();
+
+                    return pullSingle;
                 }
                 else if (call.Method.GetGenericMethodDefinition() == KnownMethods.Take)
                     return new LimitExpressionNode() { Count = (int)(call.Arguments[1] as ConstantExpression).Value, Parent = Parse(call.Arguments[0]) };

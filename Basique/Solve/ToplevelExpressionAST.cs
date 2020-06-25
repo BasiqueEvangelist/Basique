@@ -75,6 +75,24 @@ namespace Basique.Solve
         }
     }
 
+    public class PullSingleExpressionNode : ExpressionNode
+    {
+        public enum PullType
+        {
+            First, Single
+        }
+
+        public PullType Type;
+        public bool IncludeDefault;
+        public FlatPredicateNode By;
+
+        public override void Dump()
+        {
+            Parent.Dump();
+            LOGGER.Trace("PullSingle ({0})", Enum.GetName(typeof(PullType), Type));
+        }
+    }
+
     public class CreateExpressionNode : ExpressionNode
     {
         public Type OfType;

@@ -22,7 +22,8 @@ namespace Basique.Solve
                     continue;
                 else if (node is PullExpressionNode
                       || node is UpdateExpressionNode
-                      || node is DeleteExpressionNode)
+                      || node is DeleteExpressionNode
+                      || node is PullSingleExpressionNode)
                     continue; // Not our job.
                 else if (node is WhereExpressionNode whereexpr)
                 {
@@ -70,6 +71,35 @@ namespace Basique.Solve
                     s.Append($" {join.Type} join {join.To} on {join.On}");
                 }
             }
+            cmd.CommandText = s.ToString();
+        }
+
+        public static void WriteSqlPullSingle(SqlSelectorData data, PullSingleExpressionNode node, DbCommand cmd)
+        {
+            StringBuilder s = new StringBuilder();
+            int prefix = 0;
+            s.Append("select ");
+            s.AppendJoin(", ", data.RequestedType.GetTypeInfo().GetFields().Select(x => x.Name.ToLower()));
+            s.Append(" from ");
+            s.Append(data.FromTable.Name);
+            foreach (var rule in data.Rules)
+            {
+                if (rule is JoinRule join)
+                {
+                    s.Append($" {join.Type} join {join.To} on {join.On}");
+                }
+            }
+            if (data.OrderBy != null)
+            {
+                s.Append(" order by ");
+                prefix = WriteSqlPredicate(data.FromTable, data.OrderBy.Key, cmd, prefix++, s);
+                s.Append(data.OrderBy.Descending ? " desc" : " asc");
+            }
+            int limitNeeded = node.Type == PullSingleExpressionNode.PullType.First ? 1 : 2;
+            if (data.Limit == null)
+                data.Limit = limitNeeded;
+            data.Limit = data.Limit > limitNeeded ? limitNeeded : data.Limit;
+            s.Append($" limit {data.Limit}");
             cmd.CommandText = s.ToString();
         }
 
