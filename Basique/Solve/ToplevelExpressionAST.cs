@@ -86,4 +86,13 @@ namespace Basique.Solve
             LOGGER.Trace("Update");
         }
     }
+
+    public class DeleteExpressionNode : ExpressionNode
+    {
+        public override void Dump()
+        {
+            Parent.Dump();
+            LOGGER.Trace("Delete");
+        }
+    }
 }

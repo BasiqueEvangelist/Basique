@@ -65,6 +65,50 @@ namespace Basique.Solve
             return data;
         }
 
+        public static SqlDeleteData BuildDeleteData(List<ExpressionNode> nodes)
+        {
+            SqlDeleteData data = new SqlDeleteData();
+            data.FromTable = ((FinalExpressionNode)nodes[0]).Table;
+            Type currentType = data.FromTable.ElementType;
+            foreach (var node in nodes)
+            {
+                if (node is FinalExpressionNode)
+                    continue;
+                else if (node is DeleteExpressionNode)
+                    continue; // Not our job.
+                else if (node is WhereExpressionNode whereexpr)
+                {
+                    if (data.Where == null)
+                        data.Where = whereexpr.Condition;
+                    else
+                        data.Where = new BinaryPredicate() { Left = data.Where, Right = whereexpr.Condition, Type = BinaryPredicateType.AndAlso };
+                }
+                else
+                    throw new NotImplementedException();
+            }
+            return data;
+        }
+
+        public static void WriteSqlDelete<T>(SqlDeleteData data, Table<T> tab, DbCommand cmd)
+        {
+            StringBuilder s = new StringBuilder();
+            int prefix = 0;
+            s.Append("delete from ");
+            s.Append(data.FromTable.Name);
+            {
+                s.Append(" where ");
+                prefix = WriteSqlPredicate(data.FromTable, data.Where, cmd, prefix++, s);
+            }
+            foreach (var rule in data.Rules)
+            {
+                if (rule is JoinRule join)
+                {
+                    s.Append($" {join.Type} join {join.To} on {join.On}");
+                }
+            }
+            cmd.CommandText = s.ToString();
+        }
+
         public static void WriteSqlSelect(SqlSelectData data, DbCommand cmd)
         {
             StringBuilder s = new StringBuilder();
@@ -215,6 +259,13 @@ namespace Basique.Solve
         public FlatPredicateNode Where;
         public ITable FromTable;
         public UpdateContext Context;
+    }
+
+    public class SqlDeleteData
+    {
+        public List<SqlRule> Rules = new List<SqlRule>();
+        public FlatPredicateNode Where;
+        public ITable FromTable;
     }
 
     public abstract class SqlRule { }

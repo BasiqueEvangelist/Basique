@@ -51,6 +51,8 @@ namespace Basique.Modeling
                 return (TResult)await QuerySolver.SolveCreateQuery(pn, token, this);
             else if (pn.Last() is UpdateExpressionNode)
                 return (TResult)await QuerySolver.SolveUpdateQuery(pn, token, this);
+            else if (pn.Last() is DeleteExpressionNode)
+                return (TResult)await QuerySolver.SolveDeleteQuery(pn, token, this);
             else
                 throw new NotImplementedException();
         }

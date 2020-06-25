@@ -52,6 +52,16 @@ namespace Basique.Solve
             return null;
         }
 
+        public static async ValueTask<object> SolveDeleteQuery<T>(List<ExpressionNode> expr, CancellationToken token, Table<T> tab)
+        {
+            SqlDeleteData data = SqlBuilder.BuildDeleteData(expr);
+            DbCommand command = tab.Context.Connection.CreateCommand();
+            SqlBuilder.WriteSqlDelete(data, tab, command);
+            LOGGER.Debug("Running SQL: {0}", command.CommandText);
+            await command.ExecuteNonQueryAsync();
+            return null;
+        }
+
         public static async ValueTask<object> SolveCreateQuery(List<ExpressionNode> pn, CancellationToken token, ITable tab)
         {
             CreateExpressionNode create = pn.Last() as CreateExpressionNode;

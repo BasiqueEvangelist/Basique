@@ -76,6 +76,15 @@ namespace Basique.Tests
                 .ToListAsync();
 
             Console.WriteLine(string.Join('\n', l2));
+
+            await tc.TestObjects
+                .Where(x => x.Value > 4)
+                .DeleteAsync();
+
+            List<TestObject> l3 = await tc.TestObjects
+                .ToListAsync();
+
+            Console.WriteLine(string.Join('\n', l3));
         }
     }
     public static class why

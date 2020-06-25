@@ -49,6 +49,8 @@ namespace Basique.Solve
                 }
                 else if (call.Method.GetGenericMethodDefinition() == KnownMethods.Commit)
                     return new UpdateExpressionNode() { Context = (call.Arguments[1] as ConstantExpression).Value as UpdateContext, Parent = Parse(call.Arguments[0]) };
+                else if (call.Method.GetGenericMethodDefinition() == KnownMethods.DeleteAsync)
+                    return new DeleteExpressionNode() { Parent = Parse(call.Arguments[0]) };
                 else
                     throw new NotImplementedException();
             }
