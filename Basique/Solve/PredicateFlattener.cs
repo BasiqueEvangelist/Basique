@@ -33,6 +33,15 @@ namespace Basique.Solve
                     throw new NotImplementedException();
                 return pred;
             }
+            else if (expr is UnaryExpression una)
+            {
+                var pred = new UnaryPredicate() { Operand = Flatten(una.Operand) };
+                if (una.NodeType == ExpressionType.Not)
+                    pred.Type = UnaryPredicateType.Not;
+                else
+                    throw new NotImplementedException();
+                return pred;
+            }
             else if (expr is ConditionalExpression cond)
                 return new TernaryPredicate() { Condition = Flatten(cond.Test), OnTrue = Flatten(cond.IfTrue), OnFalse = Flatten(cond.IfFalse) };
             else if (expr is MemberExpression mem)

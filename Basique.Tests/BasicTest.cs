@@ -80,7 +80,7 @@ namespace Basique.Tests
             Console.WriteLine(string.Join('\n', l2));
 
             await tc.TestObjects
-                .Where(x => x.Value > 4)
+                .Where(x => x.Value > 4 && !(x.Value < -1))
                 .DeleteAsync();
 
             List<TestObject> l3 = await tc.TestObjects

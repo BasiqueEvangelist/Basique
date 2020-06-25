@@ -19,6 +19,18 @@ namespace Basique.Solve
         public override string ToString()
             => $"{Enum.GetName(typeof(BinaryPredicateType), Type)} ({Left}), ({Right})";
     }
+    public enum UnaryPredicateType
+    {
+        Not
+    }
+    public class UnaryPredicate : FlatPredicateNode
+    {
+        public FlatPredicateNode Operand;
+        public UnaryPredicateType Type;
+
+        public override string ToString()
+            => $"{Enum.GetName(typeof(UnaryPredicateType), Type)} ({Operand})";
+    }
 
     public class TernaryPredicate : FlatPredicateNode
     {

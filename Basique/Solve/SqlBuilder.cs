@@ -192,6 +192,17 @@ namespace Basique.Solve
                 prefix = WriteSqlPredicate(tab, bin.Right, cmd, prefix, into);
                 into.Append(")");
             }
+            else if (node is UnaryPredicate una)
+            {
+                if (una.Type == UnaryPredicateType.Not)
+                    into.Append("NOT ");
+                else
+                    throw new NotImplementedException();
+
+                into.Append("(");
+                prefix = WriteSqlPredicate(tab, una.Operand, cmd, prefix, into);
+                into.Append(")");
+            }
             else if (node is TernaryPredicate tern)
             {
                 into.Append("CASE WHEN (");
