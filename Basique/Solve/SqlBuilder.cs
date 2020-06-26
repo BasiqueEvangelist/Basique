@@ -256,16 +256,16 @@ namespace Basique.Solve
             s.Append("insert into ");
             s.Append(tab.Name);
             s.Append(" (");
-            s.AppendJoin(",", create.Factory.Bindings.OfType<MemberAssignment>().Select(x => x.Member.Name.ToLower()));
+            s.AppendJoin(",", create.Factory.Bindings.OfType<MemberAssignment>().Select(x => tab.Context.Tables[x.Member.DeclaringType].Columns[x.Member].Name));
             s.Append(") values (");
-            s.AppendJoin(",", create.Factory.Bindings.OfType<MemberAssignment>().Select(x => "@" + x.Member.Name.ToLower()));
+            s.AppendJoin(",", create.Factory.Bindings.OfType<MemberAssignment>().Select(x => "@" + tab.Context.Tables[x.Member.DeclaringType].Columns[x.Member].Name));
             s.Append(");");
             command.CommandText = s.ToString();
             foreach (var assign in create.Factory.Bindings.OfType<MemberAssignment>())
             {
                 var param = command.CreateParameter();
                 param.Direction = ParameterDirection.Input;
-                param.ParameterName = "@" + assign.Member.Name.ToLower();
+                param.ParameterName = "@" + tab.Context.Tables[assign.Member.DeclaringType].Columns[assign.Member].Name;
                 param.Value = Expression.Lambda(assign.Expression).Compile(false).DynamicInvoke();
                 command.Parameters.Add(param);
             }
