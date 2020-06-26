@@ -19,25 +19,29 @@ namespace Basique.Solve
         public static async ValueTask<object> SolvePullQuery(List<ExpressionNode> expr, CancellationToken token, ITable table)
         {
             SqlSelectorData data = SqlBuilder.BuildSelectorData(expr, new SqlSelectorData());
-            DbCommand command = table.Context.Connection.CreateCommand();
-            SqlBuilder.WriteSqlSelect(data, command);
-            LOGGER.Debug("Running SQL: {0}", command.CommandText);
-            var reader = await command.ExecuteReaderAsync(token);
             List<object> res = new List<object>();
-            if (reader.HasRows)
-                while (await reader.ReadAsync(token))
+            await using (DbCommand command = table.Context.Connection.CreateCommand())
+            {
+                SqlBuilder.WriteSqlSelect(data, command);
+                LOGGER.Debug("Running SQL: {0}", command.CommandText);
+                await using (var reader = await command.ExecuteReaderAsync(token))
                 {
-                    object obj = Activator.CreateInstance(data.RequestedType);
-                    foreach (var pair in table.Context.Tables[data.RequestedType].Columns)
-                    {
-                        object val = Convert.ChangeType(reader.GetValue(pair.Value.Name), pair.Value.Of);
-                        if (pair.Key is FieldInfo field)
-                            field.SetValue(obj, val);
-                        else if (pair.Key is PropertyInfo prop)
-                            prop.SetValue(obj, val);
-                    }
-                    res.Add(obj);
+                    if (reader.HasRows)
+                        while (await reader.ReadAsync(token))
+                        {
+                            object obj = Activator.CreateInstance(data.RequestedType);
+                            foreach (var pair in table.Context.Tables[data.RequestedType].Columns)
+                            {
+                                object val = Convert.ChangeType(reader.GetValue(pair.Value.Name), pair.Value.Of);
+                                if (pair.Key is FieldInfo field)
+                                    field.SetValue(obj, val);
+                                else if (pair.Key is PropertyInfo prop)
+                                    prop.SetValue(obj, val);
+                            }
+                            res.Add(obj);
+                        }
                 }
+            }
             if ((expr.Last() as PullExpressionNode).Type == PullExpressionNode.PullType.Array)
                 return GenericUtils.MakeGenericArray(res, data.RequestedType);
             else if ((expr.Last() as PullExpressionNode).Type == PullExpressionNode.PullType.List)
@@ -49,7 +53,7 @@ namespace Basique.Solve
         public static async ValueTask<object> SolveUpdateQuery(List<ExpressionNode> expr, CancellationToken token, ITable tab)
         {
             SqlUpdateData data = SqlBuilder.BuildUpdateData(expr);
-            DbCommand command = tab.Context.Connection.CreateCommand();
+            await using DbCommand command = tab.Context.Connection.CreateCommand();
             SqlBuilder.WriteSqlUpdate(data, command);
             LOGGER.Debug("Running SQL: {0}", command.CommandText);
             await command.ExecuteNonQueryAsync();
@@ -60,36 +64,41 @@ namespace Basique.Solve
         {
             SqlSelectorData data = SqlBuilder.BuildSelectorData(expr, new SqlSelectorData());
             PullSingleExpressionNode node = expr[^1] as PullSingleExpressionNode;
-            DbCommand command = tab.Context.Connection.CreateCommand();
-            SqlBuilder.WriteSqlPullSingle(data, node, command);
-            LOGGER.Debug("Running SQL: {0}", command.CommandText);
-            var reader = await command.ExecuteReaderAsync(token);
-            if (!reader.HasRows)
+            await using (DbCommand command = tab.Context.Connection.CreateCommand())
             {
-                if (node.IncludeDefault)
-                    return null;
-                else
-                    throw new InvalidOperationException("The source sequence is empty.");
+                SqlBuilder.WriteSqlPullSingle(data, node, command);
+                LOGGER.Debug("Running SQL: {0}", command.CommandText);
+
+                await using (var reader = await command.ExecuteReaderAsync(token))
+                {
+                    if (!reader.HasRows)
+                    {
+                        if (node.IncludeDefault)
+                            return null;
+                        else
+                            throw new InvalidOperationException("The source sequence is empty.");
+                    }
+                    object res = Activator.CreateInstance(data.RequestedType);
+                    await reader.ReadAsync(token);
+                    foreach (var pair in tab.Context.Tables[data.RequestedType].Columns)
+                    {
+                        object val = Convert.ChangeType(reader.GetValue(pair.Value.Name), pair.Value.Of);
+                        if (pair.Key is FieldInfo field)
+                            field.SetValue(res, val);
+                        else if (pair.Key is PropertyInfo prop)
+                            prop.SetValue(res, val);
+                    }
+                    if (await reader.ReadAsync(token) && node.Type == PullSingleExpressionNode.PullType.Single)
+                        throw new InvalidOperationException("More than one element satisfies the condition in predicate.");
+                    return res;
+                }
             }
-            object res = Activator.CreateInstance(data.RequestedType);
-            await reader.ReadAsync(token);
-            foreach (var pair in tab.Context.Tables[data.RequestedType].Columns)
-            {
-                object val = Convert.ChangeType(reader.GetValue(pair.Value.Name), pair.Value.Of);
-                if (pair.Key is FieldInfo field)
-                    field.SetValue(res, val);
-                else if (pair.Key is PropertyInfo prop)
-                    prop.SetValue(res, val);
-            }
-            if (await reader.ReadAsync(token) && node.Type == PullSingleExpressionNode.PullType.Single)
-                throw new InvalidOperationException("More than one element satisfies the condition in predicate.");
-            return res;
         }
 
         public static async ValueTask<object> SolveDeleteQuery<T>(List<ExpressionNode> expr, CancellationToken token, Table<T> tab)
         {
             SqlSelectorData data = SqlBuilder.BuildSelectorData(expr, new SqlSelectorData());
-            DbCommand command = tab.Context.Connection.CreateCommand();
+            await using DbCommand command = tab.Context.Connection.CreateCommand();
             SqlBuilder.WriteSqlDelete(data, tab, command);
             LOGGER.Debug("Running SQL: {0}", command.CommandText);
             await command.ExecuteNonQueryAsync();
@@ -99,10 +108,12 @@ namespace Basique.Solve
         public static async ValueTask<object> SolveCreateQuery(List<ExpressionNode> pn, CancellationToken token, ITable tab)
         {
             CreateExpressionNode create = pn.Last() as CreateExpressionNode;
-            DbCommand command = tab.Context.Connection.CreateCommand();
-            SqlBuilder.WriteSqlCreate(create, tab, command);
-            LOGGER.Debug("Running SQL: {0}", command.CommandText);
-            await command.ExecuteNonQueryAsync();
+            await using (DbCommand command = tab.Context.Connection.CreateCommand())
+            {
+                SqlBuilder.WriteSqlCreate(create, tab, command);
+                LOGGER.Debug("Running SQL: {0}", command.CommandText);
+                await command.ExecuteNonQueryAsync();
+            }
             object inst = Activator.CreateInstance(create.OfType);
             foreach (var binding in create.Factory.Bindings)
             {
