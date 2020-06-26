@@ -22,9 +22,18 @@ namespace Basique.Solve
                     continue;
                 else if (node is PullExpressionNode
                       || node is UpdateExpressionNode
-                      || node is DeleteExpressionNode
-                      || node is PullSingleExpressionNode)
+                      || node is DeleteExpressionNode)
                     continue; // Not our job.
+                else if (node is PullSingleExpressionNode pull)
+                {
+                    if (pull.By != null)
+                    {
+                        if (data.Where == null)
+                            data.Where = pull.By;
+                        else
+                            data.Where = new BinaryPredicate() { Left = data.Where, Right = pull.By, Type = BinaryPredicateType.AndAlso };
+                    }
+                }
                 else if (node is WhereExpressionNode whereexpr)
                 {
                     if (data.Where == null)
@@ -60,6 +69,7 @@ namespace Basique.Solve
             int prefix = 0;
             s.Append("delete from ");
             s.Append(data.FromTable.Name);
+            if (data.Where != null)
             {
                 s.Append(" where ");
                 prefix = WriteSqlPredicate(data.FromTable, data.Where, cmd, prefix++, s);
@@ -82,6 +92,11 @@ namespace Basique.Solve
             s.AppendJoin(", ", data.FromTable.Context.Tables[data.RequestedType].Columns.Select(x => x.Value.Name));
             s.Append(" from ");
             s.Append(data.FromTable.Name);
+            if (data.Where != null)
+            {
+                s.Append(" where ");
+                prefix = WriteSqlPredicate(data.FromTable, data.Where, cmd, prefix++, s);
+            }
             foreach (var rule in data.Rules)
             {
                 if (rule is JoinRule join)

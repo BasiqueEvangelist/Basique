@@ -49,7 +49,18 @@ namespace Basique.Solve
 
                     PullSingleExpressionNode pullSingle = new PullSingleExpressionNode() { Parent = Parse(call.Arguments[0]) };
 
-                    pullSingle.By = KnownMethods.PullSinglePredicated.Contains(method) ? PredicateFlattener.Flatten(call.Arguments[1]) : new ConstantPredicate() { Of = typeof(bool), Data = true };
+                    if (KnownMethods.PullSinglePredicated.Contains(method))
+                    {
+                        if (!(call.Arguments[1] is UnaryExpression quote))
+                            throw new NotImplementedException();
+                        if (!(quote.NodeType == ExpressionType.Quote))
+                            throw new NotImplementedException();
+                        if (!(quote.Operand is LambdaExpression lambda))
+                            throw new NotImplementedException();
+                        pullSingle.By = PredicateFlattener.Flatten(lambda.Body);
+                    }
+                    else
+                        pullSingle.By = null;
                     pullSingle.IncludeDefault = KnownMethods.PullSingleDefault.Contains(method);
                     if (KnownMethods.PullSingleFirst.Contains(method))
                         pullSingle.Type = PullSingleExpressionNode.PullType.First;

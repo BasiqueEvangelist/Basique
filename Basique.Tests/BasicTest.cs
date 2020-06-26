@@ -93,6 +93,7 @@ namespace Basique.Tests
             Console.WriteLine(string.Join('\n', l3));
 
             Console.WriteLine(await tc.TestObjects.FirstAsync());
+            Console.WriteLine(await tc.TestObjects.FirstAsync(x => x.Value == 2));
         }
     }
     public static class why
