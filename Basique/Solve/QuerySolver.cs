@@ -56,7 +56,7 @@ namespace Basique.Solve
             await using DbCommand command = tab.Context.Connection.CreateCommand();
             SqlBuilder.WriteSqlUpdate(data, command);
             LOGGER.Debug("Running SQL: {0}", command.CommandText);
-            await command.ExecuteNonQueryAsync();
+            await command.ExecuteNonQueryAsync(token);
             return null;
         }
 
@@ -101,7 +101,7 @@ namespace Basique.Solve
             await using DbCommand command = tab.Context.Connection.CreateCommand();
             SqlBuilder.WriteSqlDelete(data, tab, command);
             LOGGER.Debug("Running SQL: {0}", command.CommandText);
-            await command.ExecuteNonQueryAsync();
+            await command.ExecuteNonQueryAsync(token);
             return null;
         }
 
@@ -112,7 +112,7 @@ namespace Basique.Solve
             {
                 SqlBuilder.WriteSqlCreate(create, tab, command);
                 LOGGER.Debug("Running SQL: {0}", command.CommandText);
-                await command.ExecuteNonQueryAsync();
+                await command.ExecuteNonQueryAsync(token);
             }
             object inst = Activator.CreateInstance(create.OfType);
             foreach (var binding in create.Factory.Bindings)
