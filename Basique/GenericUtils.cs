@@ -7,7 +7,7 @@ namespace Basique
     public static class GenericUtils
     {
         static Type listType = typeof(List<>);
-        public static IList MakeGenericList(IEnumerable from, Type type)
+        public static IList MakeGenericList(ICollection from, Type type)
         {
             Type newListType = listType.MakeGenericType(type);
             IList newList = (IList)Activator.CreateInstance(newListType);
@@ -18,13 +18,14 @@ namespace Basique
 
             return newList;
         }
-        public static Array MakeGenericArray(IEnumerable from, Type type)
+        public static Array MakeGenericArray(ICollection from, Type type)
         {
             Type newArrayType = type.MakeArrayType();
-            Array newArray = (Array)Activator.CreateInstance(newArrayType);
+            Array newArray = (Array)Activator.CreateInstance(newArrayType, new object[] { from.Count });
+            int i = 0;
             foreach (var item in from)
             {
-                ((IList)newArray).Add(item);
+                newArray.SetValue(item, i++);
             }
 
             return newArray;
