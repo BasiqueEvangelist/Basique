@@ -112,8 +112,10 @@ namespace Basique.Solve
             }
             int limitNeeded = node.Type == PullSingleExpressionNode.PullType.First ? 1 : 2;
             if (data.Limit == null)
+            {
                 data.Limit = limitNeeded;
-            data.Limit = data.Limit > limitNeeded ? limitNeeded : data.Limit;
+                data.Limit = data.Limit > limitNeeded ? limitNeeded : data.Limit;
+            }
             s.Append($" limit {data.Limit}");
             cmd.CommandText = s.ToString();
         }
