@@ -244,7 +244,9 @@ namespace Basique.Solve
             {
                 if (sub.From is ContextPredicate ctx)
                 {
-                    into.Append($"{tab.Name}.{tab.Context.Tables[sub.Field.DeclaringType].Columns[sub.Field].Name}");
+                    if (sub.Path.Members.Length != 1)
+                        throw new NotImplementedException(); // FIXME: Handle subfields.
+                    into.Append($"{tab.Name}.{tab.Context.Tables[sub.Path.Members[0].DeclaringType].Columns[sub.Path.Members[0]].Name}");
                 }
                 else
                     throw new NotImplementedException(); // Joins and .Select() will come later.

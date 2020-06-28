@@ -48,7 +48,8 @@ namespace Basique.Solve
             {
                 if (!(mem.Member is FieldInfo field))
                     throw new NotImplementedException();
-                return new SubPredicate() { Field = field, From = Flatten(mem.Expression) };
+                var pack = MemberPath.Create(mem);
+                return new SubPredicate() { Path = pack.Path, From = Flatten(pack.Final) };
             }
             else if (expr is ParameterExpression param)
                 return new ContextPredicate() { Of = param.Type };

@@ -52,10 +52,10 @@ namespace Basique.Solve
     public class SubPredicate : FlatPredicateNode
     {
         public FlatPredicateNode From;
-        public FieldInfo Field;
+        public MemberPath Path;
 
         public override string ToString()
-            => $"Sub ({From}) ({Field.Name})";
+            => $"Sub ({From}) ({Path})";
     }
     public class ConstantPredicate : FlatPredicateNode
     {
