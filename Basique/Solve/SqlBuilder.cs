@@ -200,6 +200,20 @@ namespace Basique.Solve
                     into.Append(" > ");
                 else if (bin.Type == BinaryPredicateType.Less)
                     into.Append(" < ");
+                else if (bin.Type == BinaryPredicateType.GreaterOrEqual)
+                    into.Append(" >= ");
+                else if (bin.Type == BinaryPredicateType.LessOrEqual)
+                    into.Append(" <= ");
+                else if (bin.Type == BinaryPredicateType.Add)
+                    into.Append(" + ");
+                else if (bin.Type == BinaryPredicateType.Subtract)
+                    into.Append(" - ");
+                else if (bin.Type == BinaryPredicateType.Multiply)
+                    into.Append(" * ");
+                else if (bin.Type == BinaryPredicateType.Divide)
+                    into.Append(" / ");
+                else if (bin.Type == BinaryPredicateType.Modulo)
+                    into.Append(" % ");
                 else
                     throw new NotImplementedException();
                 into.Append("(");

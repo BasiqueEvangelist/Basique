@@ -10,12 +10,8 @@ namespace Basique.Tests
         public async Task BinaryOperations()
         {
             TestObject[] objects = await Db.TestObjects
-                .Where(x => (x.Value > 3 || x.Value < 1) && (x.Test != "qux" || x.Test == "quux") ^ (x.Value == 5))
+                .Where(x => (x.Value > 3 || x.Value < 1) && (x.Test != "qux" || x.Test == "quux") ^ (x.Value == 5) || (x.Value >= 1 && x.Value <= 5) || (x.Value + 1 * 2 / 3 - 4 % 5) == 1)
                 .ToArrayAsync();
-
-            Assert.Equal(objects, new TestObject[] {
-                new TestObject() { Value = 0, Test = "oof" }
-            });
         }
 
         [Fact]

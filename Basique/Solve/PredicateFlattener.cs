@@ -29,6 +29,20 @@ namespace Basique.Solve
                     pred.Type = BinaryPredicateType.ExclusiveOr;
                 else if (bin.NodeType == ExpressionType.GreaterThan)
                     pred.Type = BinaryPredicateType.Greater;
+                else if (bin.NodeType == ExpressionType.LessThanOrEqual)
+                    pred.Type = BinaryPredicateType.LessOrEqual;
+                else if (bin.NodeType == ExpressionType.GreaterThanOrEqual)
+                    pred.Type = BinaryPredicateType.GreaterOrEqual;
+                else if (bin.NodeType == ExpressionType.Add)
+                    pred.Type = BinaryPredicateType.Add;
+                else if (bin.NodeType == ExpressionType.Subtract)
+                    pred.Type = BinaryPredicateType.Subtract;
+                else if (bin.NodeType == ExpressionType.Multiply)
+                    pred.Type = BinaryPredicateType.Multiply;
+                else if (bin.NodeType == ExpressionType.Divide)
+                    pred.Type = BinaryPredicateType.Divide;
+                else if (bin.NodeType == ExpressionType.Modulo)
+                    pred.Type = BinaryPredicateType.Modulo;
                 else
                     throw new NotImplementedException();
                 return pred;

@@ -8,7 +8,7 @@ namespace Basique.Solve
     }
     public enum BinaryPredicateType
     {
-        Equal, NotEqual, Less, Greater, AndAlso, OrElse, ExclusiveOr
+        Equal, NotEqual, Less, Greater, AndAlso, OrElse, ExclusiveOr, LessOrEqual, GreaterOrEqual, Add, Subtract, Multiply, Divide, Modulo
     }
     public class BinaryPredicate : FlatPredicateNode
     {
