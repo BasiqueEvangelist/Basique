@@ -10,9 +10,9 @@ using System.Data.Common;
 
 namespace Basique.Solve
 {
-    public static class SqlBuilder
+    public class SqlBuilder
     {
-        public static SqlSelectorData BuildSelectorData(List<ExpressionNode> nodes, SqlSelectorData data)
+        public SqlSelectorData BuildSelectorData(List<ExpressionNode> nodes, SqlSelectorData data)
         {
             data.Relation = ((FinalExpressionNode)nodes[0]).Table;
             Type currentType = data.Relation.ElementType;
@@ -53,7 +53,7 @@ namespace Basique.Solve
             return data;
         }
 
-        public static SqlUpdateData BuildUpdateData(List<ExpressionNode> nodes)
+        public SqlUpdateData BuildUpdateData(List<ExpressionNode> nodes)
         {
             SqlUpdateData data = new SqlUpdateData();
             BuildSelectorData(nodes, data);
@@ -61,7 +61,7 @@ namespace Basique.Solve
             return data;
         }
 
-        public static void WriteSqlDelete(SqlSelectorData data, IRelation tab, DbCommand cmd)
+        public void WriteSqlDelete(SqlSelectorData data, IRelation tab, DbCommand cmd)
         {
             if (data.Limit != null)
                 throw new InvalidOperationException("Limits on Delete not allowed.");
@@ -84,7 +84,7 @@ namespace Basique.Solve
             cmd.CommandText = s.ToString();
         }
 
-        public static void WriteSqlPullSingle(SqlSelectorData data, PullSingleExpressionNode node, DbCommand cmd)
+        public void WriteSqlPullSingle(SqlSelectorData data, PullSingleExpressionNode node, DbCommand cmd)
         {
             StringBuilder s = new StringBuilder();
             int prefix = 0;
@@ -120,7 +120,7 @@ namespace Basique.Solve
             cmd.CommandText = s.ToString();
         }
 
-        public static void WriteSqlSelect(SqlSelectorData data, DbCommand cmd)
+        public void WriteSqlSelect(SqlSelectorData data, DbCommand cmd)
         {
             StringBuilder s = new StringBuilder();
             int prefix = 0;
@@ -134,21 +134,21 @@ namespace Basique.Solve
                 s.Append(" where ");
                 prefix = WriteSqlPredicate(data.Relation, data.Where, cmd, prefix, s);
             }
-            
+
             if (data.OrderBy != null)
             {
                 s.Append(" order by ");
                 prefix = WriteSqlPredicate(data.Relation, data.OrderBy.Key, cmd, prefix, s);
                 s.Append(data.OrderBy.Descending ? " desc" : " asc");
             }
-            
+
             if (data.Limit != null)
                 s.Append($" limit {data.Limit}");
-            
+
             cmd.CommandText = s.ToString();
         }
 
-        public static void WriteSqlUpdate(SqlUpdateData data, DbCommand cmd)
+        public void WriteSqlUpdate(SqlUpdateData data, DbCommand cmd)
         {
             StringBuilder s = new StringBuilder();
             int prefix = 0;
@@ -179,7 +179,7 @@ namespace Basique.Solve
             cmd.CommandText = s.ToString();
         }
 
-        private static int WriteSqlPredicate(IRelation tab, FlatPredicateNode node, DbCommand cmd, int prefix, StringBuilder into)
+        private int WriteSqlPredicate(IRelation tab, FlatPredicateNode node, DbCommand cmd, int prefix, StringBuilder into)
         {
             if (node is BinaryPredicate bin)
             {
@@ -249,7 +249,7 @@ namespace Basique.Solve
             return prefix;
         }
 
-        public static void WriteSqlCreate(CreateExpressionNode create, IRelation tab, DbCommand command)
+        public void WriteSqlCreate(CreateExpressionNode create, IRelation tab, DbCommand command)
         {
             StringBuilder s = new StringBuilder();
             s.Append("insert into ");

@@ -12,18 +12,25 @@ using NLog;
 
 namespace Basique.Solve
 {
-    public static class QuerySolver
+    public class QuerySolver
     {
-        private static Logger LOGGER = LogManager.GetCurrentClassLogger();
+        private ILogger LOGGER;
+        private SqlBuilder sqlBuilder;
 
-        public static async ValueTask<object> SolvePullQuery(List<ExpressionNode> expr, CancellationToken token, IRelation table, DbTransaction transaction)
+        public QuerySolver(LogFactory factory, SqlBuilder builder)
         {
-            SqlSelectorData data = SqlBuilder.BuildSelectorData(expr, new SqlSelectorData());
+            LOGGER = factory.GetLogger("Basique.Solve.QuerySolver");
+            sqlBuilder = builder;
+        }
+
+        public async ValueTask<object> SolvePullQuery(List<ExpressionNode> expr, CancellationToken token, IRelation table, DbTransaction transaction)
+        {
+            SqlSelectorData data = sqlBuilder.BuildSelectorData(expr, new SqlSelectorData());
             List<object> res = new List<object>();
             await using (DbCommand command = table.Context.Connection.CreateCommand())
             {
                 command.Transaction = transaction;
-                SqlBuilder.WriteSqlSelect(data, command);
+                sqlBuilder.WriteSqlSelect(data, command);
                 LOGGER.Debug("Running SQL: {0}", command.CommandText);
                 await using (var reader = await command.ExecuteReaderAsync(token))
                 {
@@ -48,25 +55,25 @@ namespace Basique.Solve
                 throw new NotImplementedException();
         }
 
-        public static async ValueTask<object> SolveUpdateQuery(List<ExpressionNode> expr, CancellationToken token, IRelation tab, DbTransaction transaction)
+        public async ValueTask<object> SolveUpdateQuery(List<ExpressionNode> expr, CancellationToken token, IRelation tab, DbTransaction transaction)
         {
-            SqlUpdateData data = SqlBuilder.BuildUpdateData(expr);
+            SqlUpdateData data = sqlBuilder.BuildUpdateData(expr);
             await using DbCommand command = tab.Context.Connection.CreateCommand();
             command.Transaction = transaction;
-            SqlBuilder.WriteSqlUpdate(data, command);
+            sqlBuilder.WriteSqlUpdate(data, command);
             LOGGER.Debug("Running SQL: {0}", command.CommandText);
             await command.ExecuteNonQueryAsync(token);
             return null;
         }
 
-        public static async ValueTask<object> SolvePullSingleQuery(List<ExpressionNode> expr, CancellationToken token, IRelation tab, DbTransaction transaction)
+        public async ValueTask<object> SolvePullSingleQuery(List<ExpressionNode> expr, CancellationToken token, IRelation tab, DbTransaction transaction)
         {
-            SqlSelectorData data = SqlBuilder.BuildSelectorData(expr, new SqlSelectorData());
+            SqlSelectorData data = sqlBuilder.BuildSelectorData(expr, new SqlSelectorData());
             PullSingleExpressionNode node = expr[^1] as PullSingleExpressionNode;
             await using (DbCommand command = tab.Context.Connection.CreateCommand())
             {
                 command.Transaction = transaction;
-                SqlBuilder.WriteSqlPullSingle(data, node, command);
+                sqlBuilder.WriteSqlPullSingle(data, node, command);
                 LOGGER.Debug("Running SQL: {0}", command.CommandText);
 
                 await using (var reader = await command.ExecuteReaderAsync(token))
@@ -93,24 +100,24 @@ namespace Basique.Solve
             }
         }
 
-        public static async ValueTask<object> SolveDeleteQuery(List<ExpressionNode> expr, CancellationToken token, IRelation tab, DbTransaction transaction)
+        public async ValueTask<object> SolveDeleteQuery(List<ExpressionNode> expr, CancellationToken token, IRelation tab, DbTransaction transaction)
         {
-            SqlSelectorData data = SqlBuilder.BuildSelectorData(expr, new SqlSelectorData());
+            SqlSelectorData data = sqlBuilder.BuildSelectorData(expr, new SqlSelectorData());
             await using DbCommand command = tab.Context.Connection.CreateCommand();
             command.Transaction = transaction;
-            SqlBuilder.WriteSqlDelete(data, tab, command);
+            sqlBuilder.WriteSqlDelete(data, tab, command);
             LOGGER.Debug("Running SQL: {0}", command.CommandText);
             await command.ExecuteNonQueryAsync(token);
             return null;
         }
 
-        public static async ValueTask<object> SolveCreateQuery(List<ExpressionNode> pn, CancellationToken token, IRelation tab, DbTransaction transaction)
+        public async ValueTask<object> SolveCreateQuery(List<ExpressionNode> pn, CancellationToken token, IRelation tab, DbTransaction transaction)
         {
             CreateExpressionNode create = pn.Last() as CreateExpressionNode;
             await using (DbCommand command = tab.Context.Connection.CreateCommand())
             {
                 command.Transaction = transaction;
-                SqlBuilder.WriteSqlCreate(create, tab, command);
+                sqlBuilder.WriteSqlCreate(create, tab, command);
                 LOGGER.Debug("Running SQL: {0}", command.CommandText);
                 await command.ExecuteNonQueryAsync(token);
             }

@@ -7,9 +7,8 @@ namespace Basique.Solve
 {
     public abstract class ExpressionNode
     {
-        internal static Logger LOGGER = LogManager.GetCurrentClassLogger();
         public ExpressionNode Parent;
-        public abstract void Dump();
+        public abstract void Dump(ILogger log);
     }
 
     public class FinalExpressionNode : ExpressionNode
@@ -22,19 +21,19 @@ namespace Basique.Solve
             Parent = this;
         }
 
-        public override void Dump()
+        public override void Dump(ILogger log)
         {
-            LOGGER.Trace("Final");
+            log.Trace("Final");
         }
     }
 
     public class WhereExpressionNode : ExpressionNode
     {
         public FlatPredicateNode Condition;
-        public override void Dump()
+        public override void Dump(ILogger log)
         {
-            Parent.Dump();
-            LOGGER.Trace("Where ({0})", Condition);
+            Parent.Dump(log);
+            log.Trace("Where ({0})", Condition);
         }
     }
 
@@ -42,20 +41,20 @@ namespace Basique.Solve
     {
         public bool Descending;
         public FlatPredicateNode Key;
-        public override void Dump()
+        public override void Dump(ILogger log)
         {
-            Parent.Dump();
-            LOGGER.Trace("OrderBy{0} ({1})", Descending ? "Descending" : "", Key);
+            Parent.Dump(log);
+            log.Trace("OrderBy{0} ({1})", Descending ? "Descending" : "", Key);
         }
     }
 
     public class LimitExpressionNode : ExpressionNode
     {
         public int Count;
-        public override void Dump()
+        public override void Dump(ILogger log)
         {
-            Parent.Dump();
-            LOGGER.Trace("Take ({0})", Count);
+            Parent.Dump(log);
+            log.Trace("Take ({0})", Count);
         }
     }
 
@@ -68,10 +67,10 @@ namespace Basique.Solve
 
         public PullType Type;
 
-        public override void Dump()
+        public override void Dump(ILogger log)
         {
-            Parent.Dump();
-            LOGGER.Trace("Pull ({0})", Enum.GetName(typeof(PullType), Type));
+            Parent.Dump(log);
+            log.Trace("Pull ({0})", Enum.GetName(typeof(PullType), Type));
         }
     }
 
@@ -86,10 +85,10 @@ namespace Basique.Solve
         public bool IncludeDefault;
         public FlatPredicateNode By;
 
-        public override void Dump()
+        public override void Dump(ILogger log)
         {
-            Parent.Dump();
-            LOGGER.Trace("PullSingle ({0})", Enum.GetName(typeof(PullType), Type));
+            Parent.Dump(log);
+            log.Trace("PullSingle ({0})", Enum.GetName(typeof(PullType), Type));
         }
     }
 
@@ -98,10 +97,10 @@ namespace Basique.Solve
         public Type OfType;
         public MemberInitExpression Factory;
 
-        public override void Dump()
+        public override void Dump(ILogger log)
         {
-            Parent.Dump();
-            LOGGER.Trace("Create {0} ({1})", OfType, Factory);
+            Parent.Dump(log);
+            log.Trace("Create {0} ({1})", OfType, Factory);
         }
     }
 
@@ -109,19 +108,19 @@ namespace Basique.Solve
     {
         public UpdateContext Context;
 
-        public override void Dump()
+        public override void Dump(ILogger log)
         {
-            Parent.Dump();
-            LOGGER.Trace("Update");
+            Parent.Dump(log);
+            log.Trace("Update");
         }
     }
 
     public class DeleteExpressionNode : ExpressionNode
     {
-        public override void Dump()
+        public override void Dump(ILogger log)
         {
-            Parent.Dump();
-            LOGGER.Trace("Delete");
+            Parent.Dump(log);
+            log.Trace("Delete");
         }
     }
 }
