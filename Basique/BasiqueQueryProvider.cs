@@ -8,20 +8,20 @@ using Basique.Modeling;
 using Basique.Solve;
 using System;
 using NLog;
+using Perfusion;
 
 namespace Basique
 {
     public class BasiqueQueryProvider : IAsyncQueryProvider
     {
-        private readonly ILogger logger;
-        private readonly QuerySolver solver;
+        [Inject] private ILogger logger;
+        [Inject] private QuerySolver solver;
         private readonly IRelation relation;
         private readonly DbTransaction transaction;
 
         internal BasiqueQueryProvider(IRelation relation, DbTransaction trans)
         {
-            logger = relation.Context.LoadedServices.LoggerFactory.GetCurrentClassLogger();
-            solver = relation.Context.LoadedServices.Solver;
+            relation.Context.Container.ResolveObject(this);
             this.relation = relation;
             this.transaction = trans;
         }

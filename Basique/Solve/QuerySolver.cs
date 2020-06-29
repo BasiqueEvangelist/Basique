@@ -9,19 +9,14 @@ using System.Reflection;
 using System.Data;
 using System.Linq;
 using NLog;
+using Perfusion;
 
 namespace Basique.Solve
 {
     public class QuerySolver
     {
-        private ILogger LOGGER;
-        private SqlBuilder sqlBuilder;
-
-        public QuerySolver(LogFactory factory, SqlBuilder builder)
-        {
-            LOGGER = factory.GetLogger("Basique.Solve.QuerySolver");
-            sqlBuilder = builder;
-        }
+        [Inject] private ILogger LOGGER;
+        [Inject] private SqlBuilder sqlBuilder;
 
         public async ValueTask<object> SolvePullQuery(List<ExpressionNode> expr, CancellationToken token, IRelation table, DbTransaction transaction)
         {
