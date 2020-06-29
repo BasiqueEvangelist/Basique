@@ -11,15 +11,19 @@ namespace Basique.Tests.Internal
     {
         class A
         {
-            public A d;
+            public B a;
+            public class B
+            {
+                public A c;
+            }
         }
 
         [Fact]
         public void Parameter()
         {
-            Expression<Func<A, A>> expr = (a) => a.d.d;
+            Expression<Func<A, A>> expr = (a) => a.a.c;
             var path = MemberPath.Create(expr.Body).Path;
-            Assert.Equal(new MemberPath() { Start = typeof(A), Members = Enumerable.Repeat(typeof(A).GetField("d"), 2).ToArray() }, path);
+            Assert.Equal(new MemberPath() { Start = typeof(A), Members = new[] { typeof(A).GetField("a") , typeof(A.B).GetField("c") } }, path);
         }
 
         [Fact]

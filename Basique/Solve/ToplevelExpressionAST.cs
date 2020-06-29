@@ -14,9 +14,9 @@ namespace Basique.Solve
 
     public class FinalExpressionNode : ExpressionNode
     {
-        public ITable Table { get; }
+        public IRelation Table { get; }
 
-        public FinalExpressionNode(ITable tab)
+        public FinalExpressionNode(IRelation tab)
         {
             Table = tab;
             Parent = this;

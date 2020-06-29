@@ -3,18 +3,22 @@ using System.Collections.Generic;
 using System.Data.Common;
 using System.Reflection;
 using System;
+using Basique.Solve;
+using System.Linq;
 
 namespace Basique.Modeling
 {
-    internal class TableData
+    public class TableData
     {
         public string Name;
-        public Dictionary<MemberInfo, ColumnData> Columns = new Dictionary<MemberInfo, ColumnData>();
+        public Dictionary<string, ColumnData> Columns = new Dictionary<string, ColumnData>();
     }
-    internal class ColumnData
+    public class ColumnData
     {
         public string Name;
-        public Type Of;
+        public TableData Table;
+        public MemberPath Path;
+        public Type Type;
         public bool IsId;
         public bool Generated;
     }
@@ -30,15 +34,20 @@ namespace Basique.Modeling
         public void RemoteName(string name) => data.Name = name;
         public ColumnBuilder<TField> Field<TField>(Expression<Func<T, TField>> selector)
         {
-            ColumnData cd = new ColumnData();
-            MemberInfo member = (selector.Body as MemberExpression).Member;
-            cd.Name = member.Name.ToLower();
-            if (member is FieldInfo field)
-                cd.Of = field.FieldType;
-            else if (member is PropertyInfo prop)
-                cd.Of = prop.PropertyType;
-            data.Columns.Add(member, cd);
-            return new ColumnBuilder<TField>(cd);
+            var columnData = new ColumnData();
+            columnData.Table = data;
+            var path = MemberPath.Create(selector.Body);
+            columnData.Path = path.Path;
+            columnData.Name = path.Path.Members[^1].Name.ToLower();
+
+            var lastMember = path.Path.Members[^1];
+            if (lastMember is FieldInfo field)
+                columnData.Type = field.FieldType;
+            else if (lastMember is PropertyInfo prop)
+                columnData.Type = prop.PropertyType;
+
+            data.Columns.Add(path.Path.ToString(), columnData);
+            return new ColumnBuilder<TField>(columnData);
         }
     }
     public class ColumnBuilder<T>
@@ -48,6 +57,12 @@ namespace Basique.Modeling
         internal ColumnBuilder(ColumnData data)
         {
             this.data = data;
+        }
+
+        public ColumnBuilder<T> RemoteName(string name)
+        {
+            data.Name = name;
+            return this;
         }
 
         public ColumnBuilder<T> Id()

@@ -10,9 +10,9 @@ namespace Basique
 {
     public class BasiqueQueryable<T> : IAsyncQueryable<T>, IOrderedAsyncQueryable<T>
     {
-        private readonly ITable tab;
+        private readonly IRelation tab;
 
-        internal BasiqueQueryable(ITable tab, Expression expression)
+        internal BasiqueQueryable(IRelation tab, Expression expression)
         {
             this.tab = tab;
             Expression = expression;

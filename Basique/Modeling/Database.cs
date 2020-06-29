@@ -5,11 +5,11 @@ using System.Data.Common;
 
 namespace Basique.Modeling
 {
-    public abstract class DatabaseContext
+    public abstract class Database
     {
         public DbConnection Connection { get; }
         internal Dictionary<Type, TableData> Tables = new Dictionary<Type, TableData>();
-        public DatabaseContext(DbConnection conn)
+        public Database(DbConnection conn)
         {
             Connection = conn;
         }

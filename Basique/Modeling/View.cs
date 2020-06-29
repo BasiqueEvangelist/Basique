@@ -1,20 +1,18 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Data.Common;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Threading;
 using System.Threading.Tasks;
+using Basique.Solve;
 
 namespace Basique.Modeling
 {
-    public class Table<T> : RelationBase<T>
+    public class View<T> : RelationBase<T>
     {
-        public Table(Database conn)
-            : base(conn)
+        public View(Database conn):base(conn)
         {
-            
         }
-
     }
 }

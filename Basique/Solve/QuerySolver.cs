@@ -16,7 +16,7 @@ namespace Basique.Solve
     {
         private static Logger LOGGER = LogManager.GetCurrentClassLogger();
 
-        public static async ValueTask<object> SolvePullQuery(List<ExpressionNode> expr, CancellationToken token, ITable table)
+        public static async ValueTask<object> SolvePullQuery(List<ExpressionNode> expr, CancellationToken token, IRelation table)
         {
             SqlSelectorData data = SqlBuilder.BuildSelectorData(expr, new SqlSelectorData());
             List<object> res = new List<object>();
@@ -30,13 +30,10 @@ namespace Basique.Solve
                         while (await reader.ReadAsync(token))
                         {
                             object obj = Activator.CreateInstance(data.RequestedType);
-                            foreach (var pair in table.Context.Tables[data.RequestedType].Columns)
+                            foreach (var columnData in table.Context.Tables[data.RequestedType].Columns.Values)
                             {
-                                object val = Convert.ChangeType(reader.GetValue(pair.Value.Name), pair.Value.Of);
-                                if (pair.Key is FieldInfo field)
-                                    field.SetValue(obj, val);
-                                else if (pair.Key is PropertyInfo prop)
-                                    prop.SetValue(obj, val);
+                                object val = Convert.ChangeType(reader.GetValue(columnData.Name), columnData.Type);
+                                columnData.Path.Set(obj, val);
                             }
                             res.Add(obj);
                         }
@@ -50,7 +47,7 @@ namespace Basique.Solve
                 throw new NotImplementedException();
         }
 
-        public static async ValueTask<object> SolveUpdateQuery(List<ExpressionNode> expr, CancellationToken token, ITable tab)
+        public static async ValueTask<object> SolveUpdateQuery(List<ExpressionNode> expr, CancellationToken token, IRelation tab)
         {
             SqlUpdateData data = SqlBuilder.BuildUpdateData(expr);
             await using DbCommand command = tab.Context.Connection.CreateCommand();
@@ -60,7 +57,7 @@ namespace Basique.Solve
             return null;
         }
 
-        public static async ValueTask<object> SolvePullSingleQuery<T>(List<ExpressionNode> expr, CancellationToken token, Table<T> tab)
+        public static async ValueTask<object> SolvePullSingleQuery(List<ExpressionNode> expr, CancellationToken token, IRelation tab)
         {
             SqlSelectorData data = SqlBuilder.BuildSelectorData(expr, new SqlSelectorData());
             PullSingleExpressionNode node = expr[^1] as PullSingleExpressionNode;
@@ -80,13 +77,11 @@ namespace Basique.Solve
                     }
                     object res = Activator.CreateInstance(data.RequestedType);
                     await reader.ReadAsync(token);
-                    foreach (var pair in tab.Context.Tables[data.RequestedType].Columns)
+                    foreach (var pair in tab.Context.Tables[data.RequestedType].Columns.Values)
                     {
-                        object val = Convert.ChangeType(reader.GetValue(pair.Value.Name), pair.Value.Of);
-                        if (pair.Key is FieldInfo field)
-                            field.SetValue(res, val);
-                        else if (pair.Key is PropertyInfo prop)
-                            prop.SetValue(res, val);
+                        object val = reader.GetValue(pair.Name);
+                        object valConv = Convert.ChangeType(val, pair.Type);
+                        pair.Path.Set(res, valConv);
                     }
                     if (await reader.ReadAsync(token) && node.Type == PullSingleExpressionNode.PullType.Single)
                         throw new InvalidOperationException("More than one element satisfies the condition in predicate.");
@@ -95,7 +90,7 @@ namespace Basique.Solve
             }
         }
 
-        public static async ValueTask<object> SolveDeleteQuery<T>(List<ExpressionNode> expr, CancellationToken token, Table<T> tab)
+        public static async ValueTask<object> SolveDeleteQuery(List<ExpressionNode> expr, CancellationToken token, IRelation tab)
         {
             SqlSelectorData data = SqlBuilder.BuildSelectorData(expr, new SqlSelectorData());
             await using DbCommand command = tab.Context.Connection.CreateCommand();
@@ -105,7 +100,7 @@ namespace Basique.Solve
             return null;
         }
 
-        public static async ValueTask<object> SolveCreateQuery(List<ExpressionNode> pn, CancellationToken token, ITable tab)
+        public static async ValueTask<object> SolveCreateQuery(List<ExpressionNode> pn, CancellationToken token, IRelation tab)
         {
             CreateExpressionNode create = pn.Last() as CreateExpressionNode;
             await using (DbCommand command = tab.Context.Connection.CreateCommand())

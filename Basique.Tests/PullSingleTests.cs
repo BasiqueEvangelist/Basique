@@ -8,6 +8,15 @@ namespace Basique.Tests
     public class PullSingleTests : TestEnvironment
     {
         [Fact]
+        public async Task BasicFirstView()
+        {
+            TestJoin obj = await Db.TestJoin.FirstAsync();
+
+            Assert.Equal(0, obj.First.Value);
+            Assert.Equal("oof", obj.Second.Test);
+        }
+
+        [Fact]
         public async Task BasicFirst()
         {
             TestObject obj = await Db.TestObjects.FirstAsync();

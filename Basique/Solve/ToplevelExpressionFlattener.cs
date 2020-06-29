@@ -15,7 +15,7 @@ namespace Basique.Solve
             while (expr.CanReduce)
                 expr = expr.ReduceAndCheck();
             if (expr is ConstantExpression con)
-                return new FinalExpressionNode(con.Value as ITable);
+                return new FinalExpressionNode(con.Value as IRelation);
             else if (expr is MethodCallExpression call)
             {
                 if (call.Method.GetGenericMethodDefinition() == KnownMethods.Where)

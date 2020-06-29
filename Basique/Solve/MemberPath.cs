@@ -11,6 +11,12 @@ namespace Basique.Solve
         public Type Start;
         public MemberInfo[] Members;
 
+        public MemberPath(MemberInfo mem)
+        {
+            Start = mem.DeclaringType;
+            Members = new[] { mem };
+        }
+
         public static (MemberPath Path, Expression Final) Create(Expression expr)
         {
             MemberPath path;
@@ -32,7 +38,7 @@ namespace Basique.Solve
                 Expression subexpr = mem;
                 while (subexpr is MemberExpression submem)
                 {
-                    foundMembers.Add(mem.Member);
+                    foundMembers.Add(submem.Member);
                     subexpr = submem.Expression;
                 }
                 if (subexpr is ParameterExpression param)
@@ -41,6 +47,7 @@ namespace Basique.Solve
                     path.Start = cons.Type;
                 else
                     throw new NotImplementedException("Final expression must be a parameter or variable");
+                foundMembers.Reverse();
                 path.Members = foundMembers.ToArray();
                 return (path, subexpr);
             }
@@ -58,6 +65,53 @@ namespace Basique.Solve
                 else
                     throw new NotImplementedException();
             return from;
+        }
+
+        public void Set(object from, object value)
+        {
+            for (var i = 0; i < Members.Length - 1; i++)
+            {
+                object newObj;
+                if (Members[i] is FieldInfo field)
+                {
+                    newObj = field.GetValue(from);
+
+                    if (newObj == null)
+                    {
+                        newObj = Activator.CreateInstance(field.FieldType);
+                        field.SetValue(from, newObj);
+                    }
+                }
+                else if (Members[i] is PropertyInfo prop)
+                {
+                    newObj = prop.GetValue(from);
+
+                    if (newObj == null)
+                    {
+                        newObj = Activator.CreateInstance(prop.PropertyType);
+                        prop.SetValue(from, newObj);
+                    }
+                }
+                else
+                    throw new NotImplementedException();
+
+                from = newObj;
+            }
+
+            if (Members[^1] is FieldInfo fieldLast)
+                fieldLast.SetValue(from, value);
+            else if (Members[^1] is PropertyInfo propLast)
+                propLast.SetValue(from, value);
+            else
+                throw new NotImplementedException();
+        }
+
+        public MemberPath LastAccessed()
+        {
+            if (Members.Length < 1)
+                throw new InvalidOperationException();
+
+            return new MemberPath() { Start = Start, Members = Members.SkipLast(1).ToArray() };
         }
 
         public override string ToString()

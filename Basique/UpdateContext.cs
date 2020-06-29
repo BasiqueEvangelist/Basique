@@ -19,7 +19,7 @@ namespace Basique
     }
     public abstract class UpdateContext
     {
-        internal List<(MemberInfo field, FlatPredicateNode factory)> Data { get; } = new List<(MemberInfo field, FlatPredicateNode factory)>();
+        internal List<(MemberPath field, FlatPredicateNode factory)> Data { get; } = new List<(MemberPath field, FlatPredicateNode factory)>();
     }
     public class UpdateContext<T> : UpdateContext
     {
@@ -32,7 +32,7 @@ namespace Basique
 
         public UpdateContext<T> Set<TField>(Expression<Func<T, TField>> selector, Expression<Func<T, TField>> data)
         {
-            Data.Add(((selector.Body as MemberExpression).Member, PredicateFlattener.Flatten(data.Body)));
+            Data.Add((MemberPath.Create(selector.Body).Path, PredicateFlattener.Flatten(data.Body)));
             return this;
         }
 
