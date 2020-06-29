@@ -42,7 +42,12 @@ namespace Basique.Solve
                         data.Where = new BinaryPredicate() { Left = data.Where, Right = whereexpr.Condition, Type = BinaryPredicateType.AndAlso };
                 }
                 else if (node is OrderByExpressionNode orderby)
-                    data.OrderBy = orderby;
+                {
+                    data.OrderBy.Clear();
+                    data.OrderBy.Add(new OrderByKey() { Descending = orderby.Descending, Key = orderby.Key });
+                }
+                else if (node is ThenByExpressionNode thenby)
+                    data.OrderBy.Add(new OrderByKey() { Descending = thenby.Descending, Key = thenby.Key });
                 else if (node is LimitExpressionNode limit)
                     if ((data.Limit ?? int.MaxValue) > limit.Count)
                         data.Limit = limit.Count;
@@ -104,11 +109,18 @@ namespace Basique.Solve
                     s.Append($" {join.Type} join {join.To} on {join.On}");
                 }
             }
-            if (data.OrderBy != null)
+            if (data.OrderBy.Count > 0)
             {
                 s.Append(" order by ");
-                prefix = WriteSqlPredicate(data.Relation, data.OrderBy.Key, cmd, prefix++, s);
-                s.Append(data.OrderBy.Descending ? " desc" : " asc");
+                for (int i = 0; i < data.OrderBy.Count; i++)
+                {
+                    prefix = WriteSqlPredicate(data.Relation, data.OrderBy[i].Key, cmd, prefix++, s);
+                    s.Append(data.OrderBy[i].Descending ? " desc" : " asc");
+                    if (i != data.OrderBy.Count - 1)
+                    {
+                        s.Append(',');
+                    }
+                }
             }
             int limitNeeded = node.Type == PullSingleExpressionNode.PullType.First ? 1 : 2;
             if (data.Limit == null)
@@ -135,11 +147,18 @@ namespace Basique.Solve
                 prefix = WriteSqlPredicate(data.Relation, data.Where, cmd, prefix, s);
             }
 
-            if (data.OrderBy != null)
+            if (data.OrderBy.Count > 0)
             {
                 s.Append(" order by ");
-                prefix = WriteSqlPredicate(data.Relation, data.OrderBy.Key, cmd, prefix, s);
-                s.Append(data.OrderBy.Descending ? " desc" : " asc");
+                for (int i = 0; i < data.OrderBy.Count; i++)
+                {
+                    prefix = WriteSqlPredicate(data.Relation, data.OrderBy[i].Key, cmd, prefix++, s);
+                    s.Append(data.OrderBy[i].Descending ? " desc" : " asc");
+                    if (i != data.OrderBy.Count - 1)
+                    {
+                        s.Append(',');
+                    }
+                }
             }
 
             if (data.Limit != null)
@@ -294,9 +313,15 @@ namespace Basique.Solve
         public int? Limit;
         public Type RequestedType;
         public List<SqlRule> Rules = new List<SqlRule>();
-        public OrderByExpressionNode OrderBy;
+        public List<OrderByKey> OrderBy = new List<OrderByKey>();
         public FlatPredicateNode Where;
         public IRelation Relation;
+    }
+
+    public struct OrderByKey
+    {
+        public FlatPredicateNode Key;
+        public bool Descending;
     }
 
     public abstract class SqlRule { }

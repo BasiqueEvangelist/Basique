@@ -18,6 +18,8 @@ namespace Basique.Solve
         public static MethodInfo ToArrayAsync = new Func<IAsyncQueryable<object>, CancellationToken, ValueTask<object[]>>(AsyncQueryable.ToArrayAsync).GetMethodInfo().GetGenericMethodDefinition();
         public static MethodInfo OrderBy = new Func<IAsyncQueryable<object>, Expression<Func<object, object>>, IAsyncQueryable<object>>(AsyncQueryable.OrderBy).GetMethodInfo().GetGenericMethodDefinition();
         public static MethodInfo OrderByDescending = new Func<IAsyncQueryable<object>, Expression<Func<object, object>>, IAsyncQueryable<object>>(AsyncQueryable.OrderByDescending).GetMethodInfo().GetGenericMethodDefinition();
+        public static MethodInfo ThenBy = new Func<IOrderedAsyncQueryable<object>, Expression<Func<object, object>>, IAsyncQueryable<object>>(AsyncQueryable.ThenBy).GetMethodInfo().GetGenericMethodDefinition();
+        public static MethodInfo ThenByDescending = new Func<IOrderedAsyncQueryable<object>, Expression<Func<object, object>>, IAsyncQueryable<object>>(AsyncQueryable.ThenByDescending).GetMethodInfo().GetGenericMethodDefinition();
         #region PullSingle variants
         public static MethodInfo FirstAsyncAlways = new Func<IAsyncQueryable<object>, CancellationToken, ValueTask<object>>(AsyncQueryable.FirstAsync).GetMethodInfo().GetGenericMethodDefinition();
         public static MethodInfo SingleAsyncAlways = new Func<IAsyncQueryable<object>, CancellationToken, ValueTask<object>>(AsyncQueryable.SingleAsync).GetMethodInfo().GetGenericMethodDefinition();

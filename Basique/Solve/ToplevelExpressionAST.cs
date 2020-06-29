@@ -48,6 +48,17 @@ namespace Basique.Solve
         }
     }
 
+    public class ThenByExpressionNode : ExpressionNode
+    {
+        public bool Descending;
+        public FlatPredicateNode Key;
+        public override void Dump(ILogger log)
+        {
+            Parent.Dump(log);
+            log.Trace("ThenBy{0} ({1})", Descending ? "Descending" : "", Key);
+        }
+    }
+
     public class LimitExpressionNode : ExpressionNode
     {
         public int Count;

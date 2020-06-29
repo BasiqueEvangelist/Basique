@@ -43,6 +43,20 @@ namespace Basique.Solve
 
                     return new OrderByExpressionNode() { Key = PredicateFlattener.Flatten(lambda.Body), Descending = isDescending, Parent = Parse(call.Arguments[0]) };
                 }
+                else if (call.Method.GetGenericMethodDefinition() == KnownMethods.ThenBy
+                      || call.Method.GetGenericMethodDefinition() == KnownMethods.ThenByDescending)
+                {
+                    if (!(call.Arguments[1] is UnaryExpression quote))
+                        throw new NotImplementedException();
+                    if (!(quote.NodeType == ExpressionType.Quote))
+                        throw new NotImplementedException();
+                    if (!(quote.Operand is LambdaExpression lambda))
+                        throw new NotImplementedException();
+
+                    bool isDescending = call.Method.GetGenericMethodDefinition() == KnownMethods.ThenByDescending;
+
+                    return new ThenByExpressionNode() { Key = PredicateFlattener.Flatten(lambda.Body), Descending = isDescending, Parent = Parse(call.Arguments[0]) };
+                }
                 else if (KnownMethods.PullSingleVariants.Contains(call.Method.GetGenericMethodDefinition()))
                 {
                     var method = call.Method.GetGenericMethodDefinition();
