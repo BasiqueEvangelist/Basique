@@ -11,18 +11,20 @@ namespace Basique
     public class BasiqueQueryable<T> : IAsyncQueryable<T>, IOrderedAsyncQueryable<T>
     {
         private readonly IRelation tab;
+        private readonly DbTransaction transaction;
 
-        internal BasiqueQueryable(IRelation tab, Expression expression)
+        internal BasiqueQueryable(IRelation tab, Expression expression, DbTransaction trans)
         {
             this.tab = tab;
             Expression = expression;
+            transaction = trans;
         }
 
         public Type ElementType => GetType();
 
         public Expression Expression { get; }
 
-        public IAsyncQueryProvider Provider => tab;
+        public IAsyncQueryProvider Provider => new BasiqueQueryProvider(tab, transaction);
 
         public IAsyncEnumerator<T> GetAsyncEnumerator(CancellationToken cancellationToken = default)
             => new LazyAsyncEnumerable<T>(

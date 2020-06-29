@@ -1,4 +1,5 @@
-﻿using System;
+﻿using System.Data.Common;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
@@ -9,7 +10,7 @@ using Basique.Solve;
 
 namespace Basique.Modeling
 {
-    public interface IRelation : IAsyncQueryable, IAsyncQueryProvider
+    public interface IRelation : IAsyncQueryable
     {
         string Name { get; }
         Database Context { get; }
@@ -33,32 +34,13 @@ namespace Basique.Modeling
 
         public Expression Expression => Expression.Constant(this);
 
-        public IAsyncQueryProvider Provider => this;
+        public IAsyncQueryProvider Provider => new BasiqueQueryProvider(this, null);
 
         public IAsyncEnumerator<T> GetAsyncEnumerator(CancellationToken cancellationToken = default)
-        => new BasiqueQueryable<T>(this, Expression).GetAsyncEnumerator(cancellationToken);
+        => new BasiqueQueryable<T>(this, Expression, null).GetAsyncEnumerator(cancellationToken);
 
-        public IAsyncQueryable<TElement> CreateQuery<TElement>(Expression expression)
-            => new BasiqueQueryable<TElement>(this, expression);
-
-
-        public async ValueTask<TResult> ExecuteAsync<TResult>(Expression expression, CancellationToken token)
-        {
-            List<ExpressionNode> pn = ToplevelExpressionFlattener.ParseAndFlatten(expression);
-            pn.Last().Dump();
-            if (pn.Last() is PullExpressionNode)
-                return (TResult)await QuerySolver.SolvePullQuery(pn, token, this);
-            else if (pn.Last() is CreateExpressionNode)
-                return (TResult)await QuerySolver.SolveCreateQuery(pn, token, this);
-            else if (pn.Last() is UpdateExpressionNode)
-                return (TResult)await QuerySolver.SolveUpdateQuery(pn, token, this);
-            else if (pn.Last() is DeleteExpressionNode)
-                return (TResult)await QuerySolver.SolveDeleteQuery(pn, token, this);
-            else if (pn.Last() is PullSingleExpressionNode)
-                return (TResult)await QuerySolver.SolvePullSingleQuery(pn, token, this);
-            else
-                throw new NotImplementedException();
-        }
+        public IAsyncQueryable<T> WithTransaction(BasiqueTransaction trans)
+            => new BasiqueQueryable<T>(this, Expression, trans?.wrapping);
     }
 }
 

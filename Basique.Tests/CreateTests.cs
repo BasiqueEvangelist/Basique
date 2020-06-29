@@ -23,5 +23,15 @@ namespace Basique.Tests
                 new TestObject() { Value = 100, Test = "beep" }
             });
         }
+
+        [Fact]
+        public async Task WithTransaction()
+        {
+            await using (var transaction = await Db.BeginTransaction())
+            {
+                await Db.TestObjects.CreateAsync(() => new TestObject() { Test = "beep", Value = 100 }, default, transaction);
+                await transaction.Commit();
+            }
+        }
     }
 }
