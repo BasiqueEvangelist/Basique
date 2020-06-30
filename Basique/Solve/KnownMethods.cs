@@ -53,8 +53,9 @@ namespace Basique.Solve
         };
         #endregion
 
-        public static MethodInfo CreateAsync = new Func<Table<object>, Expression<Func<object>>, CancellationToken, BasiqueTransaction, ValueTask<object>>(BasiqueExtensions.CreateAsync).GetMethodInfo().GetGenericMethodDefinition();
+        public static MethodInfo CreateAsyncInternal = new Func<Table<object>, Expression<Func<object>>, CancellationToken, ValueTask<object>>(BasiqueExtensions.CreateAsyncInternal).GetMethodInfo().GetGenericMethodDefinition();
         public static MethodInfo DeleteAsync = new Func<IAsyncQueryable<object>, CancellationToken, ValueTask>(BasiqueExtensions.DeleteAsync).GetMethodInfo().GetGenericMethodDefinition();
         public static MethodInfo Commit = new Func<IAsyncQueryable<object>, UpdateContext<object>, CancellationToken, ValueTask>(UpdateQueryableExtensions.Commit).GetMethodInfo().GetGenericMethodDefinition();
+        public static MethodInfo WithTransaction = new Func<RelationBase<object>, BasiqueTransaction, IAsyncQueryable<object>>(BasiqueExtensions.WithTransaction).GetMethodInfo().GetGenericMethodDefinition();
     }
 }

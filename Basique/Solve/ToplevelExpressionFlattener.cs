@@ -87,11 +87,13 @@ namespace Basique.Solve
                 }
                 else if (call.Method.GetGenericMethodDefinition() == KnownMethods.Take)
                     return new LimitExpressionNode() { Count = (int)(call.Arguments[1] as ConstantExpression).Value, Parent = Parse(call.Arguments[0]) };
+                else if (call.Method.GetGenericMethodDefinition() == KnownMethods.WithTransaction)
+                    return new TransactionExpressionNode() { Transaction = ((call.Arguments[1] as ConstantExpression).Value) as BasiqueTransaction, Parent = Parse(call.Arguments[0]) };
                 else if (call.Method.GetGenericMethodDefinition() == KnownMethods.ToListAsync)
                     return new PullExpressionNode() { Type = PullExpressionNode.PullType.List, Parent = Parse(call.Arguments[0]) };
                 else if (call.Method.GetGenericMethodDefinition() == KnownMethods.ToArrayAsync)
                     return new PullExpressionNode() { Type = PullExpressionNode.PullType.Array, Parent = Parse(call.Arguments[0]) };
-                else if (call.Method.GetGenericMethodDefinition() == KnownMethods.CreateAsync)
+                else if (call.Method.GetGenericMethodDefinition() == KnownMethods.CreateAsyncInternal)
                 {
                     if (!(call.Arguments[1] is UnaryExpression quote))
                         throw new NotImplementedException();

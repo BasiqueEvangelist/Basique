@@ -34,13 +34,10 @@ namespace Basique.Modeling
 
         public Expression Expression => Expression.Constant(this);
 
-        public IAsyncQueryProvider Provider => new BasiqueQueryProvider(this, null);
+        public IAsyncQueryProvider Provider => new BasiqueQueryProvider(this);
 
         public IAsyncEnumerator<T> GetAsyncEnumerator(CancellationToken cancellationToken = default)
-        => new BasiqueQueryable<T>(this, Expression, null).GetAsyncEnumerator(cancellationToken);
-
-        public IAsyncQueryable<T> WithTransaction(BasiqueTransaction trans)
-            => new BasiqueQueryable<T>(this, Expression, trans?.wrapping);
+            => new BasiqueQueryable<T>(this, Expression).GetAsyncEnumerator(cancellationToken);
     }
 }
 

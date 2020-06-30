@@ -34,6 +34,8 @@ namespace Basique.Solve
                             data.Where = new BinaryPredicate() { Left = data.Where, Right = pull.By, Type = BinaryPredicateType.AndAlso };
                     }
                 }
+                else if (node is TransactionExpressionNode trans)
+                    data.Transaction = trans.Transaction;
                 else if (node is WhereExpressionNode whereexpr)
                 {
                     if (data.Where == null)
@@ -311,6 +313,7 @@ namespace Basique.Solve
     public class SqlSelectorData
     {
         public int? Limit;
+        public BasiqueTransaction Transaction;
         public Type RequestedType;
         public List<SqlRule> Rules = new List<SqlRule>();
         public List<OrderByKey> OrderBy = new List<OrderByKey>();

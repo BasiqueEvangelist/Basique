@@ -133,4 +133,15 @@ namespace Basique.Solve
             log.Log(LogLevel.Trace, "Delete");
         }
     }
+
+    public class TransactionExpressionNode : ExpressionNode
+    {
+        public BasiqueTransaction Transaction;
+
+        public override void Dump(IBasiqueLogger log)
+        {
+            Parent.Dump(log);
+            log.Log(LogLevel.Trace, "Transaction");
+        }
+    }
 }

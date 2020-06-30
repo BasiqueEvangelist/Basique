@@ -12,31 +12,29 @@ namespace Basique
     public class BasiqueQueryProvider : IAsyncQueryProvider
     {
         private readonly IRelation relation;
-        private readonly DbTransaction transaction;
 
-        internal BasiqueQueryProvider(IRelation relation, DbTransaction trans)
+        internal BasiqueQueryProvider(IRelation relation)
         {
             this.relation = relation;
-            this.transaction = trans;
         }
 
         public IAsyncQueryable<TElement> CreateQuery<TElement>(Expression expression)
-                    => new BasiqueQueryable<TElement>(relation, expression, transaction);
+                    => new BasiqueQueryable<TElement>(relation, expression);
 
         public async ValueTask<TResult> ExecuteAsync<TResult>(Expression expression, CancellationToken token)
         {
             List<ExpressionNode> pn = ToplevelExpressionFlattener.ParseAndFlatten(expression);
             pn.Last().Dump(relation.Context.Logger);
             if (pn.Last() is CreateExpressionNode)
-                return (TResult)await QuerySolver.SolveCreateQuery(pn, token, relation, transaction);
+                return (TResult)await QuerySolver.SolveCreateQuery(pn, token, relation);
             else if (pn.Last() is UpdateExpressionNode)
-                return (TResult)await QuerySolver.SolveUpdateQuery(pn, token, relation, transaction);
+                return (TResult)await QuerySolver.SolveUpdateQuery(pn, token, relation);
             else if (pn.Last() is DeleteExpressionNode)
-                return (TResult)await QuerySolver.SolveDeleteQuery(pn, token, relation, transaction);
+                return (TResult)await QuerySolver.SolveDeleteQuery(pn, token, relation);
             else if (pn.Last() is PullSingleExpressionNode)
-                return (TResult)await QuerySolver.SolvePullSingleQuery(pn, token, relation, transaction);
+                return (TResult)await QuerySolver.SolvePullSingleQuery(pn, token, relation);
             else
-                return (TResult)await QuerySolver.SolvePullQuery(pn, token, relation, transaction);
+                return (TResult)await QuerySolver.SolvePullQuery(pn, token, relation);
         }
     }
 }
