@@ -1,11 +1,14 @@
 using System.Linq;
 using System.Threading.Tasks;
 using Xunit;
+using Xunit.Abstractions;
 
 namespace Basique.Tests
 {
     public class PredicateTests : TestEnvironment
     {
+        public PredicateTests(ITestOutputHelper output) : base(output) { }
+
         [Fact]
         public async Task BinaryOperations()
         {

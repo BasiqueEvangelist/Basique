@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using Basique.Modeling;
 using Microsoft.Data.Sqlite;
 using Xunit;
+using Xunit.Abstractions;
 
 namespace Basique.Tests
 {
@@ -75,6 +76,12 @@ namespace Basique.Tests
         }
 
         protected TestContext Db;
+        protected ITestOutputHelper output;
+
+        public TestEnvironment(ITestOutputHelper output)
+        {
+            this.output = output;
+        }
 
         public async Task InitializeAsync()
         {
@@ -88,6 +95,7 @@ namespace Basique.Tests
             await conn.NonQuery("CREATE VIEW v_testjoins AS SELECT first.test first_test, second.test second_test, first.value first_value, second.value second_value FROM testobjects first JOIN testobjects second ON first.value = second.value;");
 
             Db = new TestContext(conn);
+            Db.Logger = new XunitLogger(output);
 
             await Db.TestObjects.CreateAsync(() => new TestObject() { Value = 0, Test = "oof" });
             await Db.TestObjects.CreateAsync(() => new TestObject() { Value = 1, Test = "foo" });

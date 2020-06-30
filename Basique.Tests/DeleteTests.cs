@@ -1,11 +1,14 @@
 using System.Linq;
 using System.Threading.Tasks;
 using Xunit;
+using Xunit.Abstractions;
 
 namespace Basique.Tests
 {
     public class DeleteTests : TestEnvironment
     {
+        public DeleteTests(ITestOutputHelper output) : base(output) { }
+
         [Fact]
         public async Task FullTable()
         {

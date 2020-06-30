@@ -1,14 +1,13 @@
 using System;
 using System.Linq.Expressions;
 using Basique.Modeling;
-using NLog;
 
 namespace Basique.Solve
 {
     public abstract class ExpressionNode
     {
         public ExpressionNode Parent;
-        public abstract void Dump(ILogger log);
+        public abstract void Dump(IBasiqueLogger log);
     }
 
     public class FinalExpressionNode : ExpressionNode
@@ -21,19 +20,19 @@ namespace Basique.Solve
             Parent = this;
         }
 
-        public override void Dump(ILogger log)
+        public override void Dump(IBasiqueLogger log)
         {
-            log.Trace("Final");
+            log.Log(LogLevel.Trace, "Final");
         }
     }
 
     public class WhereExpressionNode : ExpressionNode
     {
         public FlatPredicateNode Condition;
-        public override void Dump(ILogger log)
+        public override void Dump(IBasiqueLogger log)
         {
             Parent.Dump(log);
-            log.Trace("Where ({0})", Condition);
+            log.Log(LogLevel.Trace, $"Where ({Condition})");
         }
     }
 
@@ -41,10 +40,10 @@ namespace Basique.Solve
     {
         public bool Descending;
         public FlatPredicateNode Key;
-        public override void Dump(ILogger log)
+        public override void Dump(IBasiqueLogger log)
         {
             Parent.Dump(log);
-            log.Trace("OrderBy{0} ({1})", Descending ? "Descending" : "", Key);
+            log.Log(LogLevel.Trace, $"OrderBy{(Descending ? "Descending" : "")} ({Key})");
         }
     }
 
@@ -52,20 +51,20 @@ namespace Basique.Solve
     {
         public bool Descending;
         public FlatPredicateNode Key;
-        public override void Dump(ILogger log)
+        public override void Dump(IBasiqueLogger log)
         {
             Parent.Dump(log);
-            log.Trace("ThenBy{0} ({1})", Descending ? "Descending" : "", Key);
+            log.Log(LogLevel.Trace, $"ThenBy{(Descending ? "Descending" : "")} ({Key})");
         }
     }
 
     public class LimitExpressionNode : ExpressionNode
     {
         public int Count;
-        public override void Dump(ILogger log)
+        public override void Dump(IBasiqueLogger log)
         {
             Parent.Dump(log);
-            log.Trace("Take ({0})", Count);
+            log.Log(LogLevel.Trace, $"Take ({Count})");
         }
     }
 
@@ -78,10 +77,10 @@ namespace Basique.Solve
 
         public PullType Type;
 
-        public override void Dump(ILogger log)
+        public override void Dump(IBasiqueLogger log)
         {
             Parent.Dump(log);
-            log.Trace("Pull ({0})", Enum.GetName(typeof(PullType), Type));
+            log.Log(LogLevel.Trace, $"Pull ({Enum.GetName(typeof(PullType), Type)})");
         }
     }
 
@@ -96,10 +95,10 @@ namespace Basique.Solve
         public bool IncludeDefault;
         public FlatPredicateNode By;
 
-        public override void Dump(ILogger log)
+        public override void Dump(IBasiqueLogger log)
         {
             Parent.Dump(log);
-            log.Trace("PullSingle ({0})", Enum.GetName(typeof(PullType), Type));
+            log.Log(LogLevel.Trace, $"PullSingle ({Enum.GetName(typeof(PullType), Type)})");
         }
     }
 
@@ -108,10 +107,10 @@ namespace Basique.Solve
         public Type OfType;
         public MemberInitExpression Factory;
 
-        public override void Dump(ILogger log)
+        public override void Dump(IBasiqueLogger log)
         {
             Parent.Dump(log);
-            log.Trace("Create {0} ({1})", OfType, Factory);
+            log.Log(LogLevel.Trace, $"Create {OfType} ({Factory})");
         }
     }
 
@@ -119,19 +118,19 @@ namespace Basique.Solve
     {
         public UpdateContext Context;
 
-        public override void Dump(ILogger log)
+        public override void Dump(IBasiqueLogger log)
         {
             Parent.Dump(log);
-            log.Trace("Update");
+            log.Log(LogLevel.Trace, "Update");
         }
     }
 
     public class DeleteExpressionNode : ExpressionNode
     {
-        public override void Dump(ILogger log)
+        public override void Dump(IBasiqueLogger log)
         {
             Parent.Dump(log);
-            log.Trace("Delete");
+            log.Log(LogLevel.Trace, "Delete");
         }
     }
 }

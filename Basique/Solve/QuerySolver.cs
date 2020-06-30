@@ -9,33 +9,28 @@ using System;
 using System.Reflection;
 using System.Data;
 using System.Linq;
-using NLog;
-using Perfusion;
 
 namespace Basique.Solve
 {
-    public class QuerySolver
+    public static class QuerySolver
     {
-        [Inject] private ILogger LOGGER;
-        [Inject] private SqlBuilder sqlBuilder;
-
-        public async ValueTask<object> SolvePullQuery(List<ExpressionNode> expr, CancellationToken token, IRelation table, DbTransaction transaction)
+        public static async ValueTask<object> SolvePullQuery(List<ExpressionNode> expr, CancellationToken token, IRelation table, DbTransaction transaction)
         {
-            SqlSelectorData data = sqlBuilder.BuildSelectorData(expr, new SqlSelectorData());
+            SqlSelectorData data = SqlBuilder.BuildSelectorData(expr, new SqlSelectorData());
             List<object> res = new List<object>();
             if (!(expr[^1] is PullExpressionNode))
             {
                 DbCommand command = table.Context.Connection.CreateCommand();
                 command.Transaction = transaction;
-                sqlBuilder.WriteSqlSelect(data, command);
-                LOGGER.Debug("Running SQL: {0}", command.CommandText);
+                SqlBuilder.WriteSqlSelect(data, command);
+                table.Context.Logger.Log(LogLevel.Debug, $"Running SQL: {command.CommandText}");
                 return typeof(BasiqueEnumerator<>).MakeGenericType(table.ElementType).GetConstructor(new[] { typeof(DbDataReader), typeof(CancellationToken), typeof(IRelation) }).Invoke(new object[] { await command.ExecuteReaderAsync(token), token, table });
             }
             await using (DbCommand command = table.Context.Connection.CreateCommand())
             {
                 command.Transaction = transaction;
-                sqlBuilder.WriteSqlSelect(data, command);
-                LOGGER.Debug("Running SQL: {0}", command.CommandText);
+                SqlBuilder.WriteSqlSelect(data, command);
+                table.Context.Logger.Log(LogLevel.Debug, $"Running SQL: {command.CommandText}");
                 await using (var reader = await command.ExecuteReaderAsync(token))
                 {
                     if (reader.HasRows)
@@ -59,26 +54,26 @@ namespace Basique.Solve
                 throw new NotImplementedException();
         }
 
-        public async ValueTask<object> SolveUpdateQuery(List<ExpressionNode> expr, CancellationToken token, IRelation tab, DbTransaction transaction)
+        public static async ValueTask<object> SolveUpdateQuery(List<ExpressionNode> expr, CancellationToken token, IRelation tab, DbTransaction transaction)
         {
-            SqlUpdateData data = sqlBuilder.BuildUpdateData(expr);
+            SqlUpdateData data = SqlBuilder.BuildUpdateData(expr);
             await using DbCommand command = tab.Context.Connection.CreateCommand();
             command.Transaction = transaction;
-            sqlBuilder.WriteSqlUpdate(data, command);
-            LOGGER.Debug("Running SQL: {0}", command.CommandText);
+            SqlBuilder.WriteSqlUpdate(data, command);
+            tab.Context.Logger.Log(LogLevel.Debug, $"Running SQL: {command.CommandText}");
             await command.ExecuteNonQueryAsync(token);
             return null;
         }
 
-        public async ValueTask<object> SolvePullSingleQuery(List<ExpressionNode> expr, CancellationToken token, IRelation tab, DbTransaction transaction)
+        public static async ValueTask<object> SolvePullSingleQuery(List<ExpressionNode> expr, CancellationToken token, IRelation tab, DbTransaction transaction)
         {
-            SqlSelectorData data = sqlBuilder.BuildSelectorData(expr, new SqlSelectorData());
+            SqlSelectorData data = SqlBuilder.BuildSelectorData(expr, new SqlSelectorData());
             PullSingleExpressionNode node = expr[^1] as PullSingleExpressionNode;
             await using (DbCommand command = tab.Context.Connection.CreateCommand())
             {
                 command.Transaction = transaction;
-                sqlBuilder.WriteSqlPullSingle(data, node, command);
-                LOGGER.Debug("Running SQL: {0}", command.CommandText);
+                SqlBuilder.WriteSqlPullSingle(data, node, command);
+                tab.Context.Logger.Log(LogLevel.Debug, $"Running SQL: {command.CommandText}");
 
                 await using (var reader = await command.ExecuteReaderAsync(token))
                 {
@@ -104,25 +99,25 @@ namespace Basique.Solve
             }
         }
 
-        public async ValueTask<object> SolveDeleteQuery(List<ExpressionNode> expr, CancellationToken token, IRelation tab, DbTransaction transaction)
+        public static async ValueTask<object> SolveDeleteQuery(List<ExpressionNode> expr, CancellationToken token, IRelation tab, DbTransaction transaction)
         {
-            SqlSelectorData data = sqlBuilder.BuildSelectorData(expr, new SqlSelectorData());
+            SqlSelectorData data = SqlBuilder.BuildSelectorData(expr, new SqlSelectorData());
             await using DbCommand command = tab.Context.Connection.CreateCommand();
             command.Transaction = transaction;
-            sqlBuilder.WriteSqlDelete(data, tab, command);
-            LOGGER.Debug("Running SQL: {0}", command.CommandText);
+            SqlBuilder.WriteSqlDelete(data, tab, command);
+            tab.Context.Logger.Log(LogLevel.Debug, $"Running SQL: {command.CommandText}");
             await command.ExecuteNonQueryAsync(token);
             return null;
         }
 
-        public async ValueTask<object> SolveCreateQuery(List<ExpressionNode> pn, CancellationToken token, IRelation tab, DbTransaction transaction)
+        public static async ValueTask<object> SolveCreateQuery(List<ExpressionNode> pn, CancellationToken token, IRelation tab, DbTransaction transaction)
         {
             CreateExpressionNode create = pn.Last() as CreateExpressionNode;
             await using (DbCommand command = tab.Context.Connection.CreateCommand())
             {
                 command.Transaction = transaction;
-                sqlBuilder.WriteSqlCreate(create, tab, command);
-                LOGGER.Debug("Running SQL: {0}", command.CommandText);
+                SqlBuilder.WriteSqlCreate(create, tab, command);
+                tab.Context.Logger.Log(LogLevel.Debug, $"Running SQL: {command.CommandText}");
                 await command.ExecuteNonQueryAsync(token);
             }
             object inst = Activator.CreateInstance(create.OfType);

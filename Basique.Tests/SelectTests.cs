@@ -3,11 +3,14 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Xunit;
+using Xunit.Abstractions;
 
 namespace Basique.Tests
 {
     public class SelectTests : TestEnvironment
     {
+        public SelectTests(ITestOutputHelper output) : base(output) { }
+
         [Fact]
         public async Task FullTable()
         {

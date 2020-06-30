@@ -2,11 +2,14 @@ using System;
 using System.Linq;
 using System.Threading.Tasks;
 using Xunit;
+using Xunit.Abstractions;
 
 namespace Basique.Tests
 {
     public class PullSingleTests : TestEnvironment
     {
+        public PullSingleTests(ITestOutputHelper output) : base(output) { }
+
         [Fact]
         public async Task BasicFirstView()
         {

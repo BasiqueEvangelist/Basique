@@ -6,28 +6,17 @@ using System.Data;
 using System.Data.Common;
 using System.Threading.Tasks;
 using Basique.Solve;
-using NLog;
-using NLog.Config;
-using Perfusion;
 
 namespace Basique.Modeling
 {
     public abstract class Database
     {
-        public Container Container { get; } = new Container();
         public DbConnection Connection { get; }
+        public IBasiqueLogger Logger { get; set; } = new EmptyLogger();
         internal Dictionary<Type, TableData> Tables = new Dictionary<Type, TableData>();
-        public Database(DbConnection conn, LogFactory factory = null)
+        public Database(DbConnection conn)
         {
             Connection = conn;
-            if (factory == null)
-                factory = new LogFactory(new LoggingConfiguration());
-            Container.OnTypeNotFound = t => throw new PerfusionException("Type not found: " + t);
-            Container.AddInstance<LogFactory>(factory);
-            Container.Add<LogInfo>();
-            Container.AddInfo<ILogger>(Container.GetInstance<LogInfo>());
-            Container.Add<SqlBuilder>();
-            Container.Add<QuerySolver>();
         }
 
         public async Task<BasiqueTransaction> BeginTransaction(CancellationToken token = default)

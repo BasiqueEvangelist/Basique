@@ -1,11 +1,14 @@
 using System.Linq;
 using System.Threading.Tasks;
 using Xunit;
+using Xunit.Abstractions;
 
 namespace Basique.Tests
 {
     public class UpdateTests : TestEnvironment
     {
+        public UpdateTests(ITestOutputHelper output) : base(output) { }
+
         [Fact]
         public async Task Basic()
         {
