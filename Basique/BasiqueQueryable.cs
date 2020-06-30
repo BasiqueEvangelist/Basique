@@ -27,8 +27,6 @@ namespace Basique
         public IAsyncQueryProvider Provider => new BasiqueQueryProvider(tab, transaction);
 
         public IAsyncEnumerator<T> GetAsyncEnumerator(CancellationToken cancellationToken = default)
-            => new LazyAsyncEnumerable<T>(
-                async () => await this.ToArrayAsync(cancellationToken)
-            ).GetAsyncEnumerator();
+            => new LazyAsyncEnumerator<T>(() => Provider.ExecuteAsync<IAsyncEnumerator<T>>(Expression, cancellationToken));
     }
 }

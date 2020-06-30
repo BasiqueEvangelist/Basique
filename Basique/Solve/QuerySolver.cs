@@ -1,3 +1,4 @@
+using System.Net.Mail;
 using System.Threading;
 using System.Linq.Expressions;
 using Basique.Modeling;
@@ -22,6 +23,14 @@ namespace Basique.Solve
         {
             SqlSelectorData data = sqlBuilder.BuildSelectorData(expr, new SqlSelectorData());
             List<object> res = new List<object>();
+            if (!(expr[^1] is PullExpressionNode))
+            {
+                DbCommand command = table.Context.Connection.CreateCommand();
+                command.Transaction = transaction;
+                sqlBuilder.WriteSqlSelect(data, command);
+                LOGGER.Debug("Running SQL: {0}", command.CommandText);
+                return typeof(BasiqueEnumerator<>).MakeGenericType(table.ElementType).GetConstructor(new[] { typeof(DbDataReader), typeof(CancellationToken), typeof(IRelation) }).Invoke(new object[] { await command.ExecuteReaderAsync(token), token, table });
+            }
             await using (DbCommand command = table.Context.Connection.CreateCommand())
             {
                 command.Transaction = transaction;

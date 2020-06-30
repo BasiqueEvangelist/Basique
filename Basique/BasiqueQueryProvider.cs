@@ -33,9 +33,7 @@ namespace Basique
         {
             List<ExpressionNode> pn = ToplevelExpressionFlattener.ParseAndFlatten(expression);
             pn.Last().Dump(logger);
-            if (pn.Last() is PullExpressionNode)
-                return (TResult)await solver.SolvePullQuery(pn, token, relation, transaction);
-            else if (pn.Last() is CreateExpressionNode)
+            if (pn.Last() is CreateExpressionNode)
                 return (TResult)await solver.SolveCreateQuery(pn, token, relation, transaction);
             else if (pn.Last() is UpdateExpressionNode)
                 return (TResult)await solver.SolveUpdateQuery(pn, token, relation, transaction);
@@ -44,7 +42,7 @@ namespace Basique
             else if (pn.Last() is PullSingleExpressionNode)
                 return (TResult)await solver.SolvePullSingleQuery(pn, token, relation, transaction);
             else
-                throw new NotImplementedException();
+                return (TResult)await solver.SolvePullQuery(pn, token, relation, transaction);
         }
     }
 }

@@ -5,49 +5,32 @@ using System.Threading.Tasks;
 
 namespace Basique
 {
-    public class LazyAsyncEnumerable<T> : IAsyncEnumerable<T>
+    public class LazyAsyncEnumerator<T> : IAsyncEnumerator<T>
     {
-        private readonly Func<ValueTask<IEnumerable<T>>> factory;
+        private readonly Func<ValueTask<IAsyncEnumerator<T>>> factory;
+        private IAsyncEnumerator<T> enumer = null;
 
-        public LazyAsyncEnumerable(Func<ValueTask<IEnumerable<T>>> factory)
+        internal LazyAsyncEnumerator(Func<ValueTask<IAsyncEnumerator<T>>> factory)
         {
             this.factory = factory;
         }
 
-        public IAsyncEnumerator<T> GetAsyncEnumerator(CancellationToken cancellationToken = default)
+        public T Current => enumer == null ? default(T) : enumer.Current;
+
+        public ValueTask DisposeAsync()
+            => enumer != null ? enumer.DisposeAsync() : new ValueTask(Task.CompletedTask);
+
+        public ValueTask<bool> MoveNextAsync()
         {
-            return new Enumerator(factory);
-        }
-        public class Enumerator : IAsyncEnumerator<T>
-        {
-            private readonly Func<ValueTask<IEnumerable<T>>> factory;
-            private IEnumerator<T> enumer = null;
-
-            internal Enumerator(Func<ValueTask<IEnumerable<T>>> factory)
+            async ValueTask<bool> getEnumerator()
             {
-                this.factory = factory;
+                enumer = await factory();
+                return await enumer.MoveNextAsync();
             }
-
-            public T Current => enumer == null ? default(T) : enumer.Current;
-
-            public ValueTask DisposeAsync()
-            {
-                if (enumer != null) enumer.Dispose();
-                return new ValueTask(Task.CompletedTask);
-            }
-
-            public ValueTask<bool> MoveNextAsync()
-            {
-                async ValueTask<bool> getEnumerator()
-                {
-                    enumer = (await factory()).GetEnumerator();
-                    return enumer.MoveNext();
-                }
-                if (enumer != null)
-                    return new ValueTask<bool>(enumer.MoveNext());
-                else
-                    return getEnumerator();
-            }
+            if (enumer != null)
+                return enumer.MoveNextAsync();
+            else
+                return getEnumerator();
         }
     }
 }
