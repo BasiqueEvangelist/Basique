@@ -1,6 +1,9 @@
+using System.Text;
+using System.Security.Cryptography;
 using System;
 using System.Data;
 using System.Data.Common;
+using System.Reflection;
 using System.Threading.Tasks;
 using Basique.Modeling;
 using Microsoft.Data.Sqlite;
@@ -49,7 +52,7 @@ namespace Basique.Tests
             public Table<TestObject> TestObjects => new Table<TestObject>(this);
             public View<TestJoin> TestJoin => new View<TestJoin>(this);
 
-            public TestContext(DbConnection conn) : base(conn)
+            public TestContext(Func<DbConnection> conn) : base(conn)
             {
                 Table<TestObject>(build =>
                 {
@@ -76,6 +79,7 @@ namespace Basique.Tests
         }
 
         protected TestContext Db;
+        protected SqliteConnection connection;
         protected ITestOutputHelper output;
 
         public TestEnvironment(ITestOutputHelper output)
@@ -85,16 +89,27 @@ namespace Basique.Tests
 
         public async Task InitializeAsync()
         {
-            SqliteConnection conn = new SqliteConnection(new SqliteConnectionStringBuilder("")
+            string uid;
             {
-                DataSource = ":memory:"
-            }.ToString());
-            await conn.OpenAsync();
+                var type = output.GetType();
+                var testMember = type.GetField("test", BindingFlags.Instance | BindingFlags.NonPublic);
+                var test = (ITest)testMember.GetValue(output);
+                var hash = new SHA1Managed();
+                uid = Convert.ToBase64String(hash.ComputeHash(Encoding.UTF8.GetBytes(test.DisplayName)));
+            }
+            string connString = new SqliteConnectionStringBuilder()
+            {
+                Mode = SqliteOpenMode.Memory,
+                Cache = SqliteCacheMode.Shared,
+                DataSource = "file:" + uid
+            }.ToString();
+            connection = new SqliteConnection(connString);
+            await connection.OpenAsync();
 
-            await conn.NonQuery("CREATE TABLE testobjects (test TEXT, value INT);");
-            await conn.NonQuery("CREATE VIEW v_testjoins AS SELECT first.test first_test, second.test second_test, first.value first_value, second.value second_value FROM testobjects first JOIN testobjects second ON first.value = second.value;");
+            await connection.NonQuery("CREATE TABLE testobjects (test TEXT, value INT);");
+            await connection.NonQuery("CREATE VIEW v_testjoins AS SELECT first.test first_test, second.test second_test, first.value first_value, second.value second_value FROM testobjects first JOIN testobjects second ON first.value = second.value;");
 
-            Db = new TestContext(conn);
+            Db = new TestContext(() => new SqliteConnection(connString));
             Db.Logger = new XunitLogger(output);
 
             await Db.TestObjects.CreateAsync(() => new TestObject() { Value = 0, Test = "oof" });
@@ -115,7 +130,7 @@ namespace Basique.Tests
 
         public async Task DisposeAsync()
         {
-            await Db.Connection.DisposeAsync();
+            await connection.DisposeAsync();
         }
 
     }

@@ -13,18 +13,26 @@ namespace Basique
         private readonly DbDataReader reader;
         private readonly IRelation rel;
         private readonly CancellationToken token;
+        private readonly DbConnection connection;
+        private readonly bool disposeConnection;
 
-        public BasiqueEnumerator(DbDataReader reader, CancellationToken token, IRelation rel)
+        public BasiqueEnumerator(DbDataReader reader, CancellationToken token, IRelation rel, DbConnection connection, bool disposeConnection)
         {
             this.reader = reader;
             this.token = token;
             this.rel = rel;
+            this.connection = connection;
+            this.disposeConnection = disposeConnection;
         }
 
         public T Current { get; private set; }
 
-        public ValueTask DisposeAsync()
-            => reader.DisposeAsync();
+        public async ValueTask DisposeAsync()
+        {
+            await reader.DisposeAsync();
+            if (disposeConnection)
+                await connection.DisposeAsync();
+        }
 
         public async ValueTask<bool> MoveNextAsync()
         {

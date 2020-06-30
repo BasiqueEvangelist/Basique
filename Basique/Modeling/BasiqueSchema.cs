@@ -12,16 +12,27 @@ namespace Basique.Modeling
 {
     public abstract class BasiqueSchema
     {
-        public DbConnection Connection { get; }
+        public Func<DbConnection> ConnectionFactory { get; }
         public IBasiqueLogger Logger { get; set; } = new EmptyLogger();
         internal Dictionary<Type, TableData> Tables = new Dictionary<Type, TableData>();
-        public BasiqueSchema(DbConnection conn)
+        public BasiqueSchema(Func<DbConnection> conn)
         {
-            Connection = conn;
+            ConnectionFactory = conn;
         }
 
         public async Task<BasiqueTransaction> BeginTransaction(CancellationToken token = default)
-            => new BasiqueTransaction(await Connection.BeginTransactionAsync(token));
+        {
+            DbConnection conn = await MintConnection(token);
+            return new BasiqueTransaction(await conn.BeginTransactionAsync(token));
+        }
+
+        // Probably should be replaced by some kind of pooling.
+        public async Task<DbConnection> MintConnection(CancellationToken token = default)
+        {
+            DbConnection conn = ConnectionFactory();
+            await conn.OpenAsync(token);
+            return conn;
+        }
 
         protected void Table<T>(Action<TableBuilder<T>> action)
         {

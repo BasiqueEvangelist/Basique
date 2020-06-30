@@ -19,17 +19,20 @@ namespace Basique.Solve
         {
             SqlSelectorData data = SqlBuilder.BuildSelectorData(expr, new SqlSelectorData());
             List<object> res = new List<object>();
+            DbTransaction trans = data.Transaction?.wrapping;
+            DbConnection conn = trans == null ? await table.Schema.MintConnection() : trans.Connection;
             if (!(expr[^1] is PullExpressionNode))
             {
-                DbCommand command = table.Schema.Connection.CreateCommand();
-                command.Transaction = data.Transaction?.wrapping;
+                DbCommand command = conn.CreateCommand();
+                command.Transaction = trans;
                 SqlBuilder.WriteSqlSelect(data, command);
                 table.Schema.Logger.Log(LogLevel.Debug, $"Running SQL: {command.CommandText}");
-                return typeof(BasiqueEnumerator<>).MakeGenericType(table.ElementType).GetConstructor(new[] { typeof(DbDataReader), typeof(CancellationToken), typeof(IRelation) }).Invoke(new object[] { await command.ExecuteReaderAsync(token), token, table });
+                return Activator.CreateInstance(typeof(BasiqueEnumerator<>).MakeGenericType(table.ElementType), new object[] { await command.ExecuteReaderAsync(token), token, table, conn, trans == null });
             }
-            await using (DbCommand command = table.Schema.Connection.CreateCommand())
+            await using (new DisposePredicate(conn, trans == null))
+            await using (DbCommand command = conn.CreateCommand())
             {
-                command.Transaction = data.Transaction?.wrapping;
+                command.Transaction = trans;
                 SqlBuilder.WriteSqlSelect(data, command);
                 table.Schema.Logger.Log(LogLevel.Debug, $"Running SQL: {command.CommandText}");
                 await using (var reader = await command.ExecuteReaderAsync(token))
@@ -58,11 +61,16 @@ namespace Basique.Solve
         public static async ValueTask<object> SolveUpdateQuery(List<ExpressionNode> expr, CancellationToken token, IRelation tab)
         {
             SqlUpdateData data = SqlBuilder.BuildUpdateData(expr);
-            await using DbCommand command = tab.Schema.Connection.CreateCommand();
-            command.Transaction = data.Transaction?.wrapping;
-            SqlBuilder.WriteSqlUpdate(data, command);
-            tab.Schema.Logger.Log(LogLevel.Debug, $"Running SQL: {command.CommandText}");
-            await command.ExecuteNonQueryAsync(token);
+            DbTransaction trans = data.Transaction?.wrapping;
+            DbConnection conn = trans == null ? await tab.Schema.MintConnection() : trans.Connection;
+            await using (new DisposePredicate(conn, trans == null))
+            {
+                await using DbCommand command = conn.CreateCommand();
+                command.Transaction = trans;
+                SqlBuilder.WriteSqlUpdate(data, command);
+                tab.Schema.Logger.Log(LogLevel.Debug, $"Running SQL: {command.CommandText}");
+                await command.ExecuteNonQueryAsync(token);
+            }
             return null;
         }
 
@@ -70,9 +78,12 @@ namespace Basique.Solve
         {
             SqlSelectorData data = SqlBuilder.BuildSelectorData(expr, new SqlSelectorData());
             PullSingleExpressionNode node = expr[^1] as PullSingleExpressionNode;
-            await using (DbCommand command = tab.Schema.Connection.CreateCommand())
+            DbTransaction trans = data.Transaction?.wrapping;
+            DbConnection conn = trans == null ? await tab.Schema.MintConnection() : trans.Connection;
+            await using (new DisposePredicate(conn, trans == null))
+            await using (DbCommand command = conn.CreateCommand())
             {
-                command.Transaction = data.Transaction?.wrapping;
+                command.Transaction = trans;
                 SqlBuilder.WriteSqlPullSingle(data, node, command);
                 tab.Schema.Logger.Log(LogLevel.Debug, $"Running SQL: {command.CommandText}");
 
@@ -103,18 +114,26 @@ namespace Basique.Solve
         public static async ValueTask<object> SolveDeleteQuery(List<ExpressionNode> expr, CancellationToken token, IRelation tab)
         {
             SqlSelectorData data = SqlBuilder.BuildSelectorData(expr, new SqlSelectorData());
-            await using DbCommand command = tab.Schema.Connection.CreateCommand();
-            command.Transaction = data.Transaction?.wrapping;
-            SqlBuilder.WriteSqlDelete(data, tab, command);
-            tab.Schema.Logger.Log(LogLevel.Debug, $"Running SQL: {command.CommandText}");
-            await command.ExecuteNonQueryAsync(token);
+            DbTransaction trans = data.Transaction?.wrapping;
+            DbConnection conn = trans == null ? await tab.Schema.MintConnection() : trans.Connection;
+            await using (new DisposePredicate(conn, trans == null))
+            {
+                await using DbCommand command = conn.CreateCommand();
+                command.Transaction = trans;
+                SqlBuilder.WriteSqlDelete(data, tab, command);
+                tab.Schema.Logger.Log(LogLevel.Debug, $"Running SQL: {command.CommandText}");
+                await command.ExecuteNonQueryAsync(token);
+            }
             return null;
         }
 
         public static async ValueTask<object> SolveCreateQuery(List<ExpressionNode> pn, CancellationToken token, IRelation tab)
         {
             CreateExpressionNode create = pn.Last() as CreateExpressionNode;
-            await using (DbCommand command = tab.Schema.Connection.CreateCommand())
+            DbTransaction trans = pn.OfType<TransactionExpressionNode>().SingleOrDefault()?.Transaction?.wrapping;
+            DbConnection conn = trans == null ? await tab.Schema.MintConnection() : trans.Connection;
+            await using (new DisposePredicate(conn, trans == null))
+            await using (DbCommand command = conn.CreateCommand())
             {
                 command.Transaction = pn.OfType<TransactionExpressionNode>().SingleOrDefault()?.Transaction?.wrapping;
                 SqlBuilder.WriteSqlCreate(create, tab, command);
