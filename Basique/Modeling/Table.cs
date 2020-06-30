@@ -10,10 +10,10 @@ namespace Basique.Modeling
 {
     public class Table<T> : RelationBase<T>
     {
-        public Table(Database conn)
+        public Table(BasiqueSchema conn)
             : base(conn)
         {
-            
+
         }
 
     }

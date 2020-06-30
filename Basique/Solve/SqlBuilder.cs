@@ -97,7 +97,7 @@ namespace Basique.Solve
             StringBuilder s = new StringBuilder();
             int prefix = 0;
             s.Append("select ");
-            s.AppendJoin(", ", data.Relation.Context.Tables[data.RequestedType].Columns.Select(x => x.Value.Name));
+            s.AppendJoin(", ", data.Relation.Schema.Tables[data.RequestedType].Columns.Select(x => x.Value.Name));
             s.Append(" from ");
             s.Append(data.Relation.Name);
             if (data.Where != null)
@@ -139,7 +139,7 @@ namespace Basique.Solve
         {
             StringBuilder s = new StringBuilder();
             int prefix = 0;
-            var tableInfo = data.Relation.Context.Tables[data.RequestedType];
+            var tableInfo = data.Relation.Schema.Tables[data.RequestedType];
             s.Append("select ");
             s.AppendJoin(", ", tableInfo.Columns.Select(x => $"{tableInfo.Name}.{x.Value.Name}"));
             s.Append(" from ");
@@ -180,7 +180,7 @@ namespace Basique.Solve
             for (int i = 0; i < data.Context.Data.Count; i++)
             {
                 var part = data.Context.Data[i];
-                s.Append($"{data.Relation.Context.Tables[data.RequestedType].Columns[part.field.ToString()].Name} = ");
+                s.Append($"{data.Relation.Schema.Tables[data.RequestedType].Columns[part.field.ToString()].Name} = ");
                 prefix = WriteSqlPredicate(data.Relation, part.factory, cmd, prefix, s);
                 if (i != data.Context.Data.Count - 1)
                     s.Append(", ");
@@ -277,7 +277,7 @@ namespace Basique.Solve
             {
                 if (sub.From is ContextPredicate ctx)
                 {
-                    into.Append($"{tab.Name}.{tab.Context.Tables[sub.Path.Members[0].DeclaringType].Columns[sub.Path.ToString()].Name}");
+                    into.Append($"{tab.Name}.{tab.Schema.Tables[sub.Path.Members[0].DeclaringType].Columns[sub.Path.ToString()].Name}");
                 }
                 else
                     throw new NotImplementedException(); // Joins and .Select() will come later.
@@ -291,16 +291,16 @@ namespace Basique.Solve
             s.Append("insert into ");
             s.Append(tab.Name);
             s.Append(" (");
-            s.AppendJoin(",", create.Factory.Bindings.OfType<MemberAssignment>().Select(x => tab.Context.Tables[x.Member.DeclaringType].Columns[new MemberPath(x.Member).ToString()].Name));
+            s.AppendJoin(",", create.Factory.Bindings.OfType<MemberAssignment>().Select(x => tab.Schema.Tables[x.Member.DeclaringType].Columns[new MemberPath(x.Member).ToString()].Name));
             s.Append(") values (");
-            s.AppendJoin(",", create.Factory.Bindings.OfType<MemberAssignment>().Select(x => "@" + tab.Context.Tables[x.Member.DeclaringType].Columns[new MemberPath(x.Member).ToString()].Name));
+            s.AppendJoin(",", create.Factory.Bindings.OfType<MemberAssignment>().Select(x => "@" + tab.Schema.Tables[x.Member.DeclaringType].Columns[new MemberPath(x.Member).ToString()].Name));
             s.Append(");");
             command.CommandText = s.ToString();
             foreach (var assign in create.Factory.Bindings.OfType<MemberAssignment>())
             {
                 var param = command.CreateParameter();
                 param.Direction = ParameterDirection.Input;
-                param.ParameterName = "@" + tab.Context.Tables[assign.Member.DeclaringType].Columns[new MemberPath(assign.Member).ToString()].Name;
+                param.ParameterName = "@" + tab.Schema.Tables[assign.Member.DeclaringType].Columns[new MemberPath(assign.Member).ToString()].Name;
                 param.Value = Expression.Lambda(assign.Expression).Compile(false).DynamicInvoke();
                 command.Parameters.Add(param);
             }

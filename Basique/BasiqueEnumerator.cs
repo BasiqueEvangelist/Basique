@@ -32,7 +32,7 @@ namespace Basique
             if (!(await reader.ReadAsync(token)))
                 return false;
             T obj = new T();
-            foreach (var columnData in rel.Context.Tables[typeof(T)].Columns.Values)
+            foreach (var columnData in rel.Schema.Tables[typeof(T)].Columns.Values)
             {
                 object val = Convert.ChangeType(reader.GetValue(columnData.Name), columnData.Type);
                 columnData.Path.Set(obj, val);

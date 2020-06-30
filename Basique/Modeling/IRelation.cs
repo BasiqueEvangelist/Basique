@@ -13,18 +13,18 @@ namespace Basique.Modeling
     public interface IRelation : IAsyncQueryable
     {
         string Name { get; }
-        Database Context { get; }
+        BasiqueSchema Schema { get; }
     }
 
     //   
     public abstract class RelationBase<T> : IRelation, IAsyncQueryable<T>
     {
         protected readonly TableData data;
-        public Database Context { get; }
+        public BasiqueSchema Schema { get; }
 
-        protected RelationBase(Database conn)
+        protected RelationBase(BasiqueSchema conn)
         {
-            Context = conn;
+            Schema = conn;
             data = conn.Tables[typeof(T)];
         }
 

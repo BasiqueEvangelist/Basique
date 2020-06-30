@@ -10,12 +10,12 @@ using Basique.Services;
 
 namespace Basique.Modeling
 {
-    public abstract class Database
+    public abstract class BasiqueSchema
     {
         public DbConnection Connection { get; }
         public IBasiqueLogger Logger { get; set; } = new EmptyLogger();
         internal Dictionary<Type, TableData> Tables = new Dictionary<Type, TableData>();
-        public Database(DbConnection conn)
+        public BasiqueSchema(DbConnection conn)
         {
             Connection = conn;
         }

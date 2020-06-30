@@ -11,7 +11,7 @@ namespace Basique.Modeling
 {
     public class View<T> : RelationBase<T>
     {
-        public View(Database conn):base(conn)
+        public View(BasiqueSchema conn) : base(conn)
         {
         }
     }

@@ -21,24 +21,24 @@ namespace Basique.Solve
             List<object> res = new List<object>();
             if (!(expr[^1] is PullExpressionNode))
             {
-                DbCommand command = table.Context.Connection.CreateCommand();
+                DbCommand command = table.Schema.Connection.CreateCommand();
                 command.Transaction = data.Transaction?.wrapping;
                 SqlBuilder.WriteSqlSelect(data, command);
-                table.Context.Logger.Log(LogLevel.Debug, $"Running SQL: {command.CommandText}");
+                table.Schema.Logger.Log(LogLevel.Debug, $"Running SQL: {command.CommandText}");
                 return typeof(BasiqueEnumerator<>).MakeGenericType(table.ElementType).GetConstructor(new[] { typeof(DbDataReader), typeof(CancellationToken), typeof(IRelation) }).Invoke(new object[] { await command.ExecuteReaderAsync(token), token, table });
             }
-            await using (DbCommand command = table.Context.Connection.CreateCommand())
+            await using (DbCommand command = table.Schema.Connection.CreateCommand())
             {
                 command.Transaction = data.Transaction?.wrapping;
                 SqlBuilder.WriteSqlSelect(data, command);
-                table.Context.Logger.Log(LogLevel.Debug, $"Running SQL: {command.CommandText}");
+                table.Schema.Logger.Log(LogLevel.Debug, $"Running SQL: {command.CommandText}");
                 await using (var reader = await command.ExecuteReaderAsync(token))
                 {
                     if (reader.HasRows)
                         while (await reader.ReadAsync(token))
                         {
                             object obj = Activator.CreateInstance(data.RequestedType);
-                            foreach (var columnData in table.Context.Tables[data.RequestedType].Columns.Values)
+                            foreach (var columnData in table.Schema.Tables[data.RequestedType].Columns.Values)
                             {
                                 object val = Convert.ChangeType(reader.GetValue(columnData.Name), columnData.Type);
                                 columnData.Path.Set(obj, val);
@@ -58,10 +58,10 @@ namespace Basique.Solve
         public static async ValueTask<object> SolveUpdateQuery(List<ExpressionNode> expr, CancellationToken token, IRelation tab)
         {
             SqlUpdateData data = SqlBuilder.BuildUpdateData(expr);
-            await using DbCommand command = tab.Context.Connection.CreateCommand();
+            await using DbCommand command = tab.Schema.Connection.CreateCommand();
             command.Transaction = data.Transaction?.wrapping;
             SqlBuilder.WriteSqlUpdate(data, command);
-            tab.Context.Logger.Log(LogLevel.Debug, $"Running SQL: {command.CommandText}");
+            tab.Schema.Logger.Log(LogLevel.Debug, $"Running SQL: {command.CommandText}");
             await command.ExecuteNonQueryAsync(token);
             return null;
         }
@@ -70,11 +70,11 @@ namespace Basique.Solve
         {
             SqlSelectorData data = SqlBuilder.BuildSelectorData(expr, new SqlSelectorData());
             PullSingleExpressionNode node = expr[^1] as PullSingleExpressionNode;
-            await using (DbCommand command = tab.Context.Connection.CreateCommand())
+            await using (DbCommand command = tab.Schema.Connection.CreateCommand())
             {
                 command.Transaction = data.Transaction?.wrapping;
                 SqlBuilder.WriteSqlPullSingle(data, node, command);
-                tab.Context.Logger.Log(LogLevel.Debug, $"Running SQL: {command.CommandText}");
+                tab.Schema.Logger.Log(LogLevel.Debug, $"Running SQL: {command.CommandText}");
 
                 await using (var reader = await command.ExecuteReaderAsync(token))
                 {
@@ -87,7 +87,7 @@ namespace Basique.Solve
                     }
                     object res = Activator.CreateInstance(data.RequestedType);
                     await reader.ReadAsync(token);
-                    foreach (var pair in tab.Context.Tables[data.RequestedType].Columns.Values)
+                    foreach (var pair in tab.Schema.Tables[data.RequestedType].Columns.Values)
                     {
                         object val = reader.GetValue(pair.Name);
                         object valConv = Convert.ChangeType(val, pair.Type);
@@ -103,10 +103,10 @@ namespace Basique.Solve
         public static async ValueTask<object> SolveDeleteQuery(List<ExpressionNode> expr, CancellationToken token, IRelation tab)
         {
             SqlSelectorData data = SqlBuilder.BuildSelectorData(expr, new SqlSelectorData());
-            await using DbCommand command = tab.Context.Connection.CreateCommand();
+            await using DbCommand command = tab.Schema.Connection.CreateCommand();
             command.Transaction = data.Transaction?.wrapping;
             SqlBuilder.WriteSqlDelete(data, tab, command);
-            tab.Context.Logger.Log(LogLevel.Debug, $"Running SQL: {command.CommandText}");
+            tab.Schema.Logger.Log(LogLevel.Debug, $"Running SQL: {command.CommandText}");
             await command.ExecuteNonQueryAsync(token);
             return null;
         }
@@ -114,11 +114,11 @@ namespace Basique.Solve
         public static async ValueTask<object> SolveCreateQuery(List<ExpressionNode> pn, CancellationToken token, IRelation tab)
         {
             CreateExpressionNode create = pn.Last() as CreateExpressionNode;
-            await using (DbCommand command = tab.Context.Connection.CreateCommand())
+            await using (DbCommand command = tab.Schema.Connection.CreateCommand())
             {
                 command.Transaction = pn.OfType<TransactionExpressionNode>().SingleOrDefault()?.Transaction?.wrapping;
                 SqlBuilder.WriteSqlCreate(create, tab, command);
-                tab.Context.Logger.Log(LogLevel.Debug, $"Running SQL: {command.CommandText}");
+                tab.Schema.Logger.Log(LogLevel.Debug, $"Running SQL: {command.CommandText}");
                 await command.ExecuteNonQueryAsync(token);
             }
             object inst = Activator.CreateInstance(create.OfType);

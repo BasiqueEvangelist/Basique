@@ -44,7 +44,7 @@ namespace Basique.Tests
             public TestObject Second { get; set; }
         }
 
-        public class TestContext : Database
+        public class TestContext : BasiqueSchema
         {
             public Table<TestObject> TestObjects => new Table<TestObject>(this);
             public View<TestJoin> TestJoin => new View<TestJoin>(this);
