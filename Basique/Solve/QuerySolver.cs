@@ -9,6 +9,7 @@ using System;
 using System.Reflection;
 using System.Data;
 using System.Linq;
+using Basique.Services;
 
 namespace Basique.Solve
 {

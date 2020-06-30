@@ -1,4 +1,5 @@
 using System;
+using Basique.Services;
 using Xunit.Abstractions;
 
 namespace Basique.Tests

@@ -4,6 +4,7 @@ using System.Linq.Expressions;
 using Basique.Solve;
 using Xunit;
 using System.Reflection;
+using Basique.Services;
 
 namespace Basique.Tests.Internal
 {
@@ -23,7 +24,7 @@ namespace Basique.Tests.Internal
         {
             Expression<Func<A, A>> expr = (a) => a.a.c;
             var path = MemberPath.Create(expr.Body).Path;
-            Assert.Equal(new MemberPath() { Start = typeof(A), Members = new[] { typeof(A).GetField("a") , typeof(A.B).GetField("c") } }, path);
+            Assert.Equal(new MemberPath() { Start = typeof(A), Members = new[] { typeof(A).GetField("a"), typeof(A.B).GetField("c") } }, path);
         }
 
         [Fact]

@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Reflection;
 using Basique.Solve;
 using System.Threading.Tasks;
+using Basique.Services;
 
 namespace Basique
 {

@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Basique
+namespace Basique.Services
 {
     public class LazyAsyncEnumerator<T> : IAsyncEnumerator<T>
     {

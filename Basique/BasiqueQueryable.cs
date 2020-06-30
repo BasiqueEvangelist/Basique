@@ -5,6 +5,8 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Threading;
 using Basique.Modeling;
+using Basique.Services;
+using Basique.Solve;
 
 namespace Basique
 {

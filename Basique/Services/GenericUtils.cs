@@ -2,7 +2,7 @@ using System.Collections.Generic;
 using System.Collections;
 using System;
 
-namespace Basique
+namespace Basique.Services
 {
     public static class GenericUtils
     {

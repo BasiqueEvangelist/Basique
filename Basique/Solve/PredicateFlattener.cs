@@ -3,6 +3,7 @@ using System.ComponentModel;
 using System;
 using System.Linq.Expressions;
 using System.Reflection;
+using Basique.Services;
 
 namespace Basique.Solve
 {

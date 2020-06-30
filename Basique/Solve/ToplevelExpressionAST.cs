@@ -1,6 +1,7 @@
 using System;
 using System.Linq.Expressions;
 using Basique.Modeling;
+using Basique.Services;
 
 namespace Basique.Solve
 {

@@ -1,4 +1,4 @@
-namespace Basique
+namespace Basique.Services
 {
     public interface IBasiqueLogger
     {

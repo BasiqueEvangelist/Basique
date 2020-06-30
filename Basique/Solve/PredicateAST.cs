@@ -1,5 +1,7 @@
 using System.Reflection;
 using System;
+using Basique.Services;
+
 namespace Basique.Solve
 {
     public abstract class FlatPredicateNode

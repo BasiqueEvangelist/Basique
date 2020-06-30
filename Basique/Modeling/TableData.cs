@@ -5,6 +5,7 @@ using System.Reflection;
 using System;
 using Basique.Solve;
 using System.Linq;
+using Basique.Services;
 
 namespace Basique.Modeling
 {

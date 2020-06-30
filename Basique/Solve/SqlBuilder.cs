@@ -7,6 +7,7 @@ using System;
 using System.Collections.Generic;
 using Basique.Modeling;
 using System.Data.Common;
+using Basique.Services;
 
 namespace Basique.Solve
 {
