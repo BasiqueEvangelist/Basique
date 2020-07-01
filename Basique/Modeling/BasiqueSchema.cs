@@ -20,7 +20,7 @@ namespace Basique.Modeling
             ConnectionFactory = conn;
         }
 
-        public async Task<BasiqueTransaction> BeginTransaction(CancellationToken token = default)
+        public async Task<BasiqueTransaction> MintTransaction(CancellationToken token = default)
         {
             DbConnection conn = await MintConnection(token);
             return new BasiqueTransaction(await conn.BeginTransactionAsync(token));

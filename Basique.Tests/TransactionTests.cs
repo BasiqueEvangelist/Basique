@@ -12,7 +12,7 @@ namespace Basique.Tests
         [Fact]
         public async Task RollbackCreate()
         {
-            await using (var transaction = await Db.BeginTransaction())
+            await using (var transaction = await Db.MintTransaction())
             {
                 await Db.TestObjects.CreateAsync(() => new TestObject() { Test = "beep", Value = 100 }, default, transaction);
                 // await transaction.Commit();
@@ -33,7 +33,7 @@ namespace Basique.Tests
         [Fact]
         public async Task RollbackDelete()
         {
-            await using (var transaction = await Db.BeginTransaction())
+            await using (var transaction = await Db.MintTransaction())
             {
                 await Db.TestObjects
                     .WithTransaction(transaction)

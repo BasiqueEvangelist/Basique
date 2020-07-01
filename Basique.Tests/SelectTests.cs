@@ -92,7 +92,7 @@ namespace Basique.Tests
         [Fact]
         public async Task WithTransaction()
         {
-            await using (var transaction = await Db.BeginTransaction())
+            await using (var transaction = await Db.MintTransaction())
             {
                 TestObject[] objects = await Db.TestObjects.WithTransaction(transaction).ToArrayAsync();
 
