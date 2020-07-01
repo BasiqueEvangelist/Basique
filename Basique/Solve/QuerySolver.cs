@@ -18,7 +18,7 @@ namespace Basique.Solve
     {
         public static async ValueTask<object> SolvePullQuery(List<ExpressionNode> expr, CancellationToken token, IRelation table)
         {
-            SqlSelectorData data = SqlBuilder.BuildSelectorData(expr, new SqlSelectorData());
+            SqlSelectorData data = LinqVM.BuildSelectorData(expr, new SqlSelectorData());
             List<object> res = new List<object>();
             DbTransaction trans = data.Transaction?.wrapping;
             DbConnection conn = trans == null ? await table.Schema.MintConnection() : trans.Connection;
@@ -61,7 +61,7 @@ namespace Basique.Solve
 
         public static async ValueTask<object> SolveUpdateQuery(List<ExpressionNode> expr, CancellationToken token, IRelation tab)
         {
-            SqlUpdateData data = SqlBuilder.BuildUpdateData(expr);
+            SqlUpdateData data = LinqVM.BuildUpdateData(expr);
             DbTransaction trans = data.Transaction?.wrapping;
             DbConnection conn = trans == null ? await tab.Schema.MintConnection() : trans.Connection;
             await using (new DisposePredicate(conn, trans == null))
@@ -77,7 +77,7 @@ namespace Basique.Solve
 
         public static async ValueTask<object> SolvePullSingleQuery(List<ExpressionNode> expr, CancellationToken token, IRelation tab)
         {
-            SqlSelectorData data = SqlBuilder.BuildSelectorData(expr, new SqlSelectorData());
+            SqlSelectorData data = LinqVM.BuildSelectorData(expr, new SqlSelectorData());
             PullSingleExpressionNode node = expr[^1] as PullSingleExpressionNode;
             DbTransaction trans = data.Transaction?.wrapping;
             DbConnection conn = trans == null ? await tab.Schema.MintConnection() : trans.Connection;
@@ -114,7 +114,7 @@ namespace Basique.Solve
 
         public static async ValueTask<object> SolveDeleteQuery(List<ExpressionNode> expr, CancellationToken token, IRelation tab)
         {
-            SqlSelectorData data = SqlBuilder.BuildSelectorData(expr, new SqlSelectorData());
+            SqlSelectorData data = LinqVM.BuildSelectorData(expr, new SqlSelectorData());
             DbTransaction trans = data.Transaction?.wrapping;
             DbConnection conn = trans == null ? await tab.Schema.MintConnection() : trans.Connection;
             await using (new DisposePredicate(conn, trans == null))
