@@ -7,6 +7,7 @@ using System.Reflection;
 using Basique.Solve;
 using System.Threading.Tasks;
 using Basique.Services;
+using Basique.Flattening;
 
 namespace Basique
 {

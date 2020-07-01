@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 using Basique.Modeling;
 using System.Linq.Expressions;
 
-namespace Basique.Solve
+namespace Basique.Flattening
 {
     public static class KnownMethods
     {

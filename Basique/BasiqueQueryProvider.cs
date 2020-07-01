@@ -6,8 +6,9 @@ using System.Threading;
 using System.Threading.Tasks;
 using Basique.Modeling;
 using Basique.Solve;
+using Basique.Flattening;
 
-namespace Basique.Solve
+namespace Basique
 {
     public class BasiqueQueryProvider : IAsyncQueryProvider
     {

@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using Basique.Modeling;
 using Basique.Solve;
 using System.Linq;
+using Basique.Flattening;
 
 namespace Basique
 {

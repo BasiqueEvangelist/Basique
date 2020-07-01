@@ -2,7 +2,7 @@ using System.Reflection;
 using System;
 using Basique.Services;
 
-namespace Basique.Solve
+namespace Basique.Flattening
 {
     public abstract class FlatPredicateNode
     {

@@ -6,7 +6,7 @@ using System.Linq.Expressions;
 using Basique.Modeling;
 using System.Diagnostics;
 
-namespace Basique.Solve
+namespace Basique.Flattening
 {
     public static class ToplevelExpressionFlattener
     {

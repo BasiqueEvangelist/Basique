@@ -5,7 +5,7 @@ using System.Linq.Expressions;
 using System.Reflection;
 using Basique.Services;
 
-namespace Basique.Solve
+namespace Basique.Flattening
 {
     public static class PredicateFlattener
     {
