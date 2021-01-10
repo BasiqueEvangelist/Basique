@@ -113,6 +113,22 @@ namespace Basique.Flattening
                     return new UpdateExpressionNode() { Context = (call.Arguments[1] as ConstantExpression).Value as UpdateContext, Parent = Parse(call.Arguments[0]) };
                 else if (call.Method.GetGenericMethodDefinition() == KnownMethods.DeleteAsync)
                     return new DeleteExpressionNode() { Parent = Parse(call.Arguments[0]) };
+                else if (call.Method.GetGenericMethodDefinition() == KnownMethods.Select)
+                {
+                    if (call.Arguments[1] is not UnaryExpression quote)
+                        throw new NotImplementedException();
+                    if (!(quote.NodeType == ExpressionType.Quote))
+                        throw new NotImplementedException();
+                    if (quote.Operand is not LambdaExpression lambda)
+                        throw new NotImplementedException();
+
+                    return new SelectExpressionNode()
+                    {
+                        To = call.Method.GetGenericArguments()[1],
+                        Via = lambda,
+                        Parent = Parse(call.Arguments[0])
+                    };
+                }
                 else
                     throw new NotImplementedException();
             }

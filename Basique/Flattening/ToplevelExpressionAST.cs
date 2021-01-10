@@ -38,6 +38,17 @@ namespace Basique.Flattening
         }
     }
 
+    public class SelectExpressionNode : ExpressionNode
+    {
+        public LambdaExpression Via;
+        public Type To;
+        public override void Dump(IBasiqueLogger log)
+        {
+            Parent.Dump(log);
+            log.Log(LogLevel.Trace, $"Select ({Via}) -> {To}");
+        }
+    }
+
     public class OrderByExpressionNode : ExpressionNode
     {
         public bool Descending;

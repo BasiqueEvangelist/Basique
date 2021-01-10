@@ -67,6 +67,13 @@ namespace Basique.Solve
                         data.Limit = limit.Count;
                     else
                         throw new NotImplementedException();
+                else if (node is SelectExpressionNode select)
+                {
+                    var newSet = new PathTree<BasiqueColumn>();
+                    DoSelect(newSet, new PathTree<BasiqueColumn>[] { data.Columns }, select.Via.Parameters, select.Via.Body);
+                    currentType = select.To;
+                    data.Columns = newSet;
+                }
             }
             data.RequestedType = currentType;
 
