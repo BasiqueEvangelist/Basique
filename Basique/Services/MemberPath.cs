@@ -55,6 +55,17 @@ namespace Basique.Services
                 throw new NotImplementedException("Final expression must be a parameter or variable");
         }
 
+        public MemberPath Prepend(MemberInfo member)
+        {
+            if (!GetTypeOf(member).IsAssignableFrom(Start))
+                throw new InvalidOperationException("Start is not assignable to member's type");
+
+            var newMembers = new MemberInfo[Members.Length + 1];
+            Array.Copy(Members, 0, newMembers, 1, Members.Length);
+            newMembers[0] = member;
+            return new MemberPath() { Members = newMembers, Start = member.DeclaringType };
+        }
+
         public object Follow(object from)
         {
             foreach (var member in Members)
@@ -122,7 +133,7 @@ namespace Basique.Services
         public static bool operator ==(MemberPath a, MemberPath b)
         {
             return a.Start == b.Start &&
-                   Enumerable.SequenceEqual(a.Members, b.Members);
+                   Enumerable.SequenceEqual(a.Members, b.Members, new MemberEqualityComparer());
         }
 
         public static bool operator !=(MemberPath a, MemberPath b)
@@ -132,7 +143,13 @@ namespace Basique.Services
 
         public override int GetHashCode()
         {
-            return HashCode.Combine(Start, Members);
+            int baseHashCode = 17;
+            var comparer = new MemberEqualityComparer();
+            foreach (var member in Members)
+            {
+                baseHashCode = HashCode.Combine(baseHashCode, comparer.GetHashCode(member));
+            }
+            return HashCode.Combine(Start, baseHashCode);
         }
 
         public override bool Equals(object obj)
@@ -140,5 +157,28 @@ namespace Basique.Services
             return obj is MemberPath path &&
                    this == path;
         }
+
+        private static Type GetTypeOf(MemberInfo member)
+        {
+            if (member is FieldInfo field)
+                return field.FieldType;
+            else if (member is PropertyInfo prop)
+                return prop.PropertyType;
+            else throw new NotImplementedException();
+        }
+
+        internal class MemberEqualityComparer : IEqualityComparer<MemberInfo>
+        {
+            public bool Equals(MemberInfo x, MemberInfo y)
+            {
+                return x.DeclaringType.AssemblyQualifiedName == y.DeclaringType.AssemblyQualifiedName
+                    && x.Name == y.Name
+                    && GetTypeOf(x).AssemblyQualifiedName == GetTypeOf(y).AssemblyQualifiedName;
+            }
+
+            public int GetHashCode(MemberInfo obj)
+                => HashCode.Combine(obj.DeclaringType.AssemblyQualifiedName, obj.Name, GetTypeOf(obj).AssemblyQualifiedName);
+        }
     }
+
 }

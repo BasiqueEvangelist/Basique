@@ -28,7 +28,7 @@ namespace Basique.Solve
                 command.Transaction = trans;
                 SqlBuilder.WriteSqlSelect(data, command);
                 table.Schema.Logger.Log(LogLevel.Debug, $"Running SQL: {command.CommandText}");
-                return Activator.CreateInstance(typeof(BasiqueEnumerator<>).MakeGenericType(table.ElementType), new object[] { await command.ExecuteReaderAsync(token), token, table, conn, trans == null });
+                return Activator.CreateInstance(typeof(BasiqueEnumerator<>).MakeGenericType(table.ElementType), new object[] { await command.ExecuteReaderAsync(token), token, conn, data.Columns, trans == null });
             }
             await using (new DisposePredicate(conn, trans == null))
             await using (DbCommand command = conn.CreateCommand())
@@ -42,10 +42,10 @@ namespace Basique.Solve
                         while (await reader.ReadAsync(token))
                         {
                             object obj = Activator.CreateInstance(data.RequestedType);
-                            foreach (var columnData in table.Schema.Tables[data.RequestedType].Columns.Values)
+                            foreach (var (path, column) in data.Columns.WalkColumns())
                             {
-                                object val = Convert.ChangeType(reader.GetValue(columnData.Name), columnData.Type);
-                                columnData.Path.Set(obj, val);
+                                object val = Convert.ChangeType(reader.GetValue(column.NamedAs), column.Column.Type);
+                                path.Set(obj, val);
                             }
                             res.Add(obj);
                         }
@@ -99,11 +99,10 @@ namespace Basique.Solve
                     }
                     object res = Activator.CreateInstance(data.RequestedType);
                     await reader.ReadAsync(token);
-                    foreach (var pair in tab.Schema.Tables[data.RequestedType].Columns.Values)
+                    foreach (var (path, column) in data.Columns.WalkColumns())
                     {
-                        object val = reader.GetValue(pair.Name);
-                        object valConv = Convert.ChangeType(val, pair.Type);
-                        pair.Path.Set(res, valConv);
+                        object val = Convert.ChangeType(reader.GetValue(column.NamedAs), column.Column.Type);
+                        path.Set(res, val);
                     }
                     if (await reader.ReadAsync(token) && node.Type == PullSingleExpressionNode.PullType.Single)
                         throw new InvalidOperationException("More than one element satisfies the condition in predicate.");

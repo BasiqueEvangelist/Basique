@@ -12,7 +12,7 @@ namespace Basique.Modeling
     public class TableData
     {
         public string Name;
-        public Dictionary<string, ColumnData> Columns = new Dictionary<string, ColumnData>();
+        public Dictionary<MemberPath, ColumnData> Columns = new Dictionary<MemberPath, ColumnData>();
     }
     public class ColumnData
     {
@@ -47,7 +47,7 @@ namespace Basique.Modeling
             else if (lastMember is PropertyInfo prop)
                 columnData.Type = prop.PropertyType;
 
-            data.Columns.Add(path.Path.ToString(), columnData);
+            data.Columns.Add(path.Path, columnData);
             return new ColumnBuilder<TField>(columnData);
         }
     }

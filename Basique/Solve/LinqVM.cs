@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using Basique.Flattening;
 using Basique.Modeling;
+using Basique.Services;
 
 namespace Basique.Solve
 {
@@ -9,7 +10,9 @@ namespace Basique.Solve
     {
         public static SqlSelectorData BuildSelectorData(List<ExpressionNode> nodes, SqlSelectorData data)
         {
+            data.Context = new QueryContext();
             data.Relation = ((FinalExpressionNode)nodes[0]).Table;
+            data.Columns = BuildSetFor(data.Context, data.Relation);
             Type currentType = data.Relation.ElementType;
             foreach (var node in nodes)
             {
@@ -52,20 +55,51 @@ namespace Basique.Solve
                         throw new NotImplementedException();
             }
             data.RequestedType = currentType;
+
+            NameAllocator alloc = new(data.Relation.Schema.Logger);
+            alloc.NameRelations(data.Columns);
+            alloc.NameVariables(data.Columns);
+
+            data.Columns.Dump(data.Relation.Schema.Logger);
+
             return data;
+        }
+
+        private static ColumnSet BuildSetFor(QueryContext ctx, IRelation relation)
+        {
+            ColumnSet set = new();
+            foreach (var (path, column) in relation.Schema.Tables[relation.ElementType].Columns)
+            {
+                set.Set(path, new BasiqueColumn()
+                {
+                    From = ctx.GetLogical(relation),
+                    Column = column
+                });
+            }
+            return set;
         }
 
         public static SqlUpdateData BuildUpdateData(List<ExpressionNode> nodes)
         {
             SqlUpdateData data = new SqlUpdateData();
             BuildSelectorData(nodes, data);
-            data.Context = (nodes[^1] as UpdateExpressionNode).Context;
+            data.UpdateContext = (nodes[^1] as UpdateExpressionNode).Context;
             return data;
+        }
+
+        public static ColumnSet BuildSimpleColumnSet(IRelation relation)
+        {
+            var ctx = new QueryContext();
+            var set = BuildSetFor(ctx, relation);
+            var alloc = new NameAllocator(relation.Schema.Logger);
+            alloc.NameRelations(set);
+            alloc.NameVariables(set);
+            return set;
         }
     }
     public class SqlUpdateData : SqlSelectorData
     {
-        public UpdateContext Context;
+        public UpdateContext UpdateContext;
     }
 
     public class SqlSelectorData
@@ -76,6 +110,8 @@ namespace Basique.Solve
         public List<OrderByKey> OrderBy = new List<OrderByKey>();
         public FlatPredicateNode Where;
         public IRelation Relation;
+        public QueryContext Context;
+        public ColumnSet Columns;
     }
 
     public struct OrderByKey

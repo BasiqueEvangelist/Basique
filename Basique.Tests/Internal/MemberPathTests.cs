@@ -34,5 +34,13 @@ namespace Basique.Tests.Internal
             var path = MemberPath.Create(expr.Body).Path;
             Assert.Equal(new MemberPath() { Start = typeof(string), Members = new MemberInfo[] { typeof(string).GetProperty("Length") } }, path);
         }
+
+        [Fact]
+        public void Prepend()
+        {
+            Expression<Func<A, A>> expr1 = (a) => a.a.c;
+            Expression<Func<A.B, A>> expr2 = (b) => b.c;
+            Assert.Equal(MemberPath.Create(expr1.Body).Path, MemberPath.Create(expr2.Body).Path.Prepend(typeof(A).GetField("a")));
+        }
     }
 }

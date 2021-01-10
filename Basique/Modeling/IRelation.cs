@@ -14,6 +14,7 @@ namespace Basique.Modeling
     {
         string Name { get; }
         BasiqueSchema Schema { get; }
+        IQueryRelation MintLogical();
     }
 
     //   
@@ -38,6 +39,8 @@ namespace Basique.Modeling
 
         public IAsyncEnumerator<T> GetAsyncEnumerator(CancellationToken cancellationToken = default)
             => new BasiqueQueryable<T>(this, Expression).GetAsyncEnumerator(cancellationToken);
+
+        public IQueryRelation MintLogical() => new DirectQueryRelation(this);
     }
 }
 

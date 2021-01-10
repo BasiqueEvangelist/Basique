@@ -25,7 +25,7 @@ namespace Basique.Solve
             if (data.Where != null)
             {
                 s.Append(" where ");
-                prefix = WriteSqlPredicate(data.Relation, data.Where, cmd, prefix++, s);
+                prefix = WriteSqlPredicate(data.Relation, data.Columns, data.Where, cmd, prefix++, s);
             }
             cmd.CommandText = s.ToString();
         }
@@ -35,20 +35,20 @@ namespace Basique.Solve
             StringBuilder s = new StringBuilder();
             int prefix = 0;
             s.Append("select ");
-            s.AppendJoin(", ", data.Relation.Schema.Tables[data.Relation.ElementType].Columns.Select(x => x.Value.Name));
+            s.AppendJoin(", ", data.Columns.WalkColumns().Select(x => $"{x.Value.From.NamedAs}.{x.Value.Column.Name} as {x.Value.NamedAs}"));
             s.Append(" from ");
             s.Append(data.Relation.Name);
             if (data.Where != null)
             {
                 s.Append(" where ");
-                prefix = WriteSqlPredicate(data.Relation, data.Where, cmd, prefix++, s);
+                prefix = WriteSqlPredicate(data.Relation, data.Columns, data.Where, cmd, prefix++, s);
             }
             if (data.OrderBy.Count > 0)
             {
                 s.Append(" order by ");
                 for (int i = 0; i < data.OrderBy.Count; i++)
                 {
-                    prefix = WriteSqlPredicate(data.Relation, data.OrderBy[i].Key, cmd, prefix++, s);
+                    prefix = WriteSqlPredicate(data.Relation, data.Columns, data.OrderBy[i].Key, cmd, prefix++, s);
                     s.Append(data.OrderBy[i].Descending ? " desc" : " asc");
                     if (i != data.OrderBy.Count - 1)
                     {
@@ -70,15 +70,14 @@ namespace Basique.Solve
         {
             StringBuilder s = new StringBuilder();
             int prefix = 0;
-            var tableInfo = data.Relation.Schema.Tables[data.Relation.ElementType];
             s.Append("select ");
-            s.AppendJoin(", ", tableInfo.Columns.Select(x => $"{tableInfo.Name}.{x.Value.Name}"));
+            s.AppendJoin(", ", data.Columns.WalkColumns().Select(x => $"{x.Value.From.NamedAs}.{x.Value.Column.Name} as {x.Value.NamedAs}"));
             s.Append(" from ");
             s.Append(data.Relation.Name);
             if (data.Where != null)
             {
                 s.Append(" where ");
-                prefix = WriteSqlPredicate(data.Relation, data.Where, cmd, prefix, s);
+                prefix = WriteSqlPredicate(data.Relation, data.Columns, data.Where, cmd, prefix, s);
             }
 
             if (data.OrderBy.Count > 0)
@@ -86,7 +85,7 @@ namespace Basique.Solve
                 s.Append(" order by ");
                 for (int i = 0; i < data.OrderBy.Count; i++)
                 {
-                    prefix = WriteSqlPredicate(data.Relation, data.OrderBy[i].Key, cmd, prefix++, s);
+                    prefix = WriteSqlPredicate(data.Relation, data.Columns, data.OrderBy[i].Key, cmd, prefix++, s);
                     s.Append(data.OrderBy[i].Descending ? " desc" : " asc");
                     if (i != data.OrderBy.Count - 1)
                     {
@@ -108,29 +107,30 @@ namespace Basique.Solve
             s.Append("update ");
             s.Append(data.Relation.Name);
             s.Append(" set ");
-            for (int i = 0; i < data.Context.Data.Count; i++)
+            for (int i = 0; i < data.UpdateContext.Data.Count; i++)
             {
-                var part = data.Context.Data[i];
-                s.Append($"{data.Relation.Schema.Tables[data.Relation.ElementType].Columns[part.field.ToString()].Name} = ");
-                prefix = WriteSqlPredicate(data.Relation, part.factory, cmd, prefix, s);
-                if (i != data.Context.Data.Count - 1)
+                var part = data.UpdateContext.Data[i];
+                var column = data.Columns.GetByPath(part.field).AssertColumn();
+                s.Append($"{column.Column.Name} = ");
+                prefix = WriteSqlPredicate(data.Relation, data.Columns, part.factory, cmd, prefix, s);
+                if (i != data.UpdateContext.Data.Count - 1)
                     s.Append(", ");
             }
             if (data.Where != null)
             {
                 s.Append(" where ");
-                prefix = WriteSqlPredicate(data.Relation, data.Where, cmd, prefix++, s);
+                prefix = WriteSqlPredicate(data.Relation, data.Columns, data.Where, cmd, prefix++, s);
             }
 
             cmd.CommandText = s.ToString();
         }
 
-        private static int WriteSqlPredicate(IRelation tab, FlatPredicateNode node, DbCommand cmd, int prefix, StringBuilder into)
+        private static int WriteSqlPredicate(IRelation tab, ColumnSet set, FlatPredicateNode node, DbCommand cmd, int prefix, StringBuilder into)
         {
             if (node is BinaryPredicate bin)
             {
                 into.Append("(");
-                prefix = WriteSqlPredicate(tab, bin.Left, cmd, prefix, into);
+                prefix = WriteSqlPredicate(tab, set, bin.Left, cmd, prefix, into);
                 into.Append(")");
                 if (bin.Type == BinaryPredicateType.Equal)
                     into.Append(" = ");
@@ -163,7 +163,7 @@ namespace Basique.Solve
                 else
                     throw new NotImplementedException();
                 into.Append("(");
-                prefix = WriteSqlPredicate(tab, bin.Right, cmd, prefix, into);
+                prefix = WriteSqlPredicate(tab, set, bin.Right, cmd, prefix, into);
                 into.Append(")");
             }
             else if (node is UnaryPredicate una)
@@ -174,17 +174,17 @@ namespace Basique.Solve
                     throw new NotImplementedException();
 
                 into.Append("(");
-                prefix = WriteSqlPredicate(tab, una.Operand, cmd, prefix, into);
+                prefix = WriteSqlPredicate(tab, set, una.Operand, cmd, prefix, into);
                 into.Append(")");
             }
             else if (node is TernaryPredicate tern)
             {
                 into.Append("CASE WHEN (");
-                prefix = WriteSqlPredicate(tab, tern.Condition, cmd, prefix, into);
+                prefix = WriteSqlPredicate(tab, set, tern.Condition, cmd, prefix, into);
                 into.Append(") THEN (");
-                prefix = WriteSqlPredicate(tab, tern.OnTrue, cmd, prefix, into);
+                prefix = WriteSqlPredicate(tab, set, tern.OnTrue, cmd, prefix, into);
                 into.Append(") ELSE (");
-                prefix = WriteSqlPredicate(tab, tern.OnFalse, cmd, prefix, into);
+                prefix = WriteSqlPredicate(tab, set, tern.OnFalse, cmd, prefix, into);
                 into.Append(") END");
             }
             else if (node is ConstantPredicate con)
@@ -201,7 +201,8 @@ namespace Basique.Solve
             {
                 if (sub.From is ContextPredicate ctx)
                 {
-                    into.Append($"{tab.Name}.{tab.Schema.Tables[sub.Path.Members[0].DeclaringType].Columns[sub.Path.ToString()].Name}");
+                    var column = set.GetByPath(sub.Path).AssertColumn();
+                    into.Append($"{column.From.NamedAs}.{column.Column.Name}");
                 }
                 else
                     throw new NotImplementedException(); // Joins and .Select() will come later.
@@ -211,20 +212,22 @@ namespace Basique.Solve
 
         public static void WriteSqlCreate(CreateExpressionNode create, IRelation tab, DbCommand command)
         {
+            var set = LinqVM.BuildSimpleColumnSet(tab);
+
             StringBuilder s = new StringBuilder();
             s.Append("insert into ");
             s.Append(tab.Name);
             s.Append(" (");
-            s.AppendJoin(",", create.Factory.Bindings.OfType<MemberAssignment>().Select(x => tab.Schema.Tables[x.Member.DeclaringType].Columns[new MemberPath(x.Member).ToString()].Name));
+            s.AppendJoin(",", create.Factory.Bindings.OfType<MemberAssignment>().Select(x => set[x.Member].AssertColumn().Column.Name));
             s.Append(") values (");
-            s.AppendJoin(",", create.Factory.Bindings.OfType<MemberAssignment>().Select(x => "@" + tab.Schema.Tables[x.Member.DeclaringType].Columns[new MemberPath(x.Member).ToString()].Name));
+            s.AppendJoin(",", create.Factory.Bindings.OfType<MemberAssignment>().Select(x => "@" + set[x.Member].AssertColumn().Column.Name));
             s.Append(");");
             command.CommandText = s.ToString();
             foreach (var assign in create.Factory.Bindings.OfType<MemberAssignment>())
             {
                 var param = command.CreateParameter();
                 param.Direction = ParameterDirection.Input;
-                param.ParameterName = "@" + tab.Schema.Tables[assign.Member.DeclaringType].Columns[new MemberPath(assign.Member).ToString()].Name;
+                param.ParameterName = "@" + set[assign.Member].AssertColumn().Column.Name;
                 param.Value = Expression.Lambda(assign.Expression).Compile(false).DynamicInvoke();
                 command.Parameters.Add(param);
             }
