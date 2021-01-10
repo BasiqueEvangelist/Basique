@@ -17,6 +17,17 @@ namespace Basique.Services
             Members = new[] { mem };
         }
 
+        public bool CanFollowType(Type type)
+        {
+            Type reciever = type;
+            foreach (var member in Members)
+            {
+                if (!member.DeclaringType.IsAssignableFrom(reciever)) return false;
+                reciever = GetTypeOf(member);
+            }
+            return true;
+        }
+
         public static (MemberPath Path, Expression Final) Create(Expression expr)
         {
             MemberPath path;

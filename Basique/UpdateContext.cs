@@ -34,7 +34,7 @@ namespace Basique
 
         public UpdateContext<T> Set<TField>(Expression<Func<T, TField>> selector, Expression<Func<T, TField>> data)
         {
-            Data.Add((MemberPath.Create(selector.Body).Path, PredicateFlattener.Flatten(data.Body)));
+            Data.Add((MemberPath.Create(selector.Body).Path, PredicateFlattener.Flatten(data.Body, data.Parameters)));
             return this;
         }
 

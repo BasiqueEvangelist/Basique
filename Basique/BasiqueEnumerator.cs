@@ -5,18 +5,20 @@ using System.Threading.Tasks;
 using System;
 using System.Data;
 using Basique.Solve;
+using System.Runtime.Serialization;
+using Basique.Services;
 
 namespace Basique
 {
-    public class BasiqueEnumerator<T> : IAsyncEnumerator<T> where T : new()
+    public class BasiqueEnumerator<T> : IAsyncEnumerator<T>
     {
         private readonly DbDataReader reader;
         private readonly CancellationToken token;
         private readonly DbConnection connection;
-        private readonly ColumnSet columns;
+        private readonly PathTree<BasiqueColumn> columns;
         private readonly bool disposeConnection;
 
-        public BasiqueEnumerator(DbDataReader reader, CancellationToken token, DbConnection connection, ColumnSet columns, bool disposeConnection)
+        public BasiqueEnumerator(DbDataReader reader, CancellationToken token, DbConnection connection, PathTree<BasiqueColumn> columns, bool disposeConnection)
         {
             this.reader = reader;
             this.token = token;
@@ -39,13 +41,13 @@ namespace Basique
             if (!reader.HasRows) return false;
             if (!await reader.ReadAsync(token))
                 return false;
-            T obj = new();
-            foreach (var (path, column) in columns.WalkColumns())
+            var newSet = new PathTree<object>();
+            foreach (var (path, column) in columns.WalkValues())
             {
                 object val = Convert.ChangeType(reader.GetValue(column.NamedAs), column.Column.Type);
-                path.Set(obj, val);
+                newSet.Set(path, val);
             }
-            Current = obj;
+            Current = (T)ObjectFactory.Create(typeof(T), newSet);
             return true;
         }
     }

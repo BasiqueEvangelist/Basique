@@ -14,9 +14,9 @@ namespace Basique.Solve
             this.logger = logger;
         }
 
-        public void NameRelations(ColumnSet set)
+        public void NameRelations(PathTree<BasiqueColumn> set)
         {
-            foreach (var pair in set.WalkColumns())
+            foreach (var pair in set.WalkValues())
             {
                 var relation = pair.Value.From;
                 var suffix = 0;
@@ -36,15 +36,15 @@ namespace Basique.Solve
             }
         }
 
-        public void NameVariables(ColumnSet set)
+        public void NameVariables(PathTree<BasiqueColumn> set)
         {
-            foreach (var composite in set.WalkComposites())
+            foreach (var composite in set.WalkTrees())
             {
                 foreach (var (_, field) in composite)
                 {
-                    if (field.HasColumn)
+                    if (!field.IsTree)
                     {
-                        var column = field.AssertColumn();
+                        var column = field.Value;
                         var suffix = 0;
 
                         if (column.NamedAs == null)

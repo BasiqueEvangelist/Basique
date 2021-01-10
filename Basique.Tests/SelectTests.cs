@@ -92,7 +92,7 @@ namespace Basique.Tests
         [Fact]
         public async Task SimpleJoin()
         {
-            var arr = await Db.TestObjects.SqlJoin(Db.TestObjects, (pair) => pair.Item1.Value == pair.Item2.Value).ToArrayAsync();
+            var arr = await Db.TestObjects.SqlJoin(Db.TestObjects, (pair) => pair.First.Value == pair.Second.Value, (a, b) => new { First = a, Second = b }).AsAsyncEnumerable().Select(x => (x.First, x.Second)).ToListAsync();
 
             Assert.Equal(arr, new (TestObject, TestObject)[]
             {

@@ -41,7 +41,7 @@ namespace Basique.Solve
                     while (await reader.ReadAsync(token))
                     {
                         object obj = Activator.CreateInstance(data.RequestedType);
-                        foreach (var (path, column) in data.Columns.WalkColumns())
+                        foreach (var (path, column) in data.Columns.WalkValues())
                         {
                             object val = Convert.ChangeType(reader.GetValue(column.NamedAs), column.Column.Type);
                             path.Set(obj, val);
@@ -94,13 +94,15 @@ namespace Basique.Solve
                     else
                         throw new InvalidOperationException("The source sequence is empty.");
                 }
-                object res = Activator.CreateInstance(data.RequestedType);
+                var newSet = new PathTree<object>();
                 await reader.ReadAsync(token);
-                foreach (var (path, column) in data.Columns.WalkColumns())
+                foreach (var (path, column) in data.Columns.WalkValues())
                 {
                     object val = Convert.ChangeType(reader.GetValue(column.NamedAs), column.Column.Type);
-                    path.Set(res, val);
+                    newSet.Set(path, val);
                 }
+                var res = ObjectFactory.Create(data.RequestedType, newSet);
+
                 if (await reader.ReadAsync(token) && node.Type == PullSingleExpressionNode.PullType.Single)
                     throw new InvalidOperationException("More than one element satisfies the condition in predicate.");
                 return res;
@@ -136,23 +138,7 @@ namespace Basique.Solve
                 tab.Schema.Logger.Log(LogLevel.Debug, $"Running SQL: {command.CommandText}");
                 await command.ExecuteNonQueryAsync(token);
             }
-            object inst = Activator.CreateInstance(create.OfType);
-            foreach (var binding in create.Factory.Bindings)
-            {
-                if (binding is MemberAssignment assign)
-                {
-                    object value = Expression.Lambda(assign.Expression).Compile(true).DynamicInvoke();
-                    if (assign.Member is FieldInfo field)
-                        field.SetValue(inst, value);
-                    else if (assign.Member is PropertyInfo property)
-                        property.SetValue(inst, value);
-                    else
-                        throw new NotImplementedException();
-                }
-                else
-                    throw new NotImplementedException();
-            }
-            return inst;
+            return null; // TODO: Actually return values.
         }
     }
 }

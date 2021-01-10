@@ -13,7 +13,7 @@ namespace Basique.Modeling
     public interface IRelationLike
     {
         string Name { get; }
-        void FillSet(ColumnSet set, QueryContext ctx);
+        void FillSet(PathTree<BasiqueColumn> set, QueryContext ctx);
         QueryRelation MintLogical();
     }
 
@@ -40,7 +40,7 @@ namespace Basique.Modeling
 
         public IAsyncEnumerator<T> GetAsyncEnumerator(CancellationToken cancellationToken = default)
             => new BasiqueQueryable<T>(this, Expression).GetAsyncEnumerator(cancellationToken);
-        public abstract void FillSet(ColumnSet set, QueryContext ctx);
+        public abstract void FillSet(PathTree<BasiqueColumn> set, QueryContext ctx);
         public virtual QueryRelation MintLogical() => new(this);
     }
 
@@ -53,7 +53,7 @@ namespace Basique.Modeling
         }
         public override string Name => data.Name;
 
-        public override void FillSet(ColumnSet set, QueryContext ctx)
+        public override void FillSet(PathTree<BasiqueColumn> set, QueryContext ctx)
         {
             foreach (var (path, column) in data.Columns)
             {

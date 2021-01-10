@@ -1,5 +1,7 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
+using System.Linq.Expressions;
 using Basique.Flattening;
 using Basique.Modeling;
 using Basique.Services;
@@ -12,7 +14,7 @@ namespace Basique.Solve
         {
             data.Context = new QueryContext();
             data.Relation = ((FinalExpressionNode)nodes[0]).Table;
-            data.Columns = new ColumnSet();
+            data.Columns = new PathTree<BasiqueColumn>();
             data.Relation.FillSet(data.Columns, data.Context);
             Type currentType = data.Relation.ElementType;
 
@@ -72,8 +74,6 @@ namespace Basique.Solve
             alloc.NameRelations(data.Columns);
             alloc.NameVariables(data.Columns);
 
-            data.Columns.Dump(data.Relation.Schema.Logger);
-
             return data;
         }
 
@@ -85,15 +85,32 @@ namespace Basique.Solve
             return data;
         }
 
-        public static ColumnSet BuildSimpleColumnSet(IRelation relation)
+        public static PathTree<BasiqueColumn> BuildSimpleColumnSet(IRelation relation)
         {
             var ctx = new QueryContext();
-            var set = new ColumnSet();
+            var set = new PathTree<BasiqueColumn>();
             relation.FillSet(set, ctx);
             var alloc = new NameAllocator(relation.Schema.Logger);
             alloc.NameRelations(set);
             alloc.NameVariables(set);
             return set;
+        }
+
+        public static void DoSelect(PathTree<BasiqueColumn> to, IList<PathTree<BasiqueColumn>> contexts, IList<ParameterExpression> parameters, Expression expr)
+        {
+            foreach (var (path, setter) in InitList.GetInitList(parameters, expr))
+            {
+                if (setter is ContextPredicate ctx)
+                {
+                    to.Set(path, contexts[ctx.ContextId]);
+                }
+                else if (setter is SubPredicate sub)
+                {
+                    if (sub.From is not ContextPredicate subctx) throw new NotImplementedException();
+
+                    to.Set(path, contexts[subctx.ContextId].GetByPath(sub.Path));
+                }
+            }
         }
     }
     public class SqlUpdateData : SqlSelectorData
@@ -111,7 +128,7 @@ namespace Basique.Solve
         public List<JoinClause> Joins = new();
         public IRelation Relation;
         public QueryContext Context;
-        public ColumnSet Columns;
+        public PathTree<BasiqueColumn> Columns;
     }
 
     public struct JoinClause

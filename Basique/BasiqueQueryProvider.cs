@@ -25,6 +25,7 @@ namespace Basique
         public async ValueTask<TResult> ExecuteAsync<TResult>(Expression expression, CancellationToken token)
         {
             List<ExpressionNode> pn = ToplevelExpressionFlattener.ParseAndFlatten(expression);
+            pn[^1].Dump(relation.Schema.Logger);
             if (pn.Last() is CreateExpressionNode)
                 return (TResult)await QuerySolver.SolveCreateQuery(pn, token, relation);
             else if (pn.Last() is UpdateExpressionNode)

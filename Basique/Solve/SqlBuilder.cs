@@ -35,7 +35,7 @@ namespace Basique.Solve
             StringBuilder s = new();
             int prefix = 0;
             s.Append("select ");
-            s.AppendJoin(", ", data.Columns.WalkColumns().Select(x => $"{x.Value.From.NamedAs}.{x.Value.Column.Name} as {x.Value.NamedAs}"));
+            s.AppendJoin(", ", data.Columns.WalkValues().Select(x => $"{x.Value.From.NamedAs}.{x.Value.Column.Name} as {x.Value.NamedAs}"));
             s.Append(" from ");
             s.Append(data.Relation.Name);
             foreach (var join in data.Joins)
@@ -76,7 +76,7 @@ namespace Basique.Solve
             StringBuilder s = new();
             int prefix = 0;
             s.Append("select ");
-            s.AppendJoin(", ", data.Columns.WalkColumns().Select(x => $"{x.Value.From.NamedAs}.{x.Value.Column.Name} as {x.Value.NamedAs}"));
+            s.AppendJoin(", ", data.Columns.WalkValues().Select(x => $"{x.Value.From.NamedAs}.{x.Value.Column.Name} as {x.Value.NamedAs}"));
             s.Append(" from ");
             s.Append(data.Relation.Name);
 
@@ -122,7 +122,7 @@ namespace Basique.Solve
             for (int i = 0; i < data.UpdateContext.Data.Count; i++)
             {
                 var (field, factory) = data.UpdateContext.Data[i];
-                var column = data.Columns.GetByPath(field).AssertColumn();
+                var column = data.Columns.GetByPath(field).Value;
                 s.Append($"{column.Column.Name} = ");
                 prefix = WriteSqlPredicate(data.Relation, data.Columns, factory, cmd, prefix, s);
                 if (i != data.UpdateContext.Data.Count - 1)
@@ -137,7 +137,7 @@ namespace Basique.Solve
             cmd.CommandText = s.ToString();
         }
 
-        private static int WriteSqlPredicate(IRelation tab, ColumnSet set, FlatPredicateNode node, DbCommand cmd, int prefix, StringBuilder into)
+        private static int WriteSqlPredicate(IRelation tab, PathTree<BasiqueColumn> set, FlatPredicateNode node, DbCommand cmd, int prefix, StringBuilder into)
         {
             if (node is BinaryPredicate bin)
             {
@@ -213,7 +213,7 @@ namespace Basique.Solve
             {
                 if (sub.From is ContextPredicate)
                 {
-                    var column = set.GetByPath(sub.Path).AssertColumn();
+                    var column = set.GetByPath(sub.Path).Value;
                     into.Append($"{column.From.NamedAs}.{column.Column.Name}");
                 }
                 else
@@ -230,19 +230,19 @@ namespace Basique.Solve
             s.Append("insert into ");
             s.Append(tab.Name);
             s.Append(" (");
-            s.AppendJoin(",", create.Factory.Bindings.OfType<MemberAssignment>().Select(x => set[x.Member].AssertColumn().Column.Name));
+            s.AppendJoin(",", create.InitList.Select(x => set.GetByPath(x.Key).Value.Column.Name));
             s.Append(") values (");
-            s.AppendJoin(",", create.Factory.Bindings.OfType<MemberAssignment>().Select(x => "@" + set[x.Member].AssertColumn().Column.Name));
+            bool isFirst = true;
+            int prefix = 0;
+            foreach (var (path, expr, i) in create.InitList.Select((x, i) => (x.Key, x.Value, i)))
+            {
+                if (!isFirst)
+                    s.Append(", ");
+                prefix = WriteSqlPredicate(tab, set, expr, command, prefix, s);
+                isFirst = false;
+            }
             s.Append(");");
             command.CommandText = s.ToString();
-            foreach (var assign in create.Factory.Bindings.OfType<MemberAssignment>())
-            {
-                var param = command.CreateParameter();
-                param.Direction = ParameterDirection.Input;
-                param.ParameterName = "@" + set[assign.Member].AssertColumn().Column.Name;
-                param.Value = Expression.Lambda(assign.Expression).Compile(false).DynamicInvoke();
-                command.Parameters.Add(param);
-            }
         }
     }
 }

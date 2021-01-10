@@ -42,5 +42,19 @@ namespace Basique.Tests.Internal
             Expression<Func<A.B, A>> expr2 = (b) => b.c;
             Assert.Equal(MemberPath.Create(expr1.Body).Path, MemberPath.Create(expr2.Body).Path.Prepend(typeof(A).GetField("a")));
         }
+
+        [Fact]
+        public void CanFollowType()
+        {
+            Expression<Func<A, A>> expr = (a) => a.a.c;
+            Assert.True(MemberPath.Create(expr.Body).Path.CanFollowType(typeof(A)));
+        }
+
+        [Fact]
+        public void CantFollowType()
+        {
+            Expression<Func<A, A>> expr = (a) => a.a.c;
+            Assert.False(MemberPath.Create(expr.Body).Path.CanFollowType(typeof(A.B)));
+        }
     }
 }

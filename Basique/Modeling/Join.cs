@@ -1,4 +1,5 @@
 using System;
+using System.Linq.Expressions;
 using System.Reflection;
 using Basique.Flattening;
 using Basique.Solve;
@@ -12,39 +13,34 @@ namespace Basique.Modeling
         public FlatPredicateNode On { get; }
     }
 
-    public class Join<TLeft, TRight> : RelationBase<(TLeft, TRight)>, IJoinRelation
+    public class Join<TLeft, TRight, TResult> : RelationBase<TResult>, IJoinRelation
     {
-        private readonly static FieldInfo item1Field = typeof(ValueTuple<,>).GetField("Item1");
-        private readonly static FieldInfo item2Field = typeof(ValueTuple<,>).GetField("Item2");
-
-        public JoinSide<TLeft> Left
-        { get; }
+        public JoinSide<TLeft> Left { get; }
         public JoinSide<TRight> Right { get; }
         public FlatPredicateNode On { get; }
+        private readonly LambdaExpression factory;
         public override string Name => throw new InvalidOperationException();
 
         IJoinSideRelation IJoinRelation.Left => Left;
         IJoinSideRelation IJoinRelation.Right => Right;
 
 
-        public Join(BasiqueSchema conn, RelationBase<TLeft> left, RelationBase<TRight> right, FlatPredicateNode on) : base(conn)
+        public Join(BasiqueSchema conn, RelationBase<TLeft> left, RelationBase<TRight> right, FlatPredicateNode on, LambdaExpression factory) : base(conn)
         {
             Left = new JoinSide<TLeft>(this, left);
             Right = new JoinSide<TRight>(this, right);
+            this.factory = factory;
             On = on;
         }
 
-        public override void FillSet(ColumnSet set, QueryContext ctx)
+        public override void FillSet(PathTree<BasiqueColumn> set, QueryContext ctx)
         {
-            ColumnSet leftSet = new(), rightSet = new();
+            PathTree<BasiqueColumn> leftSet = new(), rightSet = new();
 
             Left.FillSet(leftSet, ctx);
             Right.FillSet(rightSet, ctx);
 
-            var tupleType = typeof(ValueTuple<,>).MakeGenericType(typeof(TLeft), typeof(TRight));
-
-            set[tupleType.GetField("Item1")] = new BasiqueField(leftSet);
-            set[tupleType.GetField("Item2")] = new BasiqueField(rightSet);
+            LinqVM.DoSelect(set, new[] { leftSet, rightSet }, factory.Parameters, factory.Body);
         }
         public override QueryRelation MintLogical() => throw new InvalidOperationException();
     }
@@ -70,7 +66,7 @@ namespace Basique.Modeling
 
         public string Name => Original.Name;
 
-        public void FillSet(ColumnSet set, QueryContext ctx)
+        public void FillSet(PathTree<BasiqueColumn> set, QueryContext ctx)
         {
             foreach (var (path, column) in Join.Schema.Tables[Original.ElementType].Columns)
             {

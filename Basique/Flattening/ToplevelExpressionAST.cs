@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Linq.Expressions;
 using Basique.Modeling;
 using Basique.Services;
@@ -106,12 +107,12 @@ namespace Basique.Flattening
     public class CreateExpressionNode : ExpressionNode
     {
         public Type OfType;
-        public MemberInitExpression Factory;
+        public Dictionary<MemberPath, FlatPredicateNode> InitList;
 
         public override void Dump(IBasiqueLogger log)
         {
             Parent.Dump(log);
-            log.Log(LogLevel.Trace, $"Create {OfType} ({Factory})");
+            log.Log(LogLevel.Trace, $"Create {OfType} ({InitList})");
         }
     }
 

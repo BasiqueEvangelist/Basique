@@ -47,8 +47,9 @@ namespace Basique.Flattening
     public class ContextPredicate : FlatPredicateNode
     {
         public Type Of;
+        public int ContextId;
         public override string ToString()
-            => $"Context";
+            => $"Context {ContextId}";
     }
 
     public class SubPredicate : FlatPredicateNode

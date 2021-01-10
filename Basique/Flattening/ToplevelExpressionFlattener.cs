@@ -27,7 +27,7 @@ namespace Basique.Flattening
                     if (quote.Operand is not LambdaExpression lambda)
                         throw new NotImplementedException();
 
-                    return new WhereExpressionNode() { Condition = PredicateFlattener.Flatten(lambda.Body), Parent = Parse(call.Arguments[0]) };
+                    return new WhereExpressionNode() { Condition = PredicateFlattener.Flatten(lambda.Body, lambda.Parameters), Parent = Parse(call.Arguments[0]) };
                 }
                 else if (call.Method.GetGenericMethodDefinition() == KnownMethods.OrderBy
                       || call.Method.GetGenericMethodDefinition() == KnownMethods.OrderByDescending)
@@ -41,7 +41,7 @@ namespace Basique.Flattening
 
                     bool isDescending = call.Method.GetGenericMethodDefinition() == KnownMethods.OrderByDescending;
 
-                    return new OrderByExpressionNode() { Key = PredicateFlattener.Flatten(lambda.Body), Descending = isDescending, Parent = Parse(call.Arguments[0]) };
+                    return new OrderByExpressionNode() { Key = PredicateFlattener.Flatten(lambda.Body, lambda.Parameters), Descending = isDescending, Parent = Parse(call.Arguments[0]) };
                 }
                 else if (call.Method.GetGenericMethodDefinition() == KnownMethods.ThenBy
                       || call.Method.GetGenericMethodDefinition() == KnownMethods.ThenByDescending)
@@ -55,7 +55,7 @@ namespace Basique.Flattening
 
                     bool isDescending = call.Method.GetGenericMethodDefinition() == KnownMethods.ThenByDescending;
 
-                    return new ThenByExpressionNode() { Key = PredicateFlattener.Flatten(lambda.Body), Descending = isDescending, Parent = Parse(call.Arguments[0]) };
+                    return new ThenByExpressionNode() { Key = PredicateFlattener.Flatten(lambda.Body, lambda.Parameters), Descending = isDescending, Parent = Parse(call.Arguments[0]) };
                 }
                 else if (KnownMethods.PullSingleVariants.Contains(call.Method.GetGenericMethodDefinition()))
                 {
@@ -71,7 +71,7 @@ namespace Basique.Flattening
                             throw new NotImplementedException();
                         if (quote.Operand is not LambdaExpression lambda)
                             throw new NotImplementedException();
-                        pullSingle.By = PredicateFlattener.Flatten(lambda.Body);
+                        pullSingle.By = PredicateFlattener.Flatten(lambda.Body, lambda.Parameters);
                     }
                     else
                         pullSingle.By = null;
@@ -101,10 +101,13 @@ namespace Basique.Flattening
                         throw new NotImplementedException();
                     if (quote.Operand is not LambdaExpression lambda)
                         throw new NotImplementedException();
-                    if (lambda.Body is not MemberInitExpression init)
-                        throw new NotImplementedException();
 
-                    return new CreateExpressionNode() { OfType = call.Method.GetGenericArguments()[0], Factory = init, Parent = Parse(call.Arguments[0]) };
+                    return new CreateExpressionNode()
+                    {
+                        OfType = call.Method.GetGenericArguments()[0],
+                        InitList = InitList.GetInitList(lambda.Parameters, lambda.Body).ToDictionary(x => x.Key, x => x.Value),
+                        Parent = Parse(call.Arguments[0])
+                    };
                 }
                 else if (call.Method.GetGenericMethodDefinition() == KnownMethods.Commit)
                     return new UpdateExpressionNode() { Context = (call.Arguments[1] as ConstantExpression).Value as UpdateContext, Parent = Parse(call.Arguments[0]) };

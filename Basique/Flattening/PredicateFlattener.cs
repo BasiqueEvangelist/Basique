@@ -4,18 +4,19 @@ using System;
 using System.Linq.Expressions;
 using System.Reflection;
 using Basique.Services;
+using System.Collections.Generic;
 
 namespace Basique.Flattening
 {
     public static class PredicateFlattener
     {
-        public static FlatPredicateNode Flatten(Expression expr)
+        public static FlatPredicateNode Flatten(Expression expr, IList<ParameterExpression> parameters)
         {
             if (expr is ConstantExpression con)
                 return new ConstantPredicate() { Of = con.Type, Data = con.Value };
             else if (expr is BinaryExpression bin)
             {
-                var pred = new BinaryPredicate() { Left = Flatten(bin.Left), Right = Flatten(bin.Right) };
+                var pred = new BinaryPredicate() { Left = Flatten(bin.Left, parameters), Right = Flatten(bin.Right, parameters) };
                 if (bin.NodeType == ExpressionType.Equal)
                     pred.Type = BinaryPredicateType.Equal;
                 else if (bin.NodeType == ExpressionType.NotEqual)
@@ -50,7 +51,7 @@ namespace Basique.Flattening
             }
             else if (expr is UnaryExpression una)
             {
-                var pred = new UnaryPredicate() { Operand = Flatten(una.Operand) };
+                var pred = new UnaryPredicate() { Operand = Flatten(una.Operand, parameters) };
                 if (una.NodeType == ExpressionType.Not)
                     pred.Type = UnaryPredicateType.Not;
                 else
@@ -58,14 +59,14 @@ namespace Basique.Flattening
                 return pred;
             }
             else if (expr is ConditionalExpression cond)
-                return new TernaryPredicate() { Condition = Flatten(cond.Test), OnTrue = Flatten(cond.IfTrue), OnFalse = Flatten(cond.IfFalse) };
+                return new TernaryPredicate() { Condition = Flatten(cond.Test, parameters), OnTrue = Flatten(cond.IfTrue, parameters), OnFalse = Flatten(cond.IfFalse, parameters) };
             else if (expr is MemberExpression mem)
             {
                 var (path, final) = MemberPath.Create(mem);
-                return new SubPredicate() { Path = path, From = Flatten(final) };
+                return new SubPredicate() { Path = path, From = Flatten(final, parameters) };
             }
             else if (expr is ParameterExpression param)
-                return new ContextPredicate() { Of = param.Type };
+                return new ContextPredicate() { Of = param.Type, ContextId = parameters.IndexOf(param) };
             else
                 throw new NotImplementedException();
         }

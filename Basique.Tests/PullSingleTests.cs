@@ -22,10 +22,10 @@ namespace Basique.Tests
         [Fact]
         public async Task BasicFirstJoin()
         {
-            var obj = await Db.TestObjects.SqlJoin(Db.TestObjects, (pair) => pair.Item1.Value == pair.Item2.Value).FirstAsync();
+            var obj = await Db.TestObjects.SqlJoin(Db.TestObjects, (pair) => pair.First.Value == pair.Second.Value, (a, b) => new { First = a, Second = b }).FirstAsync();
 
-            Assert.Equal(0, obj.Item1.Value);
-            Assert.Equal("oof", obj.Item2.Test);
+            Assert.Equal(0, obj.First.Value);
+            Assert.Equal("oof", obj.Second.Test);
         }
 
         [Fact]
