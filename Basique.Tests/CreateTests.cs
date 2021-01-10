@@ -34,5 +34,12 @@ namespace Basique.Tests
             await Db.TestObjects.CreateAsync(() => new TestObject() { Test = "beep", Value = 100 }, default, transaction);
             await transaction.Commit();
         }
+
+        [Fact]
+        public async Task ReturningCreate()
+        {
+            var obj = await Db.TestObjects.CreateAsync(() => new TestObject() { Test = "beep", Value = 100 });
+            Assert.Equal(obj, new TestObject() { Test = "beep", Value = 100 });
+        }
     }
 }

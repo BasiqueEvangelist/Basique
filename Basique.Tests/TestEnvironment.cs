@@ -16,6 +16,7 @@ namespace Basique.Tests
     {
         public class TestObject
         {
+            public int Id;
             public string Test;
             public int Value;
 
@@ -58,6 +59,8 @@ namespace Basique.Tests
                 {
                     build.RemoteName("testobjects");
 
+                    build.Field(testobjects => testobjects.Id)
+                        .Id();
                     build.Field(testobjects => testobjects.Test);
                     build.Field(testobjects => testobjects.Value);
                 });
@@ -106,7 +109,7 @@ namespace Basique.Tests
             connection = new SqliteConnection(connString);
             await connection.OpenAsync();
 
-            await connection.NonQuery("CREATE TABLE testobjects (test TEXT, value INT);");
+            await connection.NonQuery("CREATE TABLE testobjects (id INTEGER PRIMARY KEY, test TEXT, value INT);");
             await connection.NonQuery("CREATE VIEW v_testjoins AS SELECT first.test first_test, second.test second_test, first.value first_value, second.value second_value FROM testobjects first JOIN testobjects second ON first.value = second.value;");
 
             Db = new TestContext(() => new SqliteConnection(connString))

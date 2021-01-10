@@ -222,10 +222,8 @@ namespace Basique.Solve
             return prefix;
         }
 
-        public static void WriteSqlCreate(CreateExpressionNode create, IRelation tab, DbCommand command)
+        public static void WriteSqlCreate(PathTree<BasiqueColumn> set, CreateExpressionNode create, IRelation tab, DbCommand command)
         {
-            var set = LinqVM.BuildSimpleColumnSet(tab);
-
             StringBuilder s = new();
             s.Append("insert into ");
             s.Append(tab.Name);
@@ -242,6 +240,19 @@ namespace Basique.Solve
                 isFirst = false;
             }
             s.Append(");");
+            command.CommandText = s.ToString();
+        }
+
+        public static void WriteSqlPullCreated(PathTree<BasiqueColumn> set, CreateExpressionNode create, IRelation tab, DbCommand command)
+        {
+            StringBuilder s = new();
+            var idColumn = set.WalkValues().Single(x => x.Value.Column.IsId);
+
+            s.Append("select ");
+            s.AppendJoin(", ", set.WalkValues().Select(x => $"{x.Value.From.NamedAs}.{x.Value.Column.Name} as {x.Value.NamedAs}"));
+            s.Append(" from ");
+            s.Append(tab.Name);
+            s.Append($" where {idColumn.Value.From.NamedAs}.{idColumn.Value.Column.Name} == last_insert_rowid()");
             command.CommandText = s.ToString();
         }
     }
