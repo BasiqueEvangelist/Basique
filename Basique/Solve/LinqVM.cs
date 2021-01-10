@@ -116,7 +116,7 @@ namespace Basique.Solve
 
     public struct JoinClause
     {
-        public IQueryRelation Right;
+        public QueryRelation Right;
         public FlatPredicateNode On;
     }
 

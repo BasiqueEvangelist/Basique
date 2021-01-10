@@ -46,7 +46,7 @@ namespace Basique.Modeling
             set[tupleType.GetField("Item1")] = new BasiqueField(leftSet);
             set[tupleType.GetField("Item2")] = new BasiqueField(rightSet);
         }
-        public override IQueryRelation MintLogical() => throw new InvalidOperationException();
+        public override QueryRelation MintLogical() => throw new InvalidOperationException();
     }
 
     public interface IJoinSideRelation : IRelationLike
@@ -81,6 +81,7 @@ namespace Basique.Modeling
                 });
             }
         }
-        public IQueryRelation MintLogical() => new JoinSideQueryRelation(this);
+
+        public QueryRelation MintLogical() => new(this);
     }
 }

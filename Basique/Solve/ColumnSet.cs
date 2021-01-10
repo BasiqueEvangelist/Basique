@@ -156,7 +156,7 @@ namespace Basique.Solve
 
     public class BasiqueColumn
     {
-        public IQueryRelation From;
+        public QueryRelation From;
         public ColumnData Column;
 
         public string NamedAs { get; set; }

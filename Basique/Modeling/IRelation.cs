@@ -14,7 +14,7 @@ namespace Basique.Modeling
     {
         string Name { get; }
         void FillSet(ColumnSet set, QueryContext ctx);
-        IQueryRelation MintLogical();
+        QueryRelation MintLogical();
     }
 
     public interface IRelation : IAsyncQueryable, IRelationLike
@@ -22,7 +22,6 @@ namespace Basique.Modeling
         BasiqueSchema Schema { get; }
     }
 
-    //   
     public abstract class RelationBase<T> : IRelation, IAsyncQueryable<T>
     {
         public BasiqueSchema Schema { get; }
@@ -42,7 +41,7 @@ namespace Basique.Modeling
         public IAsyncEnumerator<T> GetAsyncEnumerator(CancellationToken cancellationToken = default)
             => new BasiqueQueryable<T>(this, Expression).GetAsyncEnumerator(cancellationToken);
         public abstract void FillSet(ColumnSet set, QueryContext ctx);
-        public abstract IQueryRelation MintLogical();
+        public virtual QueryRelation MintLogical() => new(this);
     }
 
     public class TableBase<T> : RelationBase<T>
@@ -65,8 +64,6 @@ namespace Basique.Modeling
                 });
             }
         }
-
-        public override IQueryRelation MintLogical() => new DirectQueryRelation(this);
     }
 }
 
