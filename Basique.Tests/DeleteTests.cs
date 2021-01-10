@@ -1,3 +1,4 @@
+using System;
 using System.Linq;
 using System.Threading.Tasks;
 using Xunit;
@@ -16,7 +17,7 @@ namespace Basique.Tests
 
             TestObject[] objects = await Db.TestObjects.ToArrayAsync();
 
-            Assert.Equal(objects, new TestObject[0]);
+            Assert.Equal(objects, Array.Empty<TestObject>());
         }
 
         [Fact]

@@ -7,8 +7,8 @@ namespace Basique.Solve
     public class NameAllocator
     {
         private readonly IBasiqueLogger logger;
-        private Dictionary<string, IQueryRelation> relations = new();
-        private Dictionary<string, BasiqueColumn> columns = new();
+        private readonly Dictionary<string, IQueryRelation> relations = new();
+        private readonly Dictionary<string, BasiqueColumn> columns = new();
         public NameAllocator(IBasiqueLogger logger)
         {
             this.logger = logger;

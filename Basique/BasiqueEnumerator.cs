@@ -39,7 +39,7 @@ namespace Basique
             if (!reader.HasRows) return false;
             if (!await reader.ReadAsync(token))
                 return false;
-            T obj = new T();
+            T obj = new();
             foreach (var (path, column) in columns.WalkColumns())
             {
                 object val = Convert.ChangeType(reader.GetValue(column.NamedAs), column.Column.Type);

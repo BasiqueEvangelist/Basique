@@ -20,11 +20,11 @@ namespace Basique.Flattening
             {
                 if (call.Method.GetGenericMethodDefinition() == KnownMethods.Where)
                 {
-                    if (!(call.Arguments[1] is UnaryExpression quote))
+                    if (call.Arguments[1] is not UnaryExpression quote)
                         throw new NotImplementedException();
                     if (!(quote.NodeType == ExpressionType.Quote))
                         throw new NotImplementedException();
-                    if (!(quote.Operand is LambdaExpression lambda))
+                    if (quote.Operand is not LambdaExpression lambda)
                         throw new NotImplementedException();
 
                     return new WhereExpressionNode() { Condition = PredicateFlattener.Flatten(lambda.Body), Parent = Parse(call.Arguments[0]) };
@@ -32,11 +32,11 @@ namespace Basique.Flattening
                 else if (call.Method.GetGenericMethodDefinition() == KnownMethods.OrderBy
                       || call.Method.GetGenericMethodDefinition() == KnownMethods.OrderByDescending)
                 {
-                    if (!(call.Arguments[1] is UnaryExpression quote))
+                    if (call.Arguments[1] is not UnaryExpression quote)
                         throw new NotImplementedException();
                     if (!(quote.NodeType == ExpressionType.Quote))
                         throw new NotImplementedException();
-                    if (!(quote.Operand is LambdaExpression lambda))
+                    if (quote.Operand is not LambdaExpression lambda)
                         throw new NotImplementedException();
 
                     bool isDescending = call.Method.GetGenericMethodDefinition() == KnownMethods.OrderByDescending;
@@ -46,11 +46,11 @@ namespace Basique.Flattening
                 else if (call.Method.GetGenericMethodDefinition() == KnownMethods.ThenBy
                       || call.Method.GetGenericMethodDefinition() == KnownMethods.ThenByDescending)
                 {
-                    if (!(call.Arguments[1] is UnaryExpression quote))
+                    if (call.Arguments[1] is not UnaryExpression quote)
                         throw new NotImplementedException();
                     if (!(quote.NodeType == ExpressionType.Quote))
                         throw new NotImplementedException();
-                    if (!(quote.Operand is LambdaExpression lambda))
+                    if (quote.Operand is not LambdaExpression lambda)
                         throw new NotImplementedException();
 
                     bool isDescending = call.Method.GetGenericMethodDefinition() == KnownMethods.ThenByDescending;
@@ -61,15 +61,15 @@ namespace Basique.Flattening
                 {
                     var method = call.Method.GetGenericMethodDefinition();
 
-                    PullSingleExpressionNode pullSingle = new PullSingleExpressionNode() { Parent = Parse(call.Arguments[0]) };
+                    PullSingleExpressionNode pullSingle = new() { Parent = Parse(call.Arguments[0]) };
 
                     if (KnownMethods.PullSinglePredicated.Contains(method))
                     {
-                        if (!(call.Arguments[1] is UnaryExpression quote))
+                        if (call.Arguments[1] is not UnaryExpression quote)
                             throw new NotImplementedException();
                         if (!(quote.NodeType == ExpressionType.Quote))
                             throw new NotImplementedException();
-                        if (!(quote.Operand is LambdaExpression lambda))
+                        if (quote.Operand is not LambdaExpression lambda)
                             throw new NotImplementedException();
                         pullSingle.By = PredicateFlattener.Flatten(lambda.Body);
                     }
@@ -88,20 +88,20 @@ namespace Basique.Flattening
                 else if (call.Method.GetGenericMethodDefinition() == KnownMethods.Take)
                     return new LimitExpressionNode() { Count = (int)(call.Arguments[1] as ConstantExpression).Value, Parent = Parse(call.Arguments[0]) };
                 else if (call.Method.GetGenericMethodDefinition() == KnownMethods.WithTransaction)
-                    return new TransactionExpressionNode() { Transaction = ((call.Arguments[1] as ConstantExpression).Value) as BasiqueTransaction, Parent = Parse(call.Arguments[0]) };
+                    return new TransactionExpressionNode() { Transaction = (call.Arguments[1] as ConstantExpression).Value as BasiqueTransaction, Parent = Parse(call.Arguments[0]) };
                 else if (call.Method.GetGenericMethodDefinition() == KnownMethods.ToListAsync)
                     return new PullExpressionNode() { Type = PullExpressionNode.PullType.List, Parent = Parse(call.Arguments[0]) };
                 else if (call.Method.GetGenericMethodDefinition() == KnownMethods.ToArrayAsync)
                     return new PullExpressionNode() { Type = PullExpressionNode.PullType.Array, Parent = Parse(call.Arguments[0]) };
                 else if (call.Method.GetGenericMethodDefinition() == KnownMethods.CreateAsyncInternal)
                 {
-                    if (!(call.Arguments[1] is UnaryExpression quote))
+                    if (call.Arguments[1] is not UnaryExpression quote)
                         throw new NotImplementedException();
                     if (!(quote.NodeType == ExpressionType.Quote))
                         throw new NotImplementedException();
-                    if (!(quote.Operand is LambdaExpression lambda))
+                    if (quote.Operand is not LambdaExpression lambda)
                         throw new NotImplementedException();
-                    if (!(lambda.Body is MemberInitExpression init))
+                    if (lambda.Body is not MemberInitExpression init)
                         throw new NotImplementedException();
 
                     return new CreateExpressionNode() { OfType = call.Method.GetGenericArguments()[0], Factory = init, Parent = Parse(call.Arguments[0]) };
@@ -119,7 +119,7 @@ namespace Basique.Flattening
         public static List<ExpressionNode> ParseAndFlatten(Expression expr)
         {
             ExpressionNode root = Parse(expr);
-            List<ExpressionNode> list = new List<ExpressionNode>();
+            List<ExpressionNode> list = new();
             list.Add(root);
             for (ExpressionNode cur = root; cur != cur.Parent; cur = cur.Parent)
             {

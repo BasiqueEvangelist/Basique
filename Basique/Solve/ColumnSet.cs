@@ -9,7 +9,7 @@ namespace Basique.Solve
 {
     public class ColumnSet : IDictionary<MemberInfo, BasiqueField>
     {
-        Dictionary<MemberInfo, BasiqueField> columns = new();
+        readonly Dictionary<MemberInfo, BasiqueField> columns = new();
 
         public BasiqueField this[MemberInfo key] { get => columns[key]; set => columns[key] = value; }
 
@@ -117,8 +117,8 @@ namespace Basique.Solve
 
     public struct BasiqueField
     {
-        private ColumnSet composite;
-        private BasiqueColumn column;
+        private readonly ColumnSet composite;
+        private readonly BasiqueColumn column;
 
         public BasiqueField(ColumnSet composite)
         {

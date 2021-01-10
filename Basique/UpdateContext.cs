@@ -13,8 +13,8 @@ namespace Basique
 {
     public static class UpdateQueryableExtensions
     {
-        public static UpdateContext<T> Update<T>(this IAsyncQueryable<T> queryable) => new UpdateContext<T>(queryable);
-        internal static async ValueTask Commit<T>(this IAsyncQueryable<T> queryable, UpdateContext<T> ctx, CancellationToken tok = default(CancellationToken))
+        public static UpdateContext<T> Update<T>(this IAsyncQueryable<T> queryable) => new(queryable);
+        internal static async ValueTask Commit<T>(this IAsyncQueryable<T> queryable, UpdateContext<T> ctx, CancellationToken tok = default)
         {
             await queryable.Provider.ExecuteAsync<object>(Expression.Call(null, KnownMethods.Commit.MakeGenericMethod(typeof(T)), queryable.Expression, Expression.Constant(ctx), Expression.Constant(tok)), tok);
         }
@@ -38,7 +38,7 @@ namespace Basique
             return this;
         }
 
-        public ValueTask Commit(CancellationToken token = default(CancellationToken))
+        public ValueTask Commit(CancellationToken token = default)
             => Queryable.Commit(this, token);
     }
 }

@@ -61,10 +61,8 @@ namespace Basique.Flattening
                 return new TernaryPredicate() { Condition = Flatten(cond.Test), OnTrue = Flatten(cond.IfTrue), OnFalse = Flatten(cond.IfFalse) };
             else if (expr is MemberExpression mem)
             {
-                if (!(mem.Member is FieldInfo field))
-                    throw new NotImplementedException();
-                var pack = MemberPath.Create(mem);
-                return new SubPredicate() { Path = pack.Path, From = Flatten(pack.Final) };
+                var (path, final) = MemberPath.Create(mem);
+                return new SubPredicate() { Path = path, From = Flatten(final) };
             }
             else if (expr is ParameterExpression param)
                 return new ContextPredicate() { Of = param.Type };

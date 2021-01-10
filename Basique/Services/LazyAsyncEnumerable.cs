@@ -15,7 +15,7 @@ namespace Basique.Services
             this.factory = factory;
         }
 
-        public T Current => enumer == null ? default(T) : enumer.Current;
+        public T Current => enumer == null ? default : enumer.Current;
 
         public ValueTask DisposeAsync()
             => enumer != null ? enumer.DisposeAsync() : new ValueTask(Task.CompletedTask);

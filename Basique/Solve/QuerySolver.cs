@@ -19,7 +19,7 @@ namespace Basique.Solve
         public static async ValueTask<object> SolvePullQuery(List<ExpressionNode> expr, CancellationToken token, IRelation table)
         {
             SqlSelectorData data = LinqVM.BuildSelectorData(expr, new SqlSelectorData());
-            List<object> res = new List<object>();
+            List<object> res = new();
             DbTransaction trans = data.Transaction?.wrapping;
             DbConnection conn = trans == null ? await table.Schema.MintConnection() : trans.Connection;
             if (!(expr[^1] is PullExpressionNode))
@@ -36,20 +36,18 @@ namespace Basique.Solve
                 command.Transaction = trans;
                 SqlBuilder.WriteSqlSelect(data, command);
                 table.Schema.Logger.Log(LogLevel.Debug, $"Running SQL: {command.CommandText}");
-                await using (var reader = await command.ExecuteReaderAsync(token))
-                {
-                    if (reader.HasRows)
-                        while (await reader.ReadAsync(token))
+                await using var reader = await command.ExecuteReaderAsync(token);
+                if (reader.HasRows)
+                    while (await reader.ReadAsync(token))
+                    {
+                        object obj = Activator.CreateInstance(data.RequestedType);
+                        foreach (var (path, column) in data.Columns.WalkColumns())
                         {
-                            object obj = Activator.CreateInstance(data.RequestedType);
-                            foreach (var (path, column) in data.Columns.WalkColumns())
-                            {
-                                object val = Convert.ChangeType(reader.GetValue(column.NamedAs), column.Column.Type);
-                                path.Set(obj, val);
-                            }
-                            res.Add(obj);
+                            object val = Convert.ChangeType(reader.GetValue(column.NamedAs), column.Column.Type);
+                            path.Set(obj, val);
                         }
-                }
+                        res.Add(obj);
+                    }
             }
             if ((expr.Last() as PullExpressionNode).Type == PullExpressionNode.PullType.Array)
                 return GenericUtils.MakeGenericArray(res, data.RequestedType);
@@ -88,26 +86,24 @@ namespace Basique.Solve
                 SqlBuilder.WriteSqlPullSingle(data, node, command);
                 tab.Schema.Logger.Log(LogLevel.Debug, $"Running SQL: {command.CommandText}");
 
-                await using (var reader = await command.ExecuteReaderAsync(token))
+                await using var reader = await command.ExecuteReaderAsync(token);
+                if (!reader.HasRows)
                 {
-                    if (!reader.HasRows)
-                    {
-                        if (node.IncludeDefault)
-                            return null;
-                        else
-                            throw new InvalidOperationException("The source sequence is empty.");
-                    }
-                    object res = Activator.CreateInstance(data.RequestedType);
-                    await reader.ReadAsync(token);
-                    foreach (var (path, column) in data.Columns.WalkColumns())
-                    {
-                        object val = Convert.ChangeType(reader.GetValue(column.NamedAs), column.Column.Type);
-                        path.Set(res, val);
-                    }
-                    if (await reader.ReadAsync(token) && node.Type == PullSingleExpressionNode.PullType.Single)
-                        throw new InvalidOperationException("More than one element satisfies the condition in predicate.");
-                    return res;
+                    if (node.IncludeDefault)
+                        return null;
+                    else
+                        throw new InvalidOperationException("The source sequence is empty.");
                 }
+                object res = Activator.CreateInstance(data.RequestedType);
+                await reader.ReadAsync(token);
+                foreach (var (path, column) in data.Columns.WalkColumns())
+                {
+                    object val = Convert.ChangeType(reader.GetValue(column.NamedAs), column.Column.Type);
+                    path.Set(res, val);
+                }
+                if (await reader.ReadAsync(token) && node.Type == PullSingleExpressionNode.PullType.Single)
+                    throw new InvalidOperationException("More than one element satisfies the condition in predicate.");
+                return res;
             }
         }
 
@@ -120,7 +116,7 @@ namespace Basique.Solve
             {
                 await using DbCommand command = conn.CreateCommand();
                 command.Transaction = trans;
-                SqlBuilder.WriteSqlDelete(data, tab, command);
+                SqlBuilder.WriteSqlDelete(data, command);
                 tab.Schema.Logger.Log(LogLevel.Debug, $"Running SQL: {command.CommandText}");
                 await command.ExecuteNonQueryAsync(token);
             }

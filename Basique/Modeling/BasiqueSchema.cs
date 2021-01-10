@@ -14,7 +14,7 @@ namespace Basique.Modeling
     {
         public Func<DbConnection> ConnectionFactory { get; }
         public IBasiqueLogger Logger { get; set; } = new EmptyLogger();
-        internal Dictionary<Type, TableData> Tables = new Dictionary<Type, TableData>();
+        internal Dictionary<Type, TableData> Tables = new();
         public BasiqueSchema(Func<DbConnection> conn)
         {
             ConnectionFactory = conn;
@@ -36,7 +36,7 @@ namespace Basique.Modeling
 
         protected void Table<T>(Action<TableBuilder<T>> action)
         {
-            TableData d = new TableData();
+            TableData d = new();
             action(new TableBuilder<T>(d));
             Tables.Add(typeof(T), d);
         }

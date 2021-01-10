@@ -49,8 +49,8 @@ namespace Basique.Tests
 
         public class TestContext : BasiqueSchema
         {
-            public Table<TestObject> TestObjects => new Table<TestObject>(this);
-            public View<TestJoin> TestJoin => new View<TestJoin>(this);
+            public Table<TestObject> TestObjects => new(this);
+            public View<TestJoin> TestJoin => new(this);
 
             public TestContext(Func<DbConnection> conn) : base(conn)
             {
@@ -109,8 +109,10 @@ namespace Basique.Tests
             await connection.NonQuery("CREATE TABLE testobjects (test TEXT, value INT);");
             await connection.NonQuery("CREATE VIEW v_testjoins AS SELECT first.test first_test, second.test second_test, first.value first_value, second.value second_value FROM testobjects first JOIN testobjects second ON first.value = second.value;");
 
-            Db = new TestContext(() => new SqliteConnection(connString));
-            Db.Logger = new XunitLogger(output);
+            Db = new TestContext(() => new SqliteConnection(connString))
+            {
+                Logger = new XunitLogger(output)
+            };
 
             await Db.TestObjects.CreateAsync(() => new TestObject() { Value = 0, Test = "oof" });
             await Db.TestObjects.CreateAsync(() => new TestObject() { Value = 1, Test = "foo" });

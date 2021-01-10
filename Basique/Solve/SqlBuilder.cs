@@ -14,11 +14,11 @@ namespace Basique.Solve
 {
     public static class SqlBuilder
     {
-        public static void WriteSqlDelete(SqlSelectorData data, IRelation tab, DbCommand cmd)
+        public static void WriteSqlDelete(SqlSelectorData data, DbCommand cmd)
         {
             if (data.Limit != null)
                 throw new InvalidOperationException("Limits on Delete not allowed.");
-            StringBuilder s = new StringBuilder();
+            StringBuilder s = new();
             int prefix = 0;
             s.Append("delete from ");
             s.Append(data.Relation.Name);
@@ -32,7 +32,7 @@ namespace Basique.Solve
 
         public static void WriteSqlPullSingle(SqlSelectorData data, PullSingleExpressionNode node, DbCommand cmd)
         {
-            StringBuilder s = new StringBuilder();
+            StringBuilder s = new();
             int prefix = 0;
             s.Append("select ");
             s.AppendJoin(", ", data.Columns.WalkColumns().Select(x => $"{x.Value.From.NamedAs}.{x.Value.Column.Name} as {x.Value.NamedAs}"));
@@ -68,7 +68,7 @@ namespace Basique.Solve
 
         public static void WriteSqlSelect(SqlSelectorData data, DbCommand cmd)
         {
-            StringBuilder s = new StringBuilder();
+            StringBuilder s = new();
             int prefix = 0;
             s.Append("select ");
             s.AppendJoin(", ", data.Columns.WalkColumns().Select(x => $"{x.Value.From.NamedAs}.{x.Value.Column.Name} as {x.Value.NamedAs}"));
@@ -102,17 +102,17 @@ namespace Basique.Solve
 
         public static void WriteSqlUpdate(SqlUpdateData data, DbCommand cmd)
         {
-            StringBuilder s = new StringBuilder();
+            StringBuilder s = new();
             int prefix = 0;
             s.Append("update ");
             s.Append(data.Relation.Name);
             s.Append(" set ");
             for (int i = 0; i < data.UpdateContext.Data.Count; i++)
             {
-                var part = data.UpdateContext.Data[i];
-                var column = data.Columns.GetByPath(part.field).AssertColumn();
+                var (field, factory) = data.UpdateContext.Data[i];
+                var column = data.Columns.GetByPath(field).AssertColumn();
                 s.Append($"{column.Column.Name} = ");
-                prefix = WriteSqlPredicate(data.Relation, data.Columns, part.factory, cmd, prefix, s);
+                prefix = WriteSqlPredicate(data.Relation, data.Columns, factory, cmd, prefix, s);
                 if (i != data.UpdateContext.Data.Count - 1)
                     s.Append(", ");
             }
@@ -199,7 +199,7 @@ namespace Basique.Solve
             }
             else if (node is SubPredicate sub)
             {
-                if (sub.From is ContextPredicate ctx)
+                if (sub.From is ContextPredicate)
                 {
                     var column = set.GetByPath(sub.Path).AssertColumn();
                     into.Append($"{column.From.NamedAs}.{column.Column.Name}");
@@ -214,7 +214,7 @@ namespace Basique.Solve
         {
             var set = LinqVM.BuildSimpleColumnSet(tab);
 
-            StringBuilder s = new StringBuilder();
+            StringBuilder s = new();
             s.Append("insert into ");
             s.Append(tab.Name);
             s.Append(" (");

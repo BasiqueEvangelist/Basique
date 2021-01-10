@@ -12,7 +12,7 @@ namespace Basique.Modeling
     public class TableData
     {
         public string Name;
-        public Dictionary<MemberPath, ColumnData> Columns = new Dictionary<MemberPath, ColumnData>();
+        public Dictionary<MemberPath, ColumnData> Columns = new();
     }
     public class ColumnData
     {
@@ -35,25 +35,27 @@ namespace Basique.Modeling
         public void RemoteName(string name) => data.Name = name;
         public ColumnBuilder<TField> Field<TField>(Expression<Func<T, TField>> selector)
         {
-            var columnData = new ColumnData();
-            columnData.Table = data;
-            var path = MemberPath.Create(selector.Body);
-            columnData.Path = path.Path;
-            columnData.Name = path.Path.Members[^1].Name.ToLower();
+            var columnData = new ColumnData
+            {
+                Table = data
+            };
+            var (path, _) = MemberPath.Create(selector.Body);
+            columnData.Path = path;
+            columnData.Name = path.Members[^1].Name.ToLower();
 
-            var lastMember = path.Path.Members[^1];
+            var lastMember = path.Members[^1];
             if (lastMember is FieldInfo field)
                 columnData.Type = field.FieldType;
             else if (lastMember is PropertyInfo prop)
                 columnData.Type = prop.PropertyType;
 
-            data.Columns.Add(path.Path, columnData);
+            data.Columns.Add(path, columnData);
             return new ColumnBuilder<TField>(columnData);
         }
     }
     public class ColumnBuilder<T>
     {
-        private ColumnData data;
+        private readonly ColumnData data;
 
         internal ColumnBuilder(ColumnData data)
         {

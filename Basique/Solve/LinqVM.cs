@@ -81,7 +81,7 @@ namespace Basique.Solve
 
         public static SqlUpdateData BuildUpdateData(List<ExpressionNode> nodes)
         {
-            SqlUpdateData data = new SqlUpdateData();
+            SqlUpdateData data = new();
             BuildSelectorData(nodes, data);
             data.UpdateContext = (nodes[^1] as UpdateExpressionNode).Context;
             return data;
@@ -107,7 +107,7 @@ namespace Basique.Solve
         public int? Limit;
         public BasiqueTransaction Transaction;
         public Type RequestedType;
-        public List<OrderByKey> OrderBy = new List<OrderByKey>();
+        public List<OrderByKey> OrderBy = new();
         public FlatPredicateNode Where;
         public IRelation Relation;
         public QueryContext Context;

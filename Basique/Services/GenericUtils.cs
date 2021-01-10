@@ -6,7 +6,7 @@ namespace Basique.Services
 {
     public static class GenericUtils
     {
-        static Type listType = typeof(List<>);
+        static readonly Type listType = typeof(List<>);
         public static IList MakeGenericList(ICollection from, Type type)
         {
             Type newListType = listType.MakeGenericType(type);

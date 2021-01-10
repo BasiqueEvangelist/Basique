@@ -34,7 +34,7 @@ namespace Basique.Services
             }
             else if (expr is MemberExpression mem)
             {
-                List<MemberInfo> foundMembers = new List<MemberInfo>();
+                List<MemberInfo> foundMembers = new();
                 Expression subexpr = mem;
                 while (subexpr is MemberExpression submem)
                 {

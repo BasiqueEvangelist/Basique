@@ -92,11 +92,10 @@ namespace Basique.Tests
         [Fact]
         public async Task WithTransaction()
         {
-            await using (var transaction = await Db.MintTransaction())
-            {
-                TestObject[] objects = await Db.TestObjects.WithTransaction(transaction).ToArrayAsync();
+            await using var transaction = await Db.MintTransaction();
+            TestObject[] objects = await Db.TestObjects.WithTransaction(transaction).ToArrayAsync();
 
-                Assert.Equal(objects, new TestObject[] {
+            Assert.Equal(objects, new TestObject[] {
                     new TestObject() { Value = 0, Test = "oof" },
                     new TestObject() { Value = 1, Test = "foo" },
                     new TestObject() { Value = 2, Test = "bar" },
@@ -105,8 +104,7 @@ namespace Basique.Tests
                     new TestObject() { Value = 5, Test = "quux" }
                 });
 
-                await transaction.Commit();
-            }
+            await transaction.Commit();
         }
     }
 }

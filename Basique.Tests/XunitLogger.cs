@@ -6,7 +6,7 @@ namespace Basique.Tests
 {
     public class XunitLogger : IBasiqueLogger
     {
-        private ITestOutputHelper output;
+        private readonly ITestOutputHelper output;
 
         public XunitLogger(ITestOutputHelper output)
         {
