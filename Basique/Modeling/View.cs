@@ -9,7 +9,7 @@ using Basique.Solve;
 
 namespace Basique.Modeling
 {
-    public class View<T> : RelationBase<T>
+    public class View<T> : TableBase<T>
     {
         public View(BasiqueSchema conn) : base(conn)
         {

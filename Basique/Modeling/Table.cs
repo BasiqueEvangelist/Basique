@@ -8,13 +8,12 @@ using System.Threading.Tasks;
 
 namespace Basique.Modeling
 {
-    public class Table<T> : RelationBase<T>
+    public class Table<T> : TableBase<T>
     {
         public Table(BasiqueSchema conn)
             : base(conn)
         {
 
         }
-
     }
 }

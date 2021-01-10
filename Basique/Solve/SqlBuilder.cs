@@ -38,6 +38,11 @@ namespace Basique.Solve
             s.AppendJoin(", ", data.Columns.WalkColumns().Select(x => $"{x.Value.From.NamedAs}.{x.Value.Column.Name} as {x.Value.NamedAs}"));
             s.Append(" from ");
             s.Append(data.Relation.Name);
+            foreach (var join in data.Joins)
+            {
+                s.Append($" left join {join.Right.RemoteName} as {join.Right.NamedAs} on ");
+                prefix = WriteSqlPredicate(data.Relation, data.Columns, join.On, cmd, prefix, s);
+            }
             if (data.Where != null)
             {
                 s.Append(" where ");
@@ -74,6 +79,13 @@ namespace Basique.Solve
             s.AppendJoin(", ", data.Columns.WalkColumns().Select(x => $"{x.Value.From.NamedAs}.{x.Value.Column.Name} as {x.Value.NamedAs}"));
             s.Append(" from ");
             s.Append(data.Relation.Name);
+
+            foreach (var join in data.Joins)
+            {
+                s.Append($" left join {join.Right.RemoteName} as {join.Right.NamedAs} on ");
+                prefix = WriteSqlPredicate(data.Relation, data.Columns, join.On, cmd, prefix, s);
+            }
+
             if (data.Where != null)
             {
                 s.Append(" where ");

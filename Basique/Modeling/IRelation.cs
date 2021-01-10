@@ -10,27 +10,29 @@ using Basique.Solve;
 
 namespace Basique.Modeling
 {
-    public interface IRelation : IAsyncQueryable
+    public interface IRelationLike
     {
         string Name { get; }
-        BasiqueSchema Schema { get; }
+        void FillSet(ColumnSet set, QueryContext ctx);
         IQueryRelation MintLogical();
+    }
+
+    public interface IRelation : IAsyncQueryable, IRelationLike
+    {
+        BasiqueSchema Schema { get; }
     }
 
     //   
     public abstract class RelationBase<T> : IRelation, IAsyncQueryable<T>
     {
-        protected readonly TableData data;
         public BasiqueSchema Schema { get; }
 
         protected RelationBase(BasiqueSchema conn)
         {
             Schema = conn;
-            data = conn.Tables[typeof(T)];
         }
 
-        public string Name => data.Name;
-
+        public abstract string Name { get; }
         public Type ElementType => typeof(T);
 
         public Expression Expression => Expression.Constant(this);
@@ -39,8 +41,32 @@ namespace Basique.Modeling
 
         public IAsyncEnumerator<T> GetAsyncEnumerator(CancellationToken cancellationToken = default)
             => new BasiqueQueryable<T>(this, Expression).GetAsyncEnumerator(cancellationToken);
+        public abstract void FillSet(ColumnSet set, QueryContext ctx);
+        public abstract IQueryRelation MintLogical();
+    }
 
-        public IQueryRelation MintLogical() => new DirectQueryRelation(this);
+    public class TableBase<T> : RelationBase<T>
+    {
+        protected readonly TableData data;
+        public TableBase(BasiqueSchema conn) : base(conn)
+        {
+            data = conn.Tables[typeof(T)];
+        }
+        public override string Name => data.Name;
+
+        public override void FillSet(ColumnSet set, QueryContext ctx)
+        {
+            foreach (var (path, column) in data.Columns)
+            {
+                set.Set(path, new BasiqueColumn()
+                {
+                    From = ctx.GetLogical(this),
+                    Column = column
+                });
+            }
+        }
+
+        public override IQueryRelation MintLogical() => new DirectQueryRelation(this);
     }
 }
 

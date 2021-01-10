@@ -69,6 +69,12 @@ namespace Basique.Solve
             set[path.Members[^1]] = new BasiqueField(column);
         }
 
+        public void Set(MemberPath path, ColumnSet composite)
+        {
+            ColumnSet set = GetByPathCreating(path.LastAccessed()).AssertComposite();
+            set[path.Members[^1]] = new BasiqueField(composite);
+        }
+
         public bool TryGetValue(MemberInfo key, out BasiqueField value) => columns.TryGetValue(key, out value);
 
         public IEnumerable<KeyValuePair<MemberPath, BasiqueColumn>> WalkColumns()

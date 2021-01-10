@@ -5,9 +5,9 @@ namespace Basique.Solve
 {
     public class QueryContext
     {
-        private readonly Dictionary<IRelation, IQueryRelation> relations = new();
+        private readonly Dictionary<IRelationLike, IQueryRelation> relations = new();
 
-        public IQueryRelation GetLogical(IRelation relation)
+        public IQueryRelation GetLogical(IRelationLike relation)
         {
             if (!relations.TryGetValue(relation, out var logical))
             {

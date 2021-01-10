@@ -26,7 +26,7 @@ namespace Basique.Solve
                     relation.NamedAs = relation.RemoteName;
                     while (relations.ContainsKey(relation.NamedAs))
                     {
-                        relation.NamedAs = relation.RemoteName + "-" + suffix++;
+                        relation.NamedAs = relation.RemoteName + "_" + suffix++;
                     }
 
                     logger.Log(LogLevel.Trace, $"Named {relation.RemoteName} as {relation.NamedAs}");
@@ -52,7 +52,7 @@ namespace Basique.Solve
                             column.NamedAs = column.Column.Name;
                             while (columns.ContainsKey(column.NamedAs))
                             {
-                                column.NamedAs = column.Column.Name + "-" + suffix++;
+                                column.NamedAs = column.Column.Name + "_" + suffix++;
                             }
 
                             logger.Log(LogLevel.Trace, $"Named {column.Column.Name} as {column.NamedAs}");

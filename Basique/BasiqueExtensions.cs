@@ -23,5 +23,8 @@ namespace Basique
 
         public static IAsyncQueryable<T> WithTransaction<T>(this RelationBase<T> rel, BasiqueTransaction trans)
          => rel.Provider.CreateQuery<T>(Expression.Call(null, KnownMethods.WithTransaction.MakeGenericMethod(typeof(T)), rel.Expression, Expression.Constant(trans, typeof(BasiqueTransaction))));
+
+        public static Join<TLeft, TRight> SqlJoin<TLeft, TRight>(this RelationBase<TLeft> rel, RelationBase<TRight> other, Expression<Predicate<(TLeft, TRight)>> on)
+         => new(rel.Schema, rel, other, PredicateFlattener.Flatten(on.Body));
     }
 }

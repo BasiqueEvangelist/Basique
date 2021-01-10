@@ -12,8 +12,20 @@ namespace Basique.Solve
         {
             data.Context = new QueryContext();
             data.Relation = ((FinalExpressionNode)nodes[0]).Table;
-            data.Columns = BuildSetFor(data.Context, data.Relation);
+            data.Columns = new ColumnSet();
+            data.Relation.FillSet(data.Columns, data.Context);
             Type currentType = data.Relation.ElementType;
+
+            while (data.Relation is IJoinRelation join)
+            {
+                var clause = new JoinClause
+                {
+                    On = join.On,
+                    Right = data.Context.GetLogical(join.Right)
+                };
+                data.Joins.Add(clause);
+                data.Relation = join.Left.Original;
+            }
             foreach (var node in nodes)
             {
                 if (node is FinalExpressionNode)
@@ -65,20 +77,6 @@ namespace Basique.Solve
             return data;
         }
 
-        private static ColumnSet BuildSetFor(QueryContext ctx, IRelation relation)
-        {
-            ColumnSet set = new();
-            foreach (var (path, column) in relation.Schema.Tables[relation.ElementType].Columns)
-            {
-                set.Set(path, new BasiqueColumn()
-                {
-                    From = ctx.GetLogical(relation),
-                    Column = column
-                });
-            }
-            return set;
-        }
-
         public static SqlUpdateData BuildUpdateData(List<ExpressionNode> nodes)
         {
             SqlUpdateData data = new();
@@ -90,7 +88,8 @@ namespace Basique.Solve
         public static ColumnSet BuildSimpleColumnSet(IRelation relation)
         {
             var ctx = new QueryContext();
-            var set = BuildSetFor(ctx, relation);
+            var set = new ColumnSet();
+            relation.FillSet(set, ctx);
             var alloc = new NameAllocator(relation.Schema.Logger);
             alloc.NameRelations(set);
             alloc.NameVariables(set);
@@ -109,9 +108,16 @@ namespace Basique.Solve
         public Type RequestedType;
         public List<OrderByKey> OrderBy = new();
         public FlatPredicateNode Where;
+        public List<JoinClause> Joins = new();
         public IRelation Relation;
         public QueryContext Context;
         public ColumnSet Columns;
+    }
+
+    public struct JoinClause
+    {
+        public IQueryRelation Right;
+        public FlatPredicateNode On;
     }
 
     public struct OrderByKey

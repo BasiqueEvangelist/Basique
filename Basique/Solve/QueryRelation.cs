@@ -21,4 +21,18 @@ namespace Basique.Solve
 
         public string NamedAs { get; set; }
     }
+
+    public class JoinSideQueryRelation : IQueryRelation
+    {
+        private readonly IJoinSideRelation side;
+
+        public JoinSideQueryRelation(IJoinSideRelation side)
+        {
+            this.side = side;
+        }
+
+        public string RemoteName => side.Name;
+
+        public string NamedAs { get; set; }
+    }
 }

@@ -20,6 +20,15 @@ namespace Basique.Tests
         }
 
         [Fact]
+        public async Task BasicFirstJoin()
+        {
+            var obj = await Db.TestObjects.SqlJoin(Db.TestObjects, (pair) => pair.Item1.Value == pair.Item2.Value).FirstAsync();
+
+            Assert.Equal(0, obj.Item1.Value);
+            Assert.Equal("oof", obj.Item2.Test);
+        }
+
+        [Fact]
         public async Task BasicFirst()
         {
             TestObject obj = await Db.TestObjects.FirstAsync();

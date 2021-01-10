@@ -90,6 +90,22 @@ namespace Basique.Tests
         }
 
         [Fact]
+        public async Task SimpleJoin()
+        {
+            var arr = await Db.TestObjects.SqlJoin(Db.TestObjects, (pair) => pair.Item1.Value == pair.Item2.Value).ToArrayAsync();
+
+            Assert.Equal(arr, new (TestObject, TestObject)[]
+            {
+                (new TestObject() { Value = 0, Test = "oof" }, new TestObject() { Value = 0, Test = "oof" }),
+                (new TestObject() { Value = 1, Test = "foo" }, new TestObject() { Value = 1, Test = "foo" }),
+                (new TestObject() { Value = 2, Test = "bar" }, new TestObject() { Value = 2, Test = "bar" }),
+                (new TestObject() { Value = 3, Test = "baz" }, new TestObject() { Value = 3, Test = "baz" }),
+                (new TestObject() { Value = 4, Test = "qux" }, new TestObject() { Value = 4, Test = "qux" }),
+                (new TestObject() { Value = 5, Test = "quux" }, new TestObject() { Value = 5, Test = "quux" })
+            });
+        }
+
+        [Fact]
         public async Task WithTransaction()
         {
             await using var transaction = await Db.MintTransaction();
