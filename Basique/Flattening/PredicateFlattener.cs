@@ -69,6 +69,10 @@ namespace Basique.Flattening
             else if (expr is MemberExpression mem)
             {
                 var (path, final) = MemberPath.Create(mem);
+                if (final is ConstantExpression constant)
+                {
+                    return new ConstantPredicate() { Data = path.Follow(constant.Value), Of = MemberPath.GetTypeOf(path.Members[^1]) };
+                }
                 return new SubPredicate() { Path = path, From = Flatten(final, parameters) };
             }
             else if (expr is ParameterExpression param)

@@ -169,7 +169,7 @@ namespace Basique.Services
                    this == path;
         }
 
-        private static Type GetTypeOf(MemberInfo member)
+        public static Type GetTypeOf(MemberInfo member)
         {
             if (member is FieldInfo field)
                 return field.FieldType;
