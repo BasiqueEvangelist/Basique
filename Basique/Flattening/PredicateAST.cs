@@ -32,6 +32,11 @@ namespace Basique.Flattening
 
         public override string ToString()
             => $"{Enum.GetName(typeof(UnaryPredicateType), Type)} ({Operand})";
+
+        public static UnaryPredicate Not(FlatPredicateNode operand)
+        {
+            return new UnaryPredicate() { Operand = operand, Type = UnaryPredicateType.Not };
+        }
     }
 
     public class TernaryPredicate : FlatPredicateNode

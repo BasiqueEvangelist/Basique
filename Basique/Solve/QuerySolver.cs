@@ -160,5 +160,31 @@ namespace Basique.Solve
                 }
             }
         }
+
+        public static async ValueTask<object> SolveCountQuery(List<ExpressionNode> expr, CancellationToken token, IRelation tab)
+        {
+            SqlSelectorData data = LinqVM.BuildSelectorData(expr, new SqlSelectorData());
+            CountExpressionNode node = expr[^1] as CountExpressionNode;
+            DbTransaction trans = data.Transaction?.wrapping;
+            DbConnection conn = trans == null ? await tab.Schema.MintConnection() : trans.Connection;
+            await using (new DisposePredicate(conn, trans == null))
+            await using (DbCommand command = conn.CreateCommand())
+            {
+                command.Transaction = trans;
+                SqlBuilder.WriteSqlCount(data, node, command);
+                tab.Schema.Logger.Log(LogLevel.Debug, $"Running SQL: {command.CommandText}");
+
+                var count = (long)await command.ExecuteScalarAsync(token);
+
+                if (node.Type == CountExpressionNode.CountType.Count)
+                    return (int)count;
+                else if (node.Type == CountExpressionNode.CountType.LongCount)
+                    return count;
+                else if (node.Type == CountExpressionNode.CountType.Any)
+                    return count != 0;
+                else
+                    return count == 0;
+            }
+        }
     }
 }

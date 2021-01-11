@@ -53,6 +53,36 @@ namespace Basique.Flattening
         };
         #endregion
 
+        #region Count variants
+        public static MethodInfo Count = new Func<IOrderedAsyncQueryable<object>, CancellationToken, ValueTask<int>>(AsyncQueryable.CountAsync).Method.GetGenericMethodDefinition();
+        public static MethodInfo LongCount = new Func<IOrderedAsyncQueryable<object>, CancellationToken, ValueTask<long>>(AsyncQueryable.LongCountAsync).Method.GetGenericMethodDefinition();
+        public static MethodInfo CountPredicate = new Func<IOrderedAsyncQueryable<object>, Expression<Func<object, bool>>, CancellationToken, ValueTask<int>>(AsyncQueryable.CountAsync).Method.GetGenericMethodDefinition();
+        public static MethodInfo LongCountPredicate = new Func<IOrderedAsyncQueryable<object>, Expression<Func<object, bool>>, CancellationToken, ValueTask<long>>(AsyncQueryable.LongCountAsync).Method.GetGenericMethodDefinition();
+        public static MethodInfo Any = new Func<IOrderedAsyncQueryable<object>, CancellationToken, ValueTask<bool>>(AsyncQueryable.AnyAsync).Method.GetGenericMethodDefinition();
+        public static MethodInfo AnyPredicate = new Func<IOrderedAsyncQueryable<object>, Expression<Func<object, bool>>, CancellationToken, ValueTask<bool>>(AsyncQueryable.AnyAsync).Method.GetGenericMethodDefinition();
+        public static MethodInfo All = new Func<IOrderedAsyncQueryable<object>, Expression<Func<object, bool>>, CancellationToken, ValueTask<bool>>(AsyncQueryable.AllAsync).Method.GetGenericMethodDefinition();
+
+        public static MethodInfo[] CountVariants = new MethodInfo[] {
+            Count, LongCount, CountPredicate, LongCountPredicate,Any, AnyPredicate, All
+        };
+
+        public static MethodInfo[] CountPredicates = new MethodInfo[] {
+            LongCountPredicate,CountPredicate, AnyPredicate, All
+        };
+
+        public static MethodInfo[] CountCount = new MethodInfo[] {
+            Count, CountPredicate
+        };
+
+        public static MethodInfo[] LongCountVariants = new MethodInfo[] {
+            LongCount, LongCountPredicate
+        };
+
+        public static MethodInfo[] CountAny = new MethodInfo[] {
+            Any, AnyPredicate
+        };
+        #endregion
+
         public static MethodInfo CreateAsyncInternal = new Func<Table<object>, Expression<Func<object>>, CancellationToken, ValueTask<object>>(BasiqueExtensions.CreateAsyncInternal).GetMethodInfo().GetGenericMethodDefinition();
         public static MethodInfo DeleteAsync = new Func<IAsyncQueryable<object>, CancellationToken, ValueTask>(BasiqueExtensions.DeleteAsync).GetMethodInfo().GetGenericMethodDefinition();
         public static MethodInfo Commit = new Func<IAsyncQueryable<object>, UpdateContext<object>, CancellationToken, ValueTask>(UpdateQueryableExtensions.Commit).GetMethodInfo().GetGenericMethodDefinition();

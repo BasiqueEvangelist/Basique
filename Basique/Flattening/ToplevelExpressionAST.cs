@@ -49,6 +49,25 @@ namespace Basique.Flattening
         }
     }
 
+    public class CountExpressionNode : ExpressionNode
+    {
+        public FlatPredicateNode Predicate;
+        public CountType Type;
+        public override void Dump(IBasiqueLogger log)
+        {
+            Parent.Dump(log);
+            log.Log(LogLevel.Trace, $"Count {Type} {Predicate}");
+        }
+
+        public enum CountType
+        {
+            Count,
+            LongCount,
+            Any,
+            All
+        }
+    }
+
     public class OrderByExpressionNode : ExpressionNode
     {
         public bool Descending;

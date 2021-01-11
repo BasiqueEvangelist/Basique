@@ -129,6 +129,35 @@ namespace Basique.Flattening
                         Parent = Parse(call.Arguments[0])
                     };
                 }
+                else if (KnownMethods.CountVariants.Contains(call.Method.GetGenericMethodDefinition()))
+                {
+                    var method = call.Method.GetGenericMethodDefinition();
+
+                    var count = new CountExpressionNode()
+                    {
+                        Type = method switch
+                        {
+                            _ when KnownMethods.LongCountVariants.Contains(method) => CountExpressionNode.CountType.LongCount,
+                            _ when KnownMethods.CountCount.Contains(method) => CountExpressionNode.CountType.Count,
+                            _ when KnownMethods.CountAny.Contains(method) => CountExpressionNode.CountType.Any,
+                            _ when method == KnownMethods.All => CountExpressionNode.CountType.All,
+
+                            _ => throw new NotImplementedException()
+                        },
+                        Parent = Parse(call.Arguments[0])
+                    };
+                    if (KnownMethods.CountPredicates.Contains(method))
+                    {
+                        if (call.Arguments[1] is not UnaryExpression quote)
+                            throw new NotImplementedException();
+                        if (!(quote.NodeType == ExpressionType.Quote))
+                            throw new NotImplementedException();
+                        if (quote.Operand is not LambdaExpression lambda)
+                            throw new NotImplementedException();
+                        count.Predicate = PredicateFlattener.Flatten(lambda.Body, lambda.Parameters);
+                    }
+                    return count;
+                }
                 else
                     throw new NotImplementedException();
             }

@@ -34,6 +34,8 @@ namespace Basique
                 return (TResult)await QuerySolver.SolveDeleteQuery(pn, token, relation);
             else if (pn.Last() is PullSingleExpressionNode)
                 return (TResult)await QuerySolver.SolvePullSingleQuery(pn, token, relation);
+            else if (pn.Last() is CountExpressionNode)
+                return (TResult)await QuerySolver.SolveCountQuery(pn, token, relation);
             else
                 return (TResult)await QuerySolver.SolvePullQuery(pn, token, relation);
         }

@@ -46,6 +46,17 @@ namespace Basique.Solve
                             data.Where = new BinaryPredicate() { Left = data.Where, Right = pull.By, Type = BinaryPredicateType.AndAlso };
                     }
                 }
+                else if (node is CountExpressionNode count)
+                {
+                    if (count.Predicate != null)
+                    {
+                        var newPredicate = count.Type == CountExpressionNode.CountType.All ? UnaryPredicate.Not(count.Predicate) : count.Predicate;
+                        if (data.Where == null)
+                            data.Where = newPredicate;
+                        else
+                            data.Where = new BinaryPredicate() { Left = data.Where, Right = newPredicate, Type = BinaryPredicateType.AndAlso };
+                    }
+                }
                 else if (node is TransactionExpressionNode trans)
                     data.Transaction = trans.Transaction;
                 else if (node is WhereExpressionNode whereexpr)

@@ -255,5 +255,28 @@ namespace Basique.Solve
             s.Append($" where {idColumn.Value.From.NamedAs}.{idColumn.Value.Column.Name} == last_insert_rowid()");
             command.CommandText = s.ToString();
         }
+
+        public static void WriteSqlCount(SqlSelectorData data, CountExpressionNode node, DbCommand cmd)
+        {
+            StringBuilder s = new();
+            int prefix = 0;
+            s.Append("select count(*) from ");
+            s.Append(data.Relation.Name);
+            foreach (var join in data.Joins)
+            {
+                s.Append($" left join {join.Right.RemoteName} as {join.Right.NamedAs} on ");
+                prefix = WriteSqlPredicate(data.Relation, data.Columns, join.On, cmd, prefix, s);
+            }
+            if (data.Where != null)
+            {
+                s.Append(" where ");
+                prefix = WriteSqlPredicate(data.Relation, data.Columns, data.Where, cmd, prefix++, s);
+            }
+            if (data.Limit != null)
+            {
+                s.Append($" limit {data.Limit}");
+            }
+            cmd.CommandText = s.ToString();
+        }
     }
 }
