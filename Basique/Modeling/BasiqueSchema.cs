@@ -7,6 +7,7 @@ using System.Data.Common;
 using System.Threading.Tasks;
 using Basique.Solve;
 using Basique.Services;
+using Basique.Conversion;
 
 namespace Basique.Modeling
 {
@@ -15,9 +16,13 @@ namespace Basique.Modeling
         public Func<DbConnection> ConnectionFactory { get; }
         public IBasiqueLogger Logger { get; set; } = new EmptyLogger();
         internal Dictionary<Type, TableData> Tables = new();
+        public StackConverter Converter = new();
         public BasiqueSchema(Func<DbConnection> conn)
         {
             ConnectionFactory = conn;
+
+            Converter.Stack.Add(new ConvertConverter());
+            Converter.Stack.Add(new NullableWrapConverter(Converter));
         }
 
         public async Task<BasiqueTransaction> MintTransaction(CancellationToken token = default)

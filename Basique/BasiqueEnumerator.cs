@@ -7,19 +7,22 @@ using System.Data;
 using Basique.Solve;
 using System.Runtime.Serialization;
 using Basique.Services;
+using Basique.Modeling;
 
 namespace Basique
 {
     public class BasiqueEnumerator<T> : IAsyncEnumerator<T>
     {
+        private readonly BasiqueSchema schema;
         private readonly DbDataReader reader;
         private readonly CancellationToken token;
         private readonly DbConnection connection;
         private readonly PathTree<BasiqueColumn> columns;
         private readonly bool disposeConnection;
 
-        public BasiqueEnumerator(DbDataReader reader, CancellationToken token, DbConnection connection, PathTree<BasiqueColumn> columns, bool disposeConnection)
+        public BasiqueEnumerator(BasiqueSchema schema, DbDataReader reader, CancellationToken token, DbConnection connection, PathTree<BasiqueColumn> columns, bool disposeConnection)
         {
+            this.schema = schema;
             this.reader = reader;
             this.token = token;
             this.connection = connection;
@@ -44,7 +47,8 @@ namespace Basique
             var newSet = new PathTree<object>();
             foreach (var (path, column) in columns.WalkValues())
             {
-                object val = Convert.ChangeType(reader.GetValue(column.NamedAs), column.Column.Type);
+                object orig = reader.GetValue(column.NamedAs);
+                if (!schema.Converter.TryConvert(orig, column.Column.Type, out var val)) throw new InvalidOperationException($"Could not translate {orig.GetType()} to {column.Column.Type}");
                 newSet.Set(path, val);
             }
             Current = (T)ObjectFactory.Create(typeof(T), newSet);

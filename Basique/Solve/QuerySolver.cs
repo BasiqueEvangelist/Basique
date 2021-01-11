@@ -28,7 +28,7 @@ namespace Basique.Solve
                 command.Transaction = trans;
                 SqlBuilder.WriteSqlSelect(data, command);
                 table.Schema.Logger.Log(LogLevel.Debug, $"Running SQL: {command.CommandText}");
-                return Activator.CreateInstance(typeof(BasiqueEnumerator<>).MakeGenericType(table.ElementType), new object[] { await command.ExecuteReaderAsync(token), token, conn, data.Columns, trans == null });
+                return Activator.CreateInstance(typeof(BasiqueEnumerator<>).MakeGenericType(table.ElementType), new object[] { table.Schema, await command.ExecuteReaderAsync(token), token, conn, data.Columns, trans == null });
             }
             await using (new DisposePredicate(conn, trans == null))
             await using (DbCommand command = conn.CreateCommand())
@@ -43,7 +43,8 @@ namespace Basique.Solve
                         var newSet = new PathTree<object>();
                         foreach (var (path, column) in data.Columns.WalkValues())
                         {
-                            object val = Convert.ChangeType(reader.GetValue(column.NamedAs), column.Column.Type);
+                            object orig = reader.GetValue(column.NamedAs);
+                            if (!table.Schema.Converter.TryConvert(orig, column.Column.Type, out var val)) throw new InvalidOperationException($"Could not translate {orig.GetType()} to {column.Column.Type}");
                             newSet.Set(path, val);
                         }
                         res.Add(ObjectFactory.Create(data.RequestedType, newSet));
@@ -98,7 +99,8 @@ namespace Basique.Solve
                 await reader.ReadAsync(token);
                 foreach (var (path, column) in data.Columns.WalkValues())
                 {
-                    object val = Convert.ChangeType(reader.GetValue(column.NamedAs), column.Column.Type);
+                    object orig = reader.GetValue(column.NamedAs);
+                    if (!tab.Schema.Converter.TryConvert(orig, column.Column.Type, out var val)) throw new InvalidOperationException($"Could not translate {orig.GetType()} to {column.Column.Type}");
                     newSet.Set(path, val);
                 }
                 var res = ObjectFactory.Create(data.RequestedType, newSet);
@@ -153,7 +155,8 @@ namespace Basique.Solve
                     await reader.ReadAsync(token);
                     foreach (var (path, column) in set.WalkValues())
                     {
-                        object val = Convert.ChangeType(reader.GetValue(column.NamedAs), column.Column.Type);
+                        object orig = reader.GetValue(column.NamedAs);
+                        if (!tab.Schema.Converter.TryConvert(orig, column.Column.Type, out var val)) throw new InvalidOperationException($"Could not translate {orig.GetType()} to {column.Column.Type}");
                         newSet.Set(path, val);
                     }
                     return ObjectFactory.Create(create.OfType, newSet);

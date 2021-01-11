@@ -206,7 +206,7 @@ namespace Basique.Solve
                 var param = cmd.CreateParameter();
                 param.ParameterName = name;
                 param.Direction = ParameterDirection.Input;
-                param.Value = con.Data;
+                param.Value = con.Data ?? DBNull.Value;
                 cmd.Parameters.Add(param);
             }
             else if (node is SubPredicate sub)

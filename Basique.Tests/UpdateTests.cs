@@ -51,5 +51,21 @@ namespace Basique.Tests
                 new TestObject() { Value = 10, Test = "bee" }
             });
         }
+
+        [Fact]
+        public async Task UpdateNullable()
+        {
+            await Db.TestObjects
+                .Where(x => x.Value > 3)
+                .Update()
+                .Set(x => x.NullableValue, x => null)
+                .Commit();
+
+            await Db.TestObjects
+                .Where(x => x.Value < 3)
+                .Update()
+                .Set(x => x.NullableValue, x => 10)
+                .Commit();
+        }
     }
 }

@@ -19,6 +19,7 @@ namespace Basique.Tests
             public int Id;
             public string Test;
             public int Value;
+            public int? NullableValue;
 
 
             public override string ToString() => $"(\"{Test}\";{Value})";
@@ -63,6 +64,7 @@ namespace Basique.Tests
                         .Id();
                     build.Field(testobjects => testobjects.Test);
                     build.Field(testobjects => testobjects.Value);
+                    build.Field(testobjects => testobjects.NullableValue);
                 });
 
                 Table<TestJoin>(build =>
@@ -109,7 +111,7 @@ namespace Basique.Tests
             connection = new SqliteConnection(connString);
             await connection.OpenAsync();
 
-            await connection.NonQuery("CREATE TABLE testobjects (id INTEGER PRIMARY KEY, test TEXT, value INT);");
+            await connection.NonQuery("CREATE TABLE testobjects (id INTEGER PRIMARY KEY, test TEXT, value INT, nullablevalue INT);");
             await connection.NonQuery("CREATE VIEW v_testjoins AS SELECT first.test first_test, second.test second_test, first.value first_value, second.value second_value FROM testobjects first JOIN testobjects second ON first.value = second.value;");
 
             Db = new TestContext(() => new SqliteConnection(connString))
