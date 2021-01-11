@@ -252,7 +252,16 @@ namespace Basique.Solve
             s.AppendJoin(", ", set.WalkValues().Select(x => $"{x.Value.From.NamedAs}.{x.Value.Column.Name} as {x.Value.NamedAs}"));
             s.Append(" from ");
             s.Append(tab.Name);
-            s.Append($" where {idColumn.Value.From.NamedAs}.{idColumn.Value.Column.Name} == last_insert_rowid()");
+            s.Append($" where {idColumn.Value.From.NamedAs}.{idColumn.Value.Column.Name} = ");
+            switch (tab.Schema.SqlGeneration.LastId)
+            {
+                case SqlGenerationSettings.LastIdMethod.LastInsertRowId:
+                    s.Append("last_insert_rowid()");
+                    break;
+                case SqlGenerationSettings.LastIdMethod.LastInsertId:
+                    s.Append("LAST_INSERT_ID()");
+                    break;
+            }
             command.CommandText = s.ToString();
         }
 

@@ -54,7 +54,7 @@ namespace Basique.Tests
             public Table<TestObject> TestObjects => new(this);
             public View<TestJoin> TestJoin => new(this);
 
-            public TestContext(Func<DbConnection> conn) : base(conn)
+            public TestContext(Func<DbConnection> conn, SqlGenerationSettings sqlGen) : base(conn, sqlGen)
             {
                 Table<TestObject>(build =>
                 {
@@ -114,7 +114,7 @@ namespace Basique.Tests
             await connection.NonQuery("CREATE TABLE testobjects (id INTEGER PRIMARY KEY, test TEXT, value INT, nullablevalue INT);");
             await connection.NonQuery("CREATE VIEW v_testjoins AS SELECT first.test first_test, second.test second_test, first.value first_value, second.value second_value FROM testobjects first JOIN testobjects second ON first.value = second.value;");
 
-            Db = new TestContext(() => new SqliteConnection(connString))
+            Db = new TestContext(() => new SqliteConnection(connString), SqlGenerationSettings.Sqlite)
             {
                 Logger = new XunitLogger(output)
             };

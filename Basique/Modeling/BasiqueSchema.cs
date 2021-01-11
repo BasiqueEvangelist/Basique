@@ -15,11 +15,13 @@ namespace Basique.Modeling
     {
         public Func<DbConnection> ConnectionFactory { get; }
         public IBasiqueLogger Logger { get; set; } = new EmptyLogger();
+        public SqlGenerationSettings SqlGeneration { get; }
         internal Dictionary<Type, TableData> Tables = new();
         public StackConverter Converter = new();
-        public BasiqueSchema(Func<DbConnection> conn)
+        public BasiqueSchema(Func<DbConnection> conn, SqlGenerationSettings sqlGen)
         {
             ConnectionFactory = conn;
+            SqlGeneration = sqlGen;
 
             Converter.Stack.Add(new ConvertConverter());
             Converter.Stack.Add(new NullableWrapConverter(Converter));
