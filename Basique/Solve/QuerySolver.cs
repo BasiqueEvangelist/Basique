@@ -40,13 +40,13 @@ namespace Basique.Solve
                 if (reader.HasRows)
                     while (await reader.ReadAsync(token))
                     {
-                        object obj = Activator.CreateInstance(data.RequestedType);
+                        var newSet = new PathTree<object>();
                         foreach (var (path, column) in data.Columns.WalkValues())
                         {
                             object val = Convert.ChangeType(reader.GetValue(column.NamedAs), column.Column.Type);
-                            path.Set(obj, val);
+                            newSet.Set(path, val);
                         }
-                        res.Add(obj);
+                        res.Add(ObjectFactory.Create(data.RequestedType, newSet));
                     }
             }
             if ((expr.Last() as PullExpressionNode).Type == PullExpressionNode.PullType.Array)

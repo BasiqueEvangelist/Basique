@@ -17,5 +17,15 @@ namespace Basique.Tests
             Assert.Equal("oof", obj.AnonTest);
             Assert.Equal(0, obj.AnonValue);
         }
+
+        [Fact]
+        public async Task SelectPull()
+        {
+            var arr = await Db.TestObjects.Select(x => new { AnonValue = x.Value, AnonTest = x.Test }).Where(x => x.AnonValue == 0).ToArrayAsync();
+
+            Assert.Single(arr);
+            Assert.Equal("oof", arr[0].AnonTest);
+            Assert.Equal(0, arr[0].AnonValue);
+        }
     }
 }
