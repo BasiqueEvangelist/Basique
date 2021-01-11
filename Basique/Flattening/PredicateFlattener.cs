@@ -54,6 +54,12 @@ namespace Basique.Flattening
                 var pred = new UnaryPredicate() { Operand = Flatten(una.Operand, parameters) };
                 if (una.NodeType == ExpressionType.Not)
                     pred.Type = UnaryPredicateType.Not;
+                else if (una.NodeType == ExpressionType.Convert)
+                {
+                    if (una.Type.GetGenericTypeDefinition() == typeof(Nullable<>)
+                     && una.Type.GetGenericArguments()[0].AssemblyQualifiedName == una.Operand.Type.AssemblyQualifiedName)
+                        return Flatten(una.Operand, parameters);
+                }
                 else
                     throw new NotImplementedException();
                 return pred;
