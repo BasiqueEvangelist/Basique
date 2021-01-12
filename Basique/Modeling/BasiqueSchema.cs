@@ -30,7 +30,7 @@ namespace Basique.Modeling
         public async Task<BasiqueTransaction> MintTransaction(CancellationToken token = default)
         {
             DbConnection conn = await MintConnection(token);
-            return new BasiqueTransaction(await conn.BeginTransactionAsync(token));
+            return new BasiqueTransaction(await conn.BeginTransactionAsync(token), conn);
         }
 
         // Probably should be replaced by some kind of pooling.

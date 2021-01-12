@@ -111,13 +111,18 @@ namespace Basique.Tests
             connection = new SqliteConnection(connString);
             await connection.OpenAsync();
 
-            await connection.NonQuery("CREATE TABLE testobjects (id INTEGER PRIMARY KEY, test TEXT, value INT, nullablevalue INT);");
-            await connection.NonQuery("CREATE VIEW v_testjoins AS SELECT first.test first_test, second.test second_test, first.value first_value, second.value second_value FROM testobjects first JOIN testobjects second ON first.value = second.value;");
-
             Db = new TestContext(() => new SqliteConnection(connString), SqlGenerationSettings.Sqlite)
             {
                 Logger = new XunitLogger(output)
             };
+
+            await using (var trans = await Db.MintTransaction())
+            {
+                await trans.NonQuery("CREATE TABLE testobjects (id INTEGER PRIMARY KEY, test TEXT, value INT, nullablevalue INT);");
+                await trans.NonQuery("CREATE VIEW v_testjoins AS SELECT first.test first_test, second.test second_test, first.value first_value, second.value second_value FROM testobjects first JOIN testobjects second ON first.value = second.value;");
+
+                await trans.Commit();
+            }
 
             await Db.TestObjects.CreateAsync(() => new TestObject() { Value = 0, Test = "oof" });
             await Db.TestObjects.CreateAsync(() => new TestObject() { Value = 1, Test = "foo" });
@@ -125,36 +130,11 @@ namespace Basique.Tests
             await Db.TestObjects.CreateAsync(() => new TestObject() { Value = 3, Test = "baz" });
             await Db.TestObjects.CreateAsync(() => new TestObject() { Value = 4, Test = "qux" });
             await Db.TestObjects.CreateAsync(() => new TestObject() { Value = 5, Test = "quux" });
-
-            /*
-            DbDataReader read = await conn.Query("SELECT * FROM v_testjoins;");
-            for (int i = 0; i < read.FieldCount; i++)
-            {
-                string s = read.GetName(i);
-            }
-            */
         }
 
         public async Task DisposeAsync()
         {
             await connection.DisposeAsync();
-        }
-
-    }
-    public static class WhyDoesThisHaveToExist
-    {
-        public static Task NonQuery(this DbConnection conn, string t)
-        {
-            DbCommand comm = conn.CreateCommand();
-            comm.CommandText = t;
-            return comm.ExecuteNonQueryAsync();
-        }
-
-        public static Task<DbDataReader> Query(this DbConnection conn, string t)
-        {
-            DbCommand comm = conn.CreateCommand();
-            comm.CommandText = t;
-            return comm.ExecuteReaderAsync();
         }
     }
 }
