@@ -7,6 +7,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Basique.Tests", "Basique.Te
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Basique", "Basique\Basique.csproj", "{C791D7A1-4697-467B-924E-3C6FBC560843}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Basique.Benchmark", "Basique.Benchmark\Basique.Benchmark.csproj", "{72C6C476-E242-4A8B-952E-21AEF20EC9FD}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -56,5 +58,17 @@ Global
 		{E3A4A26C-1B69-4CD7-A572-4755F7B3C784}.Release|x64.Build.0 = Release|Any CPU
 		{E3A4A26C-1B69-4CD7-A572-4755F7B3C784}.Release|x86.ActiveCfg = Release|Any CPU
 		{E3A4A26C-1B69-4CD7-A572-4755F7B3C784}.Release|x86.Build.0 = Release|Any CPU
+		{72C6C476-E242-4A8B-952E-21AEF20EC9FD}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{72C6C476-E242-4A8B-952E-21AEF20EC9FD}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{72C6C476-E242-4A8B-952E-21AEF20EC9FD}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{72C6C476-E242-4A8B-952E-21AEF20EC9FD}.Debug|x64.Build.0 = Debug|Any CPU
+		{72C6C476-E242-4A8B-952E-21AEF20EC9FD}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{72C6C476-E242-4A8B-952E-21AEF20EC9FD}.Debug|x86.Build.0 = Debug|Any CPU
+		{72C6C476-E242-4A8B-952E-21AEF20EC9FD}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{72C6C476-E242-4A8B-952E-21AEF20EC9FD}.Release|Any CPU.Build.0 = Release|Any CPU
+		{72C6C476-E242-4A8B-952E-21AEF20EC9FD}.Release|x64.ActiveCfg = Release|Any CPU
+		{72C6C476-E242-4A8B-952E-21AEF20EC9FD}.Release|x64.Build.0 = Release|Any CPU
+		{72C6C476-E242-4A8B-952E-21AEF20EC9FD}.Release|x86.ActiveCfg = Release|Any CPU
+		{72C6C476-E242-4A8B-952E-21AEF20EC9FD}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal
