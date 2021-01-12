@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using Basique.Modeling;
 using Basique.Solve;
 using Basique.Flattening;
+using Basique.Services;
 
 namespace Basique
 {
@@ -24,6 +25,8 @@ namespace Basique
 
         public async ValueTask<TResult> ExecuteAsync<TResult>(Expression expression, CancellationToken token)
         {
+            using var watcher = new Watcher("Query executed in ", relation.Schema.Logger);
+
             List<ExpressionNode> pn = ToplevelExpressionFlattener.ParseAndFlatten(expression);
             pn[^1].Dump(relation.Schema.Logger);
             if (pn.Last() is CreateExpressionNode)
