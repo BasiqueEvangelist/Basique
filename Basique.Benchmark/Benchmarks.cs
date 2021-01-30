@@ -5,6 +5,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Basique.Modeling;
 using BenchmarkDotNet.Attributes;
+using Dapper;
 using Microsoft.Data.Sqlite;
 
 namespace Basique.Benchmark
@@ -37,6 +38,13 @@ namespace Basique.Benchmark
                 objects.Add(obj);
             }
             return objects.ToArray();
+        }
+
+        [Benchmark]
+        public async Task<TestObject[]> DapperToArray()
+        {
+            await using var conn = await schema.MintConnection();
+            return (await conn.QueryAsync<TestObject>("SELECT * FROM testobjects")).ToArray();
         }
     }
 }
