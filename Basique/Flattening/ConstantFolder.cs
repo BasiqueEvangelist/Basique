@@ -21,7 +21,7 @@ namespace Basique.Flattening
 
             if (node.Instance is ConstantPredicate or null && node.Arguments.All(x => x is ConstantPredicate))
                 return new ConstantPredicate(node.Method.Invoke(
-                    (node.Instance as ConstantPredicate).Data,
+                    (node.Instance as ConstantPredicate)?.Data,
                     node.Arguments.Cast<ConstantPredicate>().Select(x => x.Data).ToArray()
                 ));
 
