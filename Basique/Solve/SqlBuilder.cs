@@ -241,7 +241,7 @@ namespace Basique.Solve
             {
                 if (!isFirst)
                     s.Append(", ");
-                prefix = WriteSqlPredicate(tab, set, expr, command, prefix, s);
+                prefix = WriteSqlPredicate(tab, set, ConstantFolder.Instance.TransformNode(expr), command, prefix, s);
                 isFirst = false;
             }
             s.Append(");");
