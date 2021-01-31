@@ -54,7 +54,9 @@ namespace Basique.Services
                     foundMembers.Add(submem.Member);
                     subexpr = submem.Expression;
                 }
-                if (subexpr is ParameterExpression param)
+                if (subexpr is null)
+                    path.Start = null;
+                else if (subexpr is ParameterExpression param)
                     path.Start = param.Type;
                 else if (subexpr is ConstantExpression cons)
                     path.Start = cons.Type;
@@ -140,7 +142,7 @@ namespace Basique.Services
 
         public override string ToString()
         {
-            return $"({Start.FullName}) {string.Join(" -> ", Members.Select(x => x.Name))}";
+            return $"({Start?.FullName ?? "static"}) {string.Join(" -> ", Members.Select(x => x.Name))}";
         }
 
         public static bool operator ==(MemberPath a, MemberPath b)

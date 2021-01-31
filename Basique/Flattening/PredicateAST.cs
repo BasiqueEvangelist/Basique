@@ -73,7 +73,7 @@ namespace Basique.Flattening
         public ConstantPredicate(object obj)
         {
             Data = obj;
-            Of = obj.GetType();
+            Of = obj?.GetType() ?? typeof(object);
         }
 
         public object Data;

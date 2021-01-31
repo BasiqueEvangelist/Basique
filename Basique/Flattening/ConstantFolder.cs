@@ -10,8 +10,8 @@ namespace Basique.Flattening
         {
             base.TransformSubPredicate(node);
 
-            if (node.From is ConstantPredicate con)
-                return new ConstantPredicate(node.Path.Follow(con.Data));
+            if (node.From is ConstantPredicate or null)
+                return new ConstantPredicate(node.Path.Follow((node.From as ConstantPredicate)?.Data));
 
             return node;
         }

@@ -70,7 +70,7 @@ namespace Basique.Flattening
             else if (expr is MemberExpression mem)
             {
                 var (path, final) = MemberPath.Create(mem);
-                return new SubPredicate() { Path = path, From = Flatten(final, parameters) };
+                return new SubPredicate() { Path = path, From = final == null ? null : Flatten(final, parameters) };
             }
             else if (expr is ParameterExpression param)
                 return new ContextPredicate() { Of = param.Type, ContextId = parameters.IndexOf(param) };

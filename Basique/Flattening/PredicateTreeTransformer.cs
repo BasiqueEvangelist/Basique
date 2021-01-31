@@ -42,7 +42,9 @@ namespace Basique.Flattening
         protected virtual FlatPredicateNode TransformContextPredicate(ContextPredicate node) => node;
         protected virtual FlatPredicateNode TransformSubPredicate(SubPredicate node)
         {
-            node.From = TransformNode(node.From);
+            if (node.From != null)
+                node.From = TransformNode(node.From);
+
             return node;
         }
         protected virtual FlatPredicateNode TransformConstantPredicate(ConstantPredicate node) => node;
