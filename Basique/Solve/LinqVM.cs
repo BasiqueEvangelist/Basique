@@ -18,13 +18,14 @@ namespace Basique.Solve
             data.Relation.FillSet(data.Columns, data.Context);
             PredicateLinker linker = new(new[] { data.Columns });
             NameAllocator alloc = new(data.Relation.Schema.Logger);
+            StackTransformer stack = new(new PredicateTreeTransformer[] { ConstantFolder.Instance, linker, alloc });
             Type currentType = data.Relation.ElementType;
 
             while (data.Relation is IJoinRelation join)
             {
                 var clause = new JoinClause
                 {
-                    On = alloc.TransformNode(linker.TransformNode(join.On)),
+                    On = stack.TransformNode(join.On),
                     Right = data.Context.GetLogical(join.Right)
                 };
                 data.Joins.Add(clause);
@@ -43,16 +44,16 @@ namespace Basique.Solve
                     if (pull.By != null)
                     {
                         if (data.Where == null)
-                            data.Where = alloc.TransformNode(linker.TransformNode(pull.By));
+                            data.Where = stack.TransformNode(pull.By);
                         else
-                            data.Where = new BinaryPredicate() { Left = data.Where, Right = alloc.TransformNode(linker.TransformNode(pull.By)), Type = BinaryPredicateType.AndAlso };
+                            data.Where = new BinaryPredicate() { Left = data.Where, Right = stack.TransformNode(pull.By), Type = BinaryPredicateType.AndAlso };
                     }
                 }
                 else if (node is CountExpressionNode count)
                 {
                     if (count.Predicate != null)
                     {
-                        var newPredicate = alloc.TransformNode(linker.TransformNode(count.Type == CountExpressionNode.CountType.All ? UnaryPredicate.Not(count.Predicate) : count.Predicate));
+                        var newPredicate = stack.TransformNode(count.Type == CountExpressionNode.CountType.All ? UnaryPredicate.Not(count.Predicate) : count.Predicate);
                         if (data.Where == null)
                             data.Where = newPredicate;
                         else
@@ -64,17 +65,17 @@ namespace Basique.Solve
                 else if (node is WhereExpressionNode whereexpr)
                 {
                     if (data.Where == null)
-                        data.Where = alloc.TransformNode(linker.TransformNode(whereexpr.Condition));
+                        data.Where = stack.TransformNode(whereexpr.Condition);
                     else
-                        data.Where = new BinaryPredicate() { Left = data.Where, Right = alloc.TransformNode(linker.TransformNode(whereexpr.Condition)), Type = BinaryPredicateType.AndAlso };
+                        data.Where = new BinaryPredicate() { Left = data.Where, Right = stack.TransformNode(whereexpr.Condition), Type = BinaryPredicateType.AndAlso };
                 }
                 else if (node is OrderByExpressionNode orderby)
                 {
                     data.OrderBy.Clear();
-                    data.OrderBy.Add(new OrderByKey() { Descending = orderby.Descending, Key = alloc.TransformNode(linker.TransformNode(orderby.Key)) });
+                    data.OrderBy.Add(new OrderByKey() { Descending = orderby.Descending, Key = stack.TransformNode(orderby.Key) });
                 }
                 else if (node is ThenByExpressionNode thenby)
-                    data.OrderBy.Add(new OrderByKey() { Descending = thenby.Descending, Key = alloc.TransformNode(linker.TransformNode(thenby.Key)) });
+                    data.OrderBy.Add(new OrderByKey() { Descending = thenby.Descending, Key = stack.TransformNode(thenby.Key) });
                 else if (node is LimitExpressionNode limit)
                     if ((data.Limit ?? int.MaxValue) > limit.Count)
                         data.Limit = limit.Count;

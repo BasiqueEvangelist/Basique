@@ -1,10 +1,11 @@
 using System;
+using System.Collections.Generic;
 
 namespace Basique.Flattening
 {
     public abstract class PredicateTreeTransformer
     {
-        public FlatPredicateNode TransformNode(FlatPredicateNode node)
+        public virtual FlatPredicateNode TransformNode(FlatPredicateNode node)
         {
             return node switch
             {
@@ -15,6 +16,7 @@ namespace Basique.Flattening
                 SubPredicate sub => TransformSubPredicate(sub),
                 ConstantPredicate con => TransformConstantPredicate(con),
                 ColumnPredicate col => TransformColumnPredicate(col),
+                CallPredicate call => TransformCallPredicate(call),
                 _ => throw new NotImplementedException(),
             };
         }
@@ -45,5 +47,32 @@ namespace Basique.Flattening
         }
         protected virtual FlatPredicateNode TransformConstantPredicate(ConstantPredicate node) => node;
         protected virtual FlatPredicateNode TransformColumnPredicate(ColumnPredicate node) => node;
+        protected virtual FlatPredicateNode TransformCallPredicate(CallPredicate node)
+        {
+            if (node.Instance != null)
+                node.Instance = TransformNode(node.Instance);
+
+            for (int i = 0; i < node.Arguments.Length; i++)
+                node.Arguments[i] = TransformNode(node.Arguments[i]);
+
+            return node;
+        }
+    }
+
+    public class StackTransformer : PredicateTreeTransformer
+    {
+        private readonly IEnumerable<PredicateTreeTransformer> transformers;
+
+        public StackTransformer(IEnumerable<PredicateTreeTransformer> transformers)
+        {
+            this.transformers = transformers;
+        }
+
+        public override FlatPredicateNode TransformNode(FlatPredicateNode node)
+        {
+            foreach (var trans in transformers)
+                node = trans.TransformNode(node);
+            return node;
+        }
     }
 }

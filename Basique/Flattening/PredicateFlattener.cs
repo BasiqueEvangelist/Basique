@@ -5,6 +5,7 @@ using System.Linq.Expressions;
 using System.Reflection;
 using Basique.Services;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace Basique.Flattening
 {
@@ -69,14 +70,17 @@ namespace Basique.Flattening
             else if (expr is MemberExpression mem)
             {
                 var (path, final) = MemberPath.Create(mem);
-                if (final is ConstantExpression constant)
-                {
-                    return new ConstantPredicate() { Data = path.Follow(constant.Value), Of = MemberPath.GetTypeOf(path.Members[^1]) };
-                }
                 return new SubPredicate() { Path = path, From = Flatten(final, parameters) };
             }
             else if (expr is ParameterExpression param)
                 return new ContextPredicate() { Of = param.Type, ContextId = parameters.IndexOf(param) };
+            else if (expr is MethodCallExpression call)
+                return new CallPredicate()
+                {
+                    Instance = call.Method.IsStatic ? null : Flatten(call.Object, parameters),
+                    Method = call.Method,
+                    Arguments = call.Arguments.Select(x => Flatten(x, parameters)).ToArray()
+                };
             else
                 throw new NotImplementedException();
         }

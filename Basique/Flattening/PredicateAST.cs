@@ -2,6 +2,7 @@ using System.Reflection;
 using System;
 using Basique.Services;
 using Basique.Solve;
+using System.Linq;
 
 namespace Basique.Flattening
 {
@@ -68,6 +69,13 @@ namespace Basique.Flattening
     }
     public class ConstantPredicate : FlatPredicateNode
     {
+        public ConstantPredicate() { }
+        public ConstantPredicate(object obj)
+        {
+            Data = obj;
+            Of = obj.GetType();
+        }
+
         public object Data;
         public Type Of;
         public override string ToString()
@@ -79,5 +87,17 @@ namespace Basique.Flattening
 
         public override string ToString()
             => $"Column {Column.From.RemoteName}.{Column.Column.Name}";
+    }
+    public class CallPredicate : FlatPredicateNode
+    {
+        public FlatPredicateNode Instance;
+        public MethodInfo Method;
+        public FlatPredicateNode[] Arguments;
+
+        public override string ToString()
+        {
+            var args = string.Join(", ", Arguments.Select(x => x.ToString()));
+            return $"Column {Instance}.{Method}({args})";
+        }
     }
 }
