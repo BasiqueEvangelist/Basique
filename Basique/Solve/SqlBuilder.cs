@@ -253,6 +253,7 @@ namespace Basique.Solve
             StringBuilder s = new();
             var idColumn = set.WalkValues().Single(x => x.Value.Column.IsId);
 
+            s.AppendLine();
             s.Append("select ");
             s.AppendJoin(", ", set.WalkValues().Select(x => $"{x.Value.From.NamedAs}.{x.Value.Column.Name} as {x.Value.NamedAs}"));
             s.Append(" from ");
@@ -267,7 +268,7 @@ namespace Basique.Solve
                     s.Append("LAST_INSERT_ID()");
                     break;
             }
-            command.CommandText = s.ToString();
+            command.CommandText += s.ToString();
         }
 
         public static void WriteSqlCount(SqlSelectorData data, CountExpressionNode node, DbCommand cmd)

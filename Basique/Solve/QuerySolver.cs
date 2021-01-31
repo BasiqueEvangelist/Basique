@@ -139,15 +139,12 @@ namespace Basique.Solve
                 {
                     command.Transaction = pn.OfType<TransactionExpressionNode>().SingleOrDefault()?.Transaction?.wrapping;
                     SqlBuilder.WriteSqlCreate(set, create, tab, command);
-                    tab.Schema.Logger.Log(LogLevel.Debug, $"Running SQL: {command.CommandText}");
-                    await command.ExecuteNonQueryAsync(token);
-                }
-
-                if (!set.WalkValues().Any(x => x.Value.Column.IsId)) return null;
-
-                await using (DbCommand command = conn.CreateCommand())
-                {
-                    command.Transaction = pn.OfType<TransactionExpressionNode>().SingleOrDefault()?.Transaction?.wrapping;
+                    if (!set.WalkValues().Any(x => x.Value.Column.IsId))
+                    {
+                        tab.Schema.Logger.Log(LogLevel.Debug, $"Running SQL: {command.CommandText}");
+                        await command.ExecuteNonQueryAsync(token);
+                        return null;
+                    }
                     SqlBuilder.WriteSqlPullCreated(set, create, tab, command);
                     tab.Schema.Logger.Log(LogLevel.Debug, $"Running SQL: {command.CommandText}");
                     await using var reader = await command.ExecuteReaderAsync(token);
