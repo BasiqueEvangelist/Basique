@@ -16,7 +16,7 @@ namespace Basique.Tests
                 .Update()
                 .Set(x => x.Test, x => "bee")
                 .Set(x => x.Value, x => 10)
-                .Commit();
+                .ApplyAsync();
 
             TestObject[] objects = await Db.TestObjects.ToArrayAsync();
 
@@ -38,7 +38,7 @@ namespace Basique.Tests
                 .Update()
                 .Set(x => x.Test, x => "bee")
                 .Set(x => x.Value, x => 10)
-                .Commit();
+                .ApplyAsync();
 
             TestObject[] objects = await Db.TestObjects.ToArrayAsync();
 
@@ -59,13 +59,13 @@ namespace Basique.Tests
                 .Where(x => x.Value > 3)
                 .Update()
                 .Set(x => x.NullableValue, x => null)
-                .Commit();
+                .ApplyAsync();
 
             await Db.TestObjects
                 .Where(x => x.Value < 3)
                 .Update()
                 .Set(x => x.NullableValue, x => 10)
-                .Commit();
+                .ApplyAsync();
         }
     }
 }

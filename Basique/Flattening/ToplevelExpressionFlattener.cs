@@ -109,7 +109,7 @@ namespace Basique.Flattening
                         Parent = Parse(call.Arguments[0])
                     };
                 }
-                else if (call.Method.GetGenericMethodDefinition() == KnownMethods.Commit)
+                else if (call.Method.GetGenericMethodDefinition() == KnownMethods.ApplyAsync)
                     return new UpdateExpressionNode() { Context = (call.Arguments[1] as ConstantExpression).Value as UpdateContext, Parent = Parse(call.Arguments[0]) };
                 else if (call.Method.GetGenericMethodDefinition() == KnownMethods.DeleteAsync)
                     return new DeleteExpressionNode() { Parent = Parse(call.Arguments[0]) };

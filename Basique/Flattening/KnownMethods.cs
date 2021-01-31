@@ -85,7 +85,7 @@ namespace Basique.Flattening
 
         public static MethodInfo CreateAsyncInternal = new Func<Table<object>, Expression<Func<object>>, CancellationToken, ValueTask<object>>(BasiqueExtensions.CreateAsyncInternal).GetMethodInfo().GetGenericMethodDefinition();
         public static MethodInfo DeleteAsync = new Func<IAsyncQueryable<object>, CancellationToken, ValueTask>(BasiqueExtensions.DeleteAsync).GetMethodInfo().GetGenericMethodDefinition();
-        public static MethodInfo Commit = new Func<IAsyncQueryable<object>, UpdateContext<object>, CancellationToken, ValueTask>(UpdateQueryableExtensions.Commit).GetMethodInfo().GetGenericMethodDefinition();
+        public static MethodInfo ApplyAsync = new Func<IAsyncQueryable<object>, UpdateContext<object>, CancellationToken, ValueTask>(UpdateQueryableExtensions.ApplyAsync).GetMethodInfo().GetGenericMethodDefinition();
         public static MethodInfo WithTransaction = new Func<RelationBase<object>, BasiqueTransaction, IAsyncQueryable<object>>(BasiqueExtensions.WithTransaction).GetMethodInfo().GetGenericMethodDefinition();
     }
 }
