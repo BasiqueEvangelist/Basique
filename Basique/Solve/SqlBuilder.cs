@@ -219,6 +219,11 @@ namespace Basique.Solve
                 else
                     throw new NotImplementedException(); // Joins and .Select() will come later.
             }
+            else if (node is ColumnPredicate col)
+            {
+                into.Append($"{col.Column.From.NamedAs}.{col.Column.Column.Name}");
+            }
+            else throw new NotImplementedException();
             return prefix;
         }
 
@@ -228,11 +233,11 @@ namespace Basique.Solve
             s.Append("insert into ");
             s.Append(tab.Name);
             s.Append(" (");
-            s.AppendJoin(",", create.InitList.Select(x => set.GetByPath(x.Key).Value.Column.Name));
+            s.AppendJoin(",", create.InitList.WalkValues().Select(x => set.GetByPath(x.Key).Value.Column.Name));
             s.Append(") values (");
             bool isFirst = true;
             int prefix = 0;
-            foreach (var (path, expr, i) in create.InitList.Select((x, i) => (x.Key, x.Value, i)))
+            foreach (var (path, expr, i) in create.InitList.WalkValues().Select((x, i) => (x.Key, x.Value, i)))
             {
                 if (!isFirst)
                     s.Append(", ");

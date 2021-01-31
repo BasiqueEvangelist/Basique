@@ -57,6 +57,14 @@ namespace Basique.Solve
             return field;
         }
 
+        public void Merge(PathTree<T> tree)
+        {
+            foreach (var (member, el) in tree)
+            {
+                this[member] = el;
+            }
+        }
+
         public IEnumerator<KeyValuePair<MemberInfo, PathTreeElement<T>>> GetEnumerator() => columns.GetEnumerator();
 
         public bool Remove(MemberInfo key) => columns.Remove(key);
@@ -69,6 +77,12 @@ namespace Basique.Solve
 
         public void Set(MemberPath path, PathTreeElement<T> field)
         {
+            if (path == MemberPath.Empty)
+            {
+                Merge(field.Tree);
+                return;
+            }
+
             PathTree<T> set = GetByPathCreating(path.LastAccessed()).Tree;
             set[path.Members[^1]] = field;
         }
@@ -147,13 +161,19 @@ namespace Basique.Solve
                 return value;
             }
         }
+
+        public IEnumerable<KeyValuePair<MemberPath, T>> WalkValues()
+        {
+            if (IsTree) return Tree.WalkValues();
+            else return new[] { KeyValuePair.Create(MemberPath.Empty, Value) };
+        }
     }
 
     public class BasiqueColumn
     {
         public QueryRelation From;
-        public ColumnData Column;
+            public ColumnData Column;
 
-        public string NamedAs { get; set; }
-    }
+            public string NamedAs { get; set; }
+        }
 }

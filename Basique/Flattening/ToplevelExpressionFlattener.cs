@@ -105,7 +105,7 @@ namespace Basique.Flattening
                     return new CreateExpressionNode()
                     {
                         OfType = call.Method.GetGenericArguments()[0],
-                        InitList = InitList.GetInitList(lambda.Parameters, lambda.Body).ToDictionary(x => x.Key, x => x.Value),
+                        InitList = InitList.GetInitList(lambda.Parameters, lambda.Body),
                         Parent = Parse(call.Arguments[0])
                     };
                 }

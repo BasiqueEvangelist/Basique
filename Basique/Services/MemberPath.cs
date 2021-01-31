@@ -11,6 +11,8 @@ namespace Basique.Services
         public Type Start;
         public MemberInfo[] Members;
 
+        public static readonly MemberPath Empty = new() { Start = null, Members = Array.Empty<MemberInfo>() };
+
         public MemberPath(MemberInfo mem)
         {
             Start = mem.DeclaringType;
@@ -68,7 +70,7 @@ namespace Basique.Services
 
         public MemberPath Prepend(MemberInfo member)
         {
-            if (!GetTypeOf(member).IsAssignableFrom(Start))
+            if (Start is not null && !GetTypeOf(member).IsAssignableFrom(Start))
                 throw new InvalidOperationException("Start is not assignable to member's type");
 
             var newMembers = new MemberInfo[Members.Length + 1];

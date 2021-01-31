@@ -1,6 +1,7 @@
 using System.Reflection;
 using System;
 using Basique.Services;
+using Basique.Solve;
 
 namespace Basique.Flattening
 {
@@ -71,5 +72,12 @@ namespace Basique.Flattening
         public Type Of;
         public override string ToString()
             => $"Constant {Data}";
+    }
+    public class ColumnPredicate : FlatPredicateNode
+    {
+        public BasiqueColumn Column;
+
+        public override string ToString()
+            => $"Column {Column.From.RemoteName}.{Column.Column.Name}";
     }
 }

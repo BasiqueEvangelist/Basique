@@ -3,18 +3,21 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
 using Basique.Services;
+using Basique.Solve;
 
 namespace Basique.Flattening
 {
     public static class InitList
     {
-        public static IEnumerable<KeyValuePair<MemberPath, FlatPredicateNode>> GetInitList(IList<ParameterExpression> parameters, Expression expr)
+        public static PathTreeElement<FlatPredicateNode> GetInitList(IList<ParameterExpression> parameters, Expression expr)
         {
+            var tree = new PathTree<FlatPredicateNode>();
+
             if (expr is MemberInitExpression memberInit)
             {
                 foreach (var assign in memberInit.Bindings.OfType<MemberAssignment>())
                 {
-                    yield return KeyValuePair.Create(new MemberPath(assign.Member), PredicateFlattener.Flatten(assign.Expression, parameters));
+                    tree[assign.Member] = new PathTreeElement<FlatPredicateNode>(PredicateFlattener.Flatten(assign.Expression, parameters));
                 }
             }
             else if (expr is NewExpression newExpr)
@@ -23,10 +26,16 @@ namespace Basique.Flattening
 
                 foreach (var (member, param) in newExpr.Members.Zip(newExpr.Arguments, (x, y) => (x, y)))
                 {
-                    yield return KeyValuePair.Create(new MemberPath(member), PredicateFlattener.Flatten(param, parameters));
+                    tree[member] = new PathTreeElement<FlatPredicateNode>(PredicateFlattener.Flatten(param, parameters));
                 }
             }
+            else if (expr is MemberExpression member)
+            {
+                return new PathTreeElement<FlatPredicateNode>(PredicateFlattener.Flatten(member, parameters));
+            }
             else throw new NotImplementedException();
+
+            return new PathTreeElement<FlatPredicateNode>(tree);
         }
     }
 }

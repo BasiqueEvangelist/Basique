@@ -27,5 +27,14 @@ namespace Basique.Tests
             Assert.Equal("oof", arr[0].AnonTest);
             Assert.Equal(0, arr[0].AnonValue);
         }
+
+        [Fact]
+        public async Task SelectJoin()
+        {
+            var obj = await Db.TestObjects.SqlJoin(Db.TestObjects, (pair) => pair.First.Value == pair.Second.Value, (a, b) => new { First = a, Second = b }).Select(x => x.First).FirstAsync();
+
+            Assert.Equal(0, obj.Value);
+            Assert.Equal("oof", obj.Test);
+        }
     }
 }

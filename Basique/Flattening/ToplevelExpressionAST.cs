@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq.Expressions;
 using Basique.Modeling;
 using Basique.Services;
+using Basique.Solve;
 
 namespace Basique.Flattening
 {
@@ -137,7 +138,7 @@ namespace Basique.Flattening
     public class CreateExpressionNode : ExpressionNode
     {
         public Type OfType;
-        public Dictionary<MemberPath, FlatPredicateNode> InitList;
+        public PathTreeElement<FlatPredicateNode> InitList;
 
         public override void Dump(IBasiqueLogger log)
         {

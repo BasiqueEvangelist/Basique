@@ -1,10 +1,11 @@
 using System;
 using System.Collections.Generic;
+using Basique.Flattening;
 using Basique.Services;
 
 namespace Basique.Solve
 {
-    public class NameAllocator
+    public class NameAllocator : PredicateTreeTransformer
     {
         private readonly IBasiqueLogger logger;
         private readonly Dictionary<string, QueryRelation> relations = new();
@@ -62,6 +63,27 @@ namespace Basique.Solve
                     }
                 }
             }
+        }
+
+        protected override FlatPredicateNode TransformColumnPredicate(ColumnPredicate col)
+        {
+            var relation = col.Column.From;
+            var suffix = 0;
+
+            if (relation.NamedAs == null)
+            {
+                relation.NamedAs = relation.RemoteName;
+                while (relations.ContainsKey(relation.NamedAs))
+                {
+                    relation.NamedAs = relation.RemoteName + "_" + suffix++;
+                }
+
+                logger.Log(LogLevel.Trace, $"Named {relation.RemoteName} as {relation.NamedAs}");
+
+                relations[relation.NamedAs] = relation;
+            }
+
+            return base.TransformColumnPredicate(col);
         }
     }
 }
