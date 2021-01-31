@@ -12,7 +12,7 @@ namespace Basique.Benchmark
 {
     [MinColumn]
     [MaxColumn]
-    public class Benchmarks : BenchmarkEnvironment
+    public partial class Benchmarks : BenchmarkEnvironment
     {
         [GlobalSetup]
         public Task Startup() => GlobalSetup();

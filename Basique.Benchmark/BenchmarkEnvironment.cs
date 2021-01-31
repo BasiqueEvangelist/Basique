@@ -4,13 +4,21 @@ using System.Security.Cryptography;
 using System.Threading.Tasks;
 using Basique.Modeling;
 using BenchmarkDotNet.Attributes;
+using LinqToDB;
+using LinqToDB.Configuration;
+using LinqToDB.Data;
+using LinqToDB.DataProvider.SQLite;
+using LinqToDB.Mapping;
 using Microsoft.Data.Sqlite;
 
 namespace Basique.Benchmark
 {
+    [LinqToDB.Mapping.Table(Name = "testobjects")]
     public class TestObject
     {
+        [Column(Name = "test")]
         public string Test;
+        [Column(Name = "value")]
         public int Value;
 
 
@@ -51,11 +59,20 @@ namespace Basique.Benchmark
         }
     }
 
+    public class TestL2DBContext : DataConnection
+    {
+        public TestL2DBContext(LinqToDbConnectionOptions options) : base(options)
+        {
+        }
+
+        public ITable<TestObject> TestObjects => GetTable<TestObject>();
+    }
 
     public class BenchmarkEnvironment
     {
         public TestContext schema;
         public SqliteConnection holdConn;
+        public LinqToDbConnectionOptionsBuilder l2dbBuilder;
 
         public async Task GlobalSetup()
         {
@@ -73,9 +90,14 @@ namespace Basique.Benchmark
 
             schema = new TestContext(() => new SqliteConnection(connString), SqlGenerationSettings.Sqlite);
 
-            await using var trans = await schema.MintTransaction();
-            await trans.NonQuery("CREATE TABLE testobjects (id INTEGER PRIMARY KEY, test TEXT, value INT, nullablevalue INT);");
-            await trans.Commit();
+            {
+                await using var trans = await schema.MintTransaction();
+                await trans.NonQuery("CREATE TABLE testobjects (id INTEGER PRIMARY KEY, test TEXT, value INT, nullablevalue INT);");
+                await trans.Commit();
+            }
+
+            l2dbBuilder = new LinqToDbConnectionOptionsBuilder();
+            l2dbBuilder.UseConnectionFactory(SQLiteTools.GetDataProvider(), () => new SqliteConnection(connString));
         }
 
         public async Task GlobalCleanup()
