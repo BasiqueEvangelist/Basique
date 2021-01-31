@@ -12,15 +12,18 @@ namespace Basique.Services
         public static object Create(Type type, PathTree<object> values)
         {
             object instance;
-            if (type.GetConstructors().Any(x => x.IsPublic && x.GetParameters().Length == 0)
-             && values.WalkValues().All(x => x.Key.CanFollowType(type)))
+            if (values.WalkValues().All(x => x.Key.CanFollowType(type)))
             {
-                instance = Activator.CreateInstance(type);
-                foreach (var (path, obj) in values.WalkValues())
+                var ctor = type.GetConstructors().FirstOrDefault(x => x.IsPublic && x.GetParameters().Length == 0);
+                if (ctor != null)
                 {
-                    path.Set(instance, obj);
+                    instance = ctor.Invoke(Array.Empty<object>());
+                    foreach (var (path, obj) in values.WalkValues())
+                    {
+                        path.Set(instance, obj);
+                    }
+                    return instance;
                 }
-                return instance;
             }
 
             instance = TryCreateAnonymous(type, values);
