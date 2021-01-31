@@ -38,6 +38,12 @@ namespace Basique
             return this;
         }
 
+        public UpdateContext<T> Set<TField>(Expression<Func<T, TField>> selector, TField data)
+        {
+            Data.Add((MemberPath.Create(selector.Body).Path, new ConstantPredicate(data)));
+            return this;
+        }
+
         public ValueTask ApplyAsync(CancellationToken token = default)
             => Queryable.ApplyAsync(this, token);
     }
