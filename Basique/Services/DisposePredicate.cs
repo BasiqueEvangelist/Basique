@@ -26,7 +26,7 @@ namespace Basique.Services
             if (WillDispose)
                 if (Wrapping is IAsyncDisposable disp)
                     return disp.DisposeAsync();
-            return new ValueTask(Task.CompletedTask);
+            return default;
         }
     }
 }
