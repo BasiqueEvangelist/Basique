@@ -172,8 +172,8 @@ namespace Basique.Solve
     public class BasiqueColumn
     {
         public QueryRelation From;
-            public ColumnData Column;
+        public ColumnData Column;
 
-            public string NamedAs { get; set; }
-        }
+        public string NamedAs { get; set; }
+    }
 }

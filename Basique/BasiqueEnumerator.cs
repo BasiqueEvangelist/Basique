@@ -5,7 +5,6 @@ using System.Threading.Tasks;
 using System;
 using System.Data;
 using Basique.Solve;
-using System.Runtime.Serialization;
 using Basique.Services;
 using Basique.Modeling;
 

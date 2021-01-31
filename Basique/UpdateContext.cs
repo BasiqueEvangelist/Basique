@@ -3,8 +3,6 @@ using System.Linq.Expressions;
 using System.Linq;
 using System;
 using System.Collections.Generic;
-using System.Reflection;
-using Basique.Solve;
 using System.Threading.Tasks;
 using Basique.Services;
 using Basique.Flattening;

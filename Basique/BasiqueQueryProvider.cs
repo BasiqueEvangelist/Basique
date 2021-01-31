@@ -1,4 +1,3 @@
-using System.Data.Common;
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
@@ -21,7 +20,7 @@ namespace Basique
         }
 
         public IAsyncQueryable<TElement> CreateQuery<TElement>(Expression expression)
-                    => new BasiqueQueryable<TElement>(relation, expression);
+            => new BasiqueQueryable<TElement>(relation, expression);
 
         public async ValueTask<TResult> ExecuteAsync<TResult>(Expression expression, CancellationToken token)
         {

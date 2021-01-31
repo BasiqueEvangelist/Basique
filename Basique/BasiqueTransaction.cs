@@ -8,7 +8,7 @@ namespace Basique
     public class BasiqueTransaction : IAsyncDisposable
     {
         internal readonly DbTransaction wrapping;
-        private DbConnection connection;
+        private readonly DbConnection connection;
         private bool commited;
 
         internal BasiqueTransaction(DbTransaction on, DbConnection connection)

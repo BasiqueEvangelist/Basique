@@ -1,4 +1,3 @@
-using System;
 using System.Collections.Generic;
 using Basique.Flattening;
 using Basique.Services;

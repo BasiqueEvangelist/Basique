@@ -1,13 +1,9 @@
 using System.Data;
-using System.Linq.Expressions;
 using System.Linq;
-using System.Reflection;
 using System.Text;
 using System;
-using System.Collections.Generic;
 using Basique.Modeling;
 using System.Data.Common;
-using Basique.Services;
 using Basique.Flattening;
 
 namespace Basique.Solve
@@ -19,13 +15,12 @@ namespace Basique.Solve
             if (data.Limit != null)
                 throw new InvalidOperationException("Limits on Delete not allowed.");
             StringBuilder s = new();
-            int prefix = 0;
             s.Append("delete from ");
             s.Append(data.Relation.Name);
             if (data.Where != null)
             {
                 s.Append(" where ");
-                prefix = WriteSqlPredicate(data.Relation, data.Columns, data.Where, cmd, prefix++, s);
+                WriteSqlPredicate(data.Relation, data.Columns, data.Where, cmd, 0, s);
             }
             cmd.CommandText = s.ToString();
         }
@@ -131,7 +126,7 @@ namespace Basique.Solve
             if (data.Where != null)
             {
                 s.Append(" where ");
-                prefix = WriteSqlPredicate(data.Relation, data.Columns, data.Where, cmd, prefix++, s);
+                WriteSqlPredicate(data.Relation, data.Columns, data.Where, cmd, prefix, s);
             }
 
             cmd.CommandText = s.ToString();
@@ -217,7 +212,7 @@ namespace Basique.Solve
                     into.Append($"{column.From.NamedAs}.{column.Column.Name}");
                 }
                 else
-                    throw new NotImplementedException(); // Joins and .Select() will come later.
+                    throw new NotImplementedException();
             }
             else if (node is ColumnPredicate col)
             {
@@ -248,7 +243,7 @@ namespace Basique.Solve
             command.CommandText = s.ToString();
         }
 
-        public static void WriteSqlPullCreated(PathTree<BasiqueColumn> set, CreateExpressionNode create, IRelation tab, DbCommand command)
+        public static void WriteSqlPullCreated(PathTree<BasiqueColumn> set, IRelation tab, DbCommand command)
         {
             StringBuilder s = new();
             var idColumn = set.WalkValues().Single(x => x.Value.Column.IsId);
@@ -271,7 +266,7 @@ namespace Basique.Solve
             command.CommandText += s.ToString();
         }
 
-        public static void WriteSqlCount(SqlSelectorData data, CountExpressionNode node, DbCommand cmd)
+        public static void WriteSqlCount(SqlSelectorData data, DbCommand cmd)
         {
             StringBuilder s = new();
             int prefix = 0;
@@ -285,7 +280,7 @@ namespace Basique.Solve
             if (data.Where != null)
             {
                 s.Append(" where ");
-                prefix = WriteSqlPredicate(data.Relation, data.Columns, data.Where, cmd, prefix++, s);
+                WriteSqlPredicate(data.Relation, data.Columns, data.Where, cmd, prefix, s);
             }
             if (data.Limit != null)
             {

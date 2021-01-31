@@ -1,10 +1,8 @@
 using System.Linq;
-using System.Collections.Specialized;
 using System.Collections.Generic;
 using System;
 using System.Linq.Expressions;
 using Basique.Modeling;
-using System.Diagnostics;
 
 namespace Basique.Flattening
 {

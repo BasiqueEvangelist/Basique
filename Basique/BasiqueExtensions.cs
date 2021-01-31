@@ -1,10 +1,8 @@
-using System.Data.Common;
 using System.Threading;
 using System;
 using System.Linq.Expressions;
 using System.Threading.Tasks;
 using Basique.Modeling;
-using Basique.Solve;
 using System.Linq;
 using Basique.Flattening;
 

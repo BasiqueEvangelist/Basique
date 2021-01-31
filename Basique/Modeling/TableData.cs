@@ -1,10 +1,7 @@
 using System.Linq.Expressions;
 using System.Collections.Generic;
-using System.Data.Common;
 using System.Reflection;
 using System;
-using Basique.Solve;
-using System.Linq;
 using Basique.Services;
 
 namespace Basique.Modeling

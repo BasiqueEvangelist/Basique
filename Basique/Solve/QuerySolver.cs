@@ -1,12 +1,9 @@
-using System.Net.Mail;
 using System.Threading;
-using System.Linq.Expressions;
 using Basique.Modeling;
 using System.Collections.Generic;
 using System.Data.Common;
 using System.Threading.Tasks;
 using System;
-using System.Reflection;
 using System.Data;
 using System.Linq;
 using Basique.Services;
@@ -135,29 +132,27 @@ namespace Basique.Solve
             await using (new DisposePredicate(conn, trans == null))
             {
                 var set = LinqVM.BuildSimpleColumnSet(tab);
-                await using (DbCommand command = conn.CreateCommand())
+                await using DbCommand command = conn.CreateCommand();
+                command.Transaction = pn.OfType<TransactionExpressionNode>().SingleOrDefault()?.Transaction?.wrapping;
+                SqlBuilder.WriteSqlCreate(set, create, tab, command);
+                if (!set.WalkValues().Any(x => x.Value.Column.IsId))
                 {
-                    command.Transaction = pn.OfType<TransactionExpressionNode>().SingleOrDefault()?.Transaction?.wrapping;
-                    SqlBuilder.WriteSqlCreate(set, create, tab, command);
-                    if (!set.WalkValues().Any(x => x.Value.Column.IsId))
-                    {
-                        tab.Schema.Logger.Log(LogLevel.Debug, $"Running SQL: {command.CommandText}");
-                        await command.ExecuteNonQueryAsync(token);
-                        return null;
-                    }
-                    SqlBuilder.WriteSqlPullCreated(set, create, tab, command);
                     tab.Schema.Logger.Log(LogLevel.Debug, $"Running SQL: {command.CommandText}");
-                    await using var reader = await command.ExecuteReaderAsync(token);
-                    var newSet = new PathTree<object>();
-                    await reader.ReadAsync(token);
-                    foreach (var (path, column) in set.WalkValues())
-                    {
-                        object orig = reader.GetValue(column.NamedAs);
-                        if (!tab.Schema.Converter.TryConvert(orig, column.Column.Type, out var val)) throw new InvalidOperationException($"Could not translate {orig.GetType()} to {column.Column.Type}");
-                        newSet.Set(path, val);
-                    }
-                    return ObjectFactory.Create(create.OfType, newSet);
+                    await command.ExecuteNonQueryAsync(token);
+                    return null;
                 }
+                SqlBuilder.WriteSqlPullCreated(set, tab, command);
+                tab.Schema.Logger.Log(LogLevel.Debug, $"Running SQL: {command.CommandText}");
+                await using var reader = await command.ExecuteReaderAsync(token);
+                var newSet = new PathTree<object>();
+                await reader.ReadAsync(token);
+                foreach (var (path, column) in set.WalkValues())
+                {
+                    object orig = reader.GetValue(column.NamedAs);
+                    if (!tab.Schema.Converter.TryConvert(orig, column.Column.Type, out var val)) throw new InvalidOperationException($"Could not translate {orig.GetType()} to {column.Column.Type}");
+                    newSet.Set(path, val);
+                }
+                return ObjectFactory.Create(create.OfType, newSet);
             }
         }
 
@@ -171,7 +166,7 @@ namespace Basique.Solve
             await using (DbCommand command = conn.CreateCommand())
             {
                 command.Transaction = trans;
-                SqlBuilder.WriteSqlCount(data, node, command);
+                SqlBuilder.WriteSqlCount(data, command);
                 tab.Schema.Logger.Log(LogLevel.Debug, $"Running SQL: {command.CommandText}");
 
                 var count = (long)await command.ExecuteScalarAsync(token);

@@ -1,10 +1,8 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Linq.Expressions;
 using Basique.Flattening;
 using Basique.Modeling;
-using Basique.Services;
 
 namespace Basique.Solve
 {
