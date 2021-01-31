@@ -1,16 +1,28 @@
 using System.Collections.Generic;
 using System.Collections;
 using System;
+using System.Linq.Expressions;
 
 namespace Basique.Services
 {
     public static class GenericUtils
     {
-        static readonly Type listType = typeof(List<>);
+        static readonly Dictionary<Type, Func<int, Array>> arrayFactories = new();
+        static readonly Dictionary<Type, Func<int, IList>> listFactories = new();
+
         public static IList MakeGenericList(ICollection from, Type type)
         {
-            Type newListType = listType.MakeGenericType(type);
-            IList newList = (IList)Activator.CreateInstance(newListType);
+            if (!listFactories.ContainsKey(type))
+            {
+                var intParam = Expression.Parameter(typeof(int));
+                var listType = typeof(List<>).MakeGenericType(type);
+                var ctor = listType.GetConstructor(new[] { typeof(int) });
+                listFactories[type] = Expression.Lambda<Func<int, IList>>(
+                    Expression.New(ctor, new[] { intParam }), false, new[] { intParam }
+                ).Compile();
+            }
+
+            IList newList = listFactories[type](from.Count);
             foreach (var item in from)
             {
                 newList.Add(item);
@@ -20,8 +32,15 @@ namespace Basique.Services
         }
         public static Array MakeGenericArray(ICollection from, Type type)
         {
-            Type newArrayType = type.MakeArrayType();
-            Array newArray = (Array)Activator.CreateInstance(newArrayType, new object[] { from.Count });
+            if (!arrayFactories.ContainsKey(type))
+            {
+                var intParam = Expression.Parameter(typeof(int));
+                arrayFactories[type] = Expression.Lambda<Func<int, Array>>(
+                    Expression.NewArrayBounds(type, new[] { intParam }), false, new[] { intParam }
+                ).Compile();
+            }
+
+            Array newArray = arrayFactories[type](from.Count);
             int i = 0;
             foreach (var item in from)
             {
