@@ -62,7 +62,8 @@ namespace Basique.Solve
                 data.Limit = limitNeeded;
                 data.Limit = data.Limit > limitNeeded ? limitNeeded : data.Limit;
             }
-            s.Append($" limit {data.Limit}");
+            s.Append($" limit ");
+            s.Append(data.Limit);
             cmd.CommandText = s.ToString();
         }
 
@@ -77,7 +78,11 @@ namespace Basique.Solve
 
             foreach (var join in data.Joins)
             {
-                s.Append($" left join {join.Right.RemoteName} as {join.Right.NamedAs} on ");
+                s.Append(" left join ");
+                s.Append(join.Right.RemoteName);
+                s.Append(" as ");
+                s.Append(join.Right.NamedAs);
+                s.Append(" on ");
                 prefix = WriteSqlPredicate(data.Relation, data.Columns, join.On, cmd, prefix, s);
             }
 
@@ -102,7 +107,10 @@ namespace Basique.Solve
             }
 
             if (data.Limit != null)
-                s.Append($" limit {data.Limit}");
+            {
+                s.Append(" limit ");
+                s.Append(data.Limit);
+            }
 
             cmd.CommandText = s.ToString();
         }
@@ -118,7 +126,8 @@ namespace Basique.Solve
             {
                 var (field, factory) = data.UpdateContext.Data[i];
                 var column = data.Columns.GetByPath(field).Value;
-                s.Append($"{column.Column.Name} = ");
+                s.Append(column.Column.Name);
+                s.Append(" = ");
                 prefix = WriteSqlPredicate(data.Relation, data.Columns, factory, cmd, prefix, s);
                 if (i != data.UpdateContext.Data.Count - 1)
                     s.Append(", ");
@@ -209,14 +218,18 @@ namespace Basique.Solve
                 if (sub.From is ContextPredicate)
                 {
                     var column = set.GetByPath(sub.Path).Value;
-                    into.Append($"{column.From.NamedAs}.{column.Column.Name}");
+                    into.Append(column.From.NamedAs);
+                    into.Append(" ");
+                    into.Append(column.Column.Name);
                 }
                 else
                     throw new NotImplementedException();
             }
             else if (node is ColumnPredicate col)
             {
-                into.Append($"{col.Column.From.NamedAs}.{col.Column.Column.Name}");
+                into.Append(col.Column.From.NamedAs);
+                into.Append(" ");
+                into.Append(col.Column.Column.Name);
             }
             else throw new NotImplementedException();
             return prefix;
@@ -253,7 +266,11 @@ namespace Basique.Solve
             s.AppendJoin(", ", set.WalkValues().Select(x => $"{x.Value.From.NamedAs}.{x.Value.Column.Name} as {x.Value.NamedAs}"));
             s.Append(" from ");
             s.Append(tab.Name);
-            s.Append($" where {idColumn.Value.From.NamedAs}.{idColumn.Value.Column.Name} = ");
+            s.Append(" where ");
+            s.Append(idColumn.Value.From.NamedAs);
+            s.Append('.');
+            s.Append(idColumn.Value.Column.Name);
+            s.Append(" = ");
             switch (tab.Schema.SqlGeneration.LastId)
             {
                 case SqlGenerationSettings.LastIdMethod.LastInsertRowId:
@@ -274,7 +291,11 @@ namespace Basique.Solve
             s.Append(data.Relation.Name);
             foreach (var join in data.Joins)
             {
-                s.Append($" left join {join.Right.RemoteName} as {join.Right.NamedAs} on ");
+                s.Append(" left join ");
+                s.Append(join.Right.RemoteName);
+                s.Append(" as ");
+                s.Append(join.Right.NamedAs);
+                s.Append(" on ");
                 prefix = WriteSqlPredicate(data.Relation, data.Columns, join.On, cmd, prefix, s);
             }
             if (data.Where != null)
@@ -284,7 +305,8 @@ namespace Basique.Solve
             }
             if (data.Limit != null)
             {
-                s.Append($" limit {data.Limit}");
+                s.Append(" limit ");
+                s.Append(data.Limit);
             }
             cmd.CommandText = s.ToString();
         }
