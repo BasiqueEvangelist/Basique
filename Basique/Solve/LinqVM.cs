@@ -27,7 +27,7 @@ namespace Basique.Solve
                     Right = data.Context.GetLogical(join.Right)
                 };
                 data.Joins.Add(clause);
-                data.Relation = join.Left.Original;
+                data.Relation = join.Left;
             }
             foreach (var node in nodes)
             {

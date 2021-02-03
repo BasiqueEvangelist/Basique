@@ -7,26 +7,26 @@ namespace Basique.Modeling
 {
     public interface IJoinRelation : IRelation
     {
-        public IJoinSideRelation Left { get; }
+        public IRelation Left { get; }
         public IJoinSideRelation Right { get; }
         public FlatPredicateNode On { get; }
     }
 
     public class Join<TLeft, TRight, TResult> : RelationBase<TResult>, IJoinRelation
     {
-        public JoinSide<TLeft> Left { get; }
+        public RelationBase<TLeft> Left { get; }
         public JoinSide<TRight> Right { get; }
         public FlatPredicateNode On { get; }
         private readonly LambdaExpression factory;
         public override string Name => throw new InvalidOperationException();
 
-        IJoinSideRelation IJoinRelation.Left => Left;
+        IRelation IJoinRelation.Left => Left;
         IJoinSideRelation IJoinRelation.Right => Right;
 
 
         public Join(BasiqueSchema conn, RelationBase<TLeft> left, RelationBase<TRight> right, FlatPredicateNode on, LambdaExpression factory) : base(conn)
         {
-            Left = new JoinSide<TLeft>(this, left);
+            Left = left;
             Right = new JoinSide<TRight>(this, right);
             this.factory = factory;
             On = on;
