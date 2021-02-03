@@ -35,7 +35,6 @@ namespace Basique.Tests
         {
             await Db.TestObjects
                 .Where(x => x.Value > 3)
-                .Update()
                 .Set(x => x.Test, x => "bee")
                 .Set(x => x.Value, x => 10)
                 .ApplyAsync();

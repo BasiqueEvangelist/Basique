@@ -16,6 +16,12 @@ namespace Basique
         {
             await queryable.Provider.ExecuteAsync<object>(Expression.Call(null, KnownMethods.ApplyAsync.MakeGenericMethod(typeof(T)), queryable.Expression, Expression.Constant(ctx), Expression.Constant(tok)), tok);
         }
+
+        public static UpdateContext<T> Set<T, TField>(this IAsyncQueryable<T> queryable, Expression<Func<T, TField>> selector, Expression<Func<T, TField>> data)
+            => queryable.Update().Set(selector, data);
+
+        public static UpdateContext<T> Set<T, TField>(this IAsyncQueryable<T> queryable, Expression<Func<T, TField>> selector, TField data)
+            => queryable.Update().Set(selector, data);
     }
     public abstract class UpdateContext
     {
