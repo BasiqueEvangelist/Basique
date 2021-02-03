@@ -2,27 +2,27 @@ using System.Collections.Generic;
 using System.Collections;
 using System;
 using System.Linq.Expressions;
+using System.Collections.Concurrent;
 
 namespace Basique.Services
 {
     public static class GenericUtils
     {
-        static readonly Dictionary<Type, Func<int, Array>> arrayFactories = new();
-        static readonly Dictionary<Type, Func<int, IList>> listFactories = new();
+        static readonly ConcurrentDictionary<Type, Func<int, Array>> arrayFactories = new();
+        static readonly ConcurrentDictionary<Type, Func<int, IList>> listFactories = new();
 
         public static IList MakeGenericList(ICollection from, Type type)
         {
-            if (!listFactories.ContainsKey(type))
+            IList newList = listFactories.GetOrAdd(type, _ =>
             {
                 var intParam = Expression.Parameter(typeof(int));
                 var listType = typeof(List<>).MakeGenericType(type);
                 var ctor = listType.GetConstructor(new[] { typeof(int) });
-                listFactories[type] = Expression.Lambda<Func<int, IList>>(
+                return Expression.Lambda<Func<int, IList>>(
                     Expression.New(ctor, new[] { intParam }), false, new[] { intParam }
                 ).Compile();
-            }
+            })(from.Count);
 
-            IList newList = listFactories[type](from.Count);
             foreach (var item in from)
             {
                 newList.Add(item);
@@ -32,15 +32,14 @@ namespace Basique.Services
         }
         public static Array MakeGenericArray(ICollection from, Type type)
         {
-            if (!arrayFactories.ContainsKey(type))
+            Array newArray = arrayFactories.GetOrAdd(type, _ =>
             {
                 var intParam = Expression.Parameter(typeof(int));
-                arrayFactories[type] = Expression.Lambda<Func<int, Array>>(
+                return Expression.Lambda<Func<int, Array>>(
                     Expression.NewArrayBounds(type, new[] { intParam }), false, new[] { intParam }
                 ).Compile();
-            }
+            })(from.Count);
 
-            Array newArray = arrayFactories[type](from.Count);
             int i = 0;
             foreach (var item in from)
             {
