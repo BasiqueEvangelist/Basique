@@ -87,5 +87,7 @@ namespace Basique.Flattening
         public static MethodInfo DeleteAsync = new Func<IAsyncQueryable<object>, CancellationToken, ValueTask>(BasiqueExtensions.DeleteAsync).GetMethodInfo().GetGenericMethodDefinition();
         public static MethodInfo ApplyAsync = new Func<IAsyncQueryable<object>, UpdateContext<object>, CancellationToken, ValueTask>(UpdateQueryableExtensions.ApplyAsync).GetMethodInfo().GetGenericMethodDefinition();
         public static MethodInfo WithTransaction = new Func<RelationBase<object>, BasiqueTransaction, IAsyncQueryable<object>>(BasiqueExtensions.WithTransaction).GetMethodInfo().GetGenericMethodDefinition();
+
+        public static MethodInfo StartsWith = typeof(string).GetMethod("StartsWith", new[] { typeof(string) });
     }
 }

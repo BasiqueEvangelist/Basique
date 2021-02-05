@@ -5,6 +5,7 @@ using System;
 using Basique.Modeling;
 using System.Data.Common;
 using Basique.Flattening;
+using System.Reflection;
 
 namespace Basique.Solve
 {
@@ -141,7 +142,7 @@ namespace Basique.Solve
             cmd.CommandText = s.ToString();
         }
 
-        private static int WriteSqlPredicate(IRelation tab, PathTree<BasiqueColumn> set, FlatPredicateNode node, DbCommand cmd, int prefix, StringBuilder into)
+        public static int WriteSqlPredicate(IRelation tab, PathTree<BasiqueColumn> set, FlatPredicateNode node, DbCommand cmd, int prefix, StringBuilder into)
         {
             if (node is BinaryPredicate bin)
             {
@@ -231,8 +232,25 @@ namespace Basique.Solve
                 into.Append(" ");
                 into.Append(col.Column.Column.Name);
             }
+            else if (node is CallPredicate call)
+            {
+                var writer = GetWriterFor(call);
+                prefix = writer.WriteMethod(call, tab, set, cmd, prefix, into);
+            }
             else throw new NotImplementedException();
             return prefix;
+        }
+
+        public static IMethodWriter GetWriterFor(CallPredicate call)
+        {
+            if (DefaultFunctionWriter.CanProvide(call))
+                return DefaultFunctionWriter.Instance;
+
+            var writer = call.Method.GetCustomAttribute<MethodWriterAttribute>()?.MethodWriter;
+            if (writer != null)
+                return writer;
+
+            throw new InvalidOperationException($"No method writer found for {call.Method}");
         }
 
         public static void WriteSqlCreate(PathTree<BasiqueColumn> set, CreateExpressionNode create, IRelation tab, DbCommand command)

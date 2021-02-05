@@ -1,4 +1,5 @@
 using System.Linq;
+using System.Reflection;
 
 namespace Basique.Flattening
 {
@@ -19,13 +20,23 @@ namespace Basique.Flattening
         {
             base.TransformCallPredicate(node);
 
-            if (node.Instance is ConstantPredicate or null && node.Arguments.All(x => x is ConstantPredicate))
+            if (node.Instance is ConstantPredicate or null && node.Arguments.All(x => x is ConstantPredicate) && ShouldFoldMethod(node.Method))
                 return new ConstantPredicate(node.Method.Invoke(
                     (node.Instance as ConstantPredicate)?.Data,
                     node.Arguments.Cast<ConstantPredicate>().Select(x => x.Data).ToArray()
                 ));
 
             return node;
+        }
+
+        public static bool ShouldFoldMethod(MethodInfo info)
+        {
+            if (info.GetCustomAttribute<NoConstantFoldingAttribute>() != null)
+                return false;
+            else if (info.GetCustomAttribute<MethodWriterAttribute>() != null)
+                return false;
+            else
+                return true;
         }
     }
 }
