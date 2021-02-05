@@ -220,7 +220,7 @@ namespace Basique.Solve
                 {
                     var column = set.GetByPath(sub.Path).Value;
                     into.Append(column.From.NamedAs);
-                    into.Append(" ");
+                    into.Append(".");
                     into.Append(column.Column.Name);
                 }
                 else
@@ -229,7 +229,7 @@ namespace Basique.Solve
             else if (node is ColumnPredicate col)
             {
                 into.Append(col.Column.From.NamedAs);
-                into.Append(" ");
+                into.Append(".");
                 into.Append(col.Column.Column.Name);
             }
             else if (node is CallPredicate call)
