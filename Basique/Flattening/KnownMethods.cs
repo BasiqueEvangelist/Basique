@@ -89,5 +89,7 @@ namespace Basique.Flattening
         public static MethodInfo WithTransaction = new Func<RelationBase<object>, BasiqueTransaction, IAsyncQueryable<object>>(BasiqueExtensions.WithTransaction).GetMethodInfo().GetGenericMethodDefinition();
 
         public static MethodInfo StartsWith = typeof(string).GetMethod("StartsWith", new[] { typeof(string) });
+        public static MethodInfo ReplaceString = typeof(string).GetMethod("Replace", new[] { typeof(string), typeof(string) });
+        public static MethodInfo ReplaceChar = typeof(string).GetMethod("Replace", new[] { typeof(char), typeof(char) });
     }
 }

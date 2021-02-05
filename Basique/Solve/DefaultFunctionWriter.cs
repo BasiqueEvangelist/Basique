@@ -14,6 +14,10 @@ namespace Basique.Solve
         {
             if (call.Method == KnownMethods.StartsWith)
                 return true;
+            else if (call.Method == KnownMethods.ReplaceChar)
+                return true;
+            else if (call.Method == KnownMethods.ReplaceString)
+                return true;
             return false;
         }
 
@@ -47,6 +51,16 @@ namespace Basique.Solve
                         default: throw new NotImplementedException();
                     }
                 }
+            }
+            else if (call.Method == KnownMethods.ReplaceString || call.Method == KnownMethods.ReplaceChar)
+            {
+                into.Append("replace(");
+                prefix = SqlBuilder.WriteSqlPredicate(mainTable, tree, call.Instance, cmd, prefix, into);
+                into.Append(", ");
+                prefix = SqlBuilder.WriteSqlPredicate(mainTable, tree, call.Arguments[0], cmd, prefix, into);
+                into.Append(", ");
+                prefix = SqlBuilder.WriteSqlPredicate(mainTable, tree, call.Arguments[1], cmd, prefix, into);
+                into.Append(")");
             }
             else throw new NotImplementedException();
 

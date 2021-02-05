@@ -57,5 +57,14 @@ namespace Basique.Tests
 
             await Assert.ThrowsAsync<InvalidOperationException>(async () => await Db.TestObjects.SingleAsync());
         }
+
+        [Fact]
+        public async Task ReplaceSingle()
+        {
+            var obj = await Db.TestObjects.SingleAsync(x => x.Test.Replace('b', 'd') == "dar");
+
+            Assert.Equal("bar", obj.Test);
+            Assert.Equal(2, obj.Value);
+        }
     }
 }
