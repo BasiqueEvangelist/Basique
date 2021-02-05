@@ -2,7 +2,6 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Reflection;
-using Basique.Modeling;
 using Basique.Services;
 
 namespace Basique.Solve
@@ -167,13 +166,5 @@ namespace Basique.Solve
             if (IsTree) return Tree.WalkValues();
             else return new[] { KeyValuePair.Create(MemberPath.Empty, Value) };
         }
-    }
-
-    public class BasiqueColumn
-    {
-        public QueryRelation From;
-        public ColumnData Column;
-
-        public string NamedAs { get; set; }
     }
 }
