@@ -62,6 +62,14 @@ namespace Basique.Solve
                 prefix = SqlBuilder.WriteSqlPredicate(mainTable, tree, call.Arguments[1], cmd, prefix, into);
                 into.Append(")");
             }
+            else if (call.Method == KnownMethods.SqlLike)
+            {
+                into.Append("(");
+                prefix = SqlBuilder.WriteSqlPredicate(mainTable, tree, call.Arguments[0], cmd, prefix, into);
+                into.Append(") like (");
+                prefix = SqlBuilder.WriteSqlPredicate(mainTable, tree, call.Arguments[1], cmd, prefix, into);
+                into.Append(")");
+            }
             else throw new NotImplementedException();
 
             return prefix;

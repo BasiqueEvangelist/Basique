@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using Basique.Modeling;
 using System.Linq;
 using Basique.Flattening;
+using Basique.Solve;
 
 namespace Basique
 {
@@ -24,5 +25,9 @@ namespace Basique
 
         public static Join<TLeft, TRight, TResult> SqlJoin<TLeft, TRight, TResult>(this RelationBase<TLeft> rel, RelationBase<TRight> other, Expression<Predicate<TResult>> on, Expression<Func<TLeft, TRight, TResult>> factory)
          => new(rel.Schema, rel, other, PredicateFlattener.Flatten(on.Body, on.Parameters), factory);
+
+        [MethodWriter(typeof(DefaultFunctionWriter))]
+        public static bool SqlLike(this string source, string match)
+         => throw new NotImplementedException("Managed SqlLike is not yet implemented.");
     }
 }

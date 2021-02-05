@@ -91,5 +91,6 @@ namespace Basique.Flattening
         public static MethodInfo StartsWith = typeof(string).GetMethod("StartsWith", new[] { typeof(string) });
         public static MethodInfo ReplaceString = typeof(string).GetMethod("Replace", new[] { typeof(string), typeof(string) });
         public static MethodInfo ReplaceChar = typeof(string).GetMethod("Replace", new[] { typeof(char), typeof(char) });
+        public static MethodInfo SqlLike = new Func<string, string, bool>(BasiqueExtensions.SqlLike).GetMethodInfo();
     }
 }

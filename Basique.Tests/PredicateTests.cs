@@ -64,6 +64,19 @@ namespace Basique.Tests
         }
 
         [Fact]
+        public async Task SqlLike()
+        {
+            TestObject[] objects = await Db.TestObjects
+                .Where(x => x.Test.SqlLike("b%"))
+                .ToArrayAsync();
+
+            Assert.Equal(objects, new TestObject[] {
+                new TestObject() { Value = 2, Test = "bar" },
+                new TestObject() { Value = 3, Test = "baz" },
+            });
+        }
+
+        [Fact]
         public async Task Ternary()
         {
             TestObject[] objects = await Db.TestObjects
