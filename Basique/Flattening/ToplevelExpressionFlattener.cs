@@ -85,13 +85,15 @@ namespace Basique.Flattening
                 }
                 else if (call.Method.GetGenericMethodDefinition() == KnownMethods.Take)
                     return new LimitExpressionNode() { Count = (int)(call.Arguments[1] as ConstantExpression).Value, Parent = Parse(call.Arguments[0]) };
-                else if (call.Method.GetGenericMethodDefinition() == KnownMethods.WithTransaction)
+                else if (call.Method.GetGenericMethodDefinition() == KnownMethods.WithTransactionQueryable)
+                    return new TransactionExpressionNode() { Transaction = (call.Arguments[1] as ConstantExpression).Value as BasiqueTransaction, Parent = Parse(call.Arguments[0]) };
+                else if (call.Method.GetGenericMethodDefinition() == KnownMethods.WithTransactionSingle)
                     return new TransactionExpressionNode() { Transaction = (call.Arguments[1] as ConstantExpression).Value as BasiqueTransaction, Parent = Parse(call.Arguments[0]) };
                 else if (call.Method.GetGenericMethodDefinition() == KnownMethods.ToListAsync)
                     return new PullExpressionNode() { Type = PullExpressionNode.PullType.List, Parent = Parse(call.Arguments[0]) };
                 else if (call.Method.GetGenericMethodDefinition() == KnownMethods.ToArrayAsync)
                     return new PullExpressionNode() { Type = PullExpressionNode.PullType.Array, Parent = Parse(call.Arguments[0]) };
-                else if (call.Method.GetGenericMethodDefinition() == KnownMethods.CreateAsyncInternal)
+                else if (call.Method.GetGenericMethodDefinition() == KnownMethods.Create)
                 {
                     if (call.Arguments[1] is not UnaryExpression quote)
                         throw new NotImplementedException();
@@ -111,7 +113,8 @@ namespace Basique.Flattening
                     return new UpdateExpressionNode() { Context = (call.Arguments[1] as ConstantExpression).Value as UpdateContext, Parent = Parse(call.Arguments[0]) };
                 else if (call.Method.GetGenericMethodDefinition() == KnownMethods.DeleteAsync)
                     return new DeleteExpressionNode() { Parent = Parse(call.Arguments[0]) };
-                else if (call.Method.GetGenericMethodDefinition() == KnownMethods.Select)
+                else if (call.Method.GetGenericMethodDefinition() == KnownMethods.SelectQueryable
+                      || call.Method.GetGenericMethodDefinition() == KnownMethods.SelectSingle)
                 {
                     if (call.Arguments[1] is not UnaryExpression quote)
                         throw new NotImplementedException();
@@ -156,6 +159,10 @@ namespace Basique.Flattening
                     }
                     return count;
                 }
+                else if (call.Method.GetGenericMethodDefinition() == KnownMethods.VoidAsync)
+                    return new VoidExpressionNode() { Parent = Parse(call.Arguments[0]) };
+                else if (call.Method.GetGenericMethodDefinition() == KnownMethods.RunAsync)
+                    return new RunExpressionNode() { Parent = Parse(call.Arguments[0]) };
                 else
                     throw new NotImplementedException();
             }

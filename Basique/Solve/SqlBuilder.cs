@@ -274,14 +274,14 @@ namespace Basique.Solve
             command.CommandText = s.ToString();
         }
 
-        public static void WriteSqlPullCreated(PathTree<BasiqueColumn> set, IRelation tab, DbCommand command)
+        public static void WriteSqlPullCreated(PathTree<BasiqueColumn> originalSet, SqlCreateData data, IRelation tab, DbCommand command)
         {
             StringBuilder s = new();
-            var idColumn = set.WalkValues().Single(x => x.Value.Column.IsId);
+            var idColumn = originalSet.WalkValues().Single(x => x.Value.Column.IsId);
 
             s.AppendLine();
             s.Append("select ");
-            s.AppendJoin(", ", set.WalkValues().Select(x => $"{x.Value.From.NamedAs}.{x.Value.Column.Name} as {x.Value.NamedAs}"));
+            s.AppendJoin(", ", data.Columns.WalkValues().Select(x => $"{x.Value.From.NamedAs}.{x.Value.Column.Name} as {x.Value.NamedAs}"));
             s.Append(" from ");
             s.Append(tab.Name);
             s.Append(" where ");

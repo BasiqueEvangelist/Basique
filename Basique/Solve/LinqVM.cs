@@ -96,6 +96,39 @@ namespace Basique.Solve
             return data;
         }
 
+        public static SqlCreateData BuildCreateData(List<ExpressionNode> nodes, SqlCreateData data)
+        {
+            data.Context = new QueryContext();
+            data.Relation = ((FinalExpressionNode)nodes[0]).Table;
+            data.Columns = new PathTree<BasiqueColumn>();
+            data.Relation.FillSet(data.Columns, data.Context);
+            NameAllocator alloc = new(data.Relation.Schema.Logger);
+            Type currentType = data.Relation.ElementType;
+
+            foreach (var node in nodes)
+            {
+                if (node is FinalExpressionNode)
+                    continue;
+                else if (node is TransactionExpressionNode trans)
+                    data.Transaction = trans.Transaction;
+                else if (node is SelectExpressionNode select)
+                {
+                    var newSet = new PathTree<BasiqueColumn>();
+                    DoSelect(newSet, new PathTree<BasiqueColumn>[] { data.Columns }, select.Via.Parameters, select.Via.Body);
+                    currentType = select.To;
+                    // linker.Contexts = new[] { newSet };
+                    data.Columns = newSet;
+                }
+            }
+
+            data.RequestedType = currentType;
+
+            alloc.NameRelations(data.Columns);
+            alloc.NameVariables(data.Columns);
+
+            return data;
+        }
+
         public static SqlUpdateData BuildUpdateData(List<ExpressionNode> nodes)
         {
             SqlUpdateData data = new();
@@ -148,6 +181,15 @@ namespace Basique.Solve
         public IRelation Relation;
         public QueryContext Context;
         public PathTree<BasiqueColumn> Columns;
+    }
+
+    public class SqlCreateData
+    {
+        public BasiqueTransaction Transaction;
+        public IRelation Relation;
+        public QueryContext Context;
+        public PathTree<BasiqueColumn> Columns;
+        public Type RequestedType;
     }
 
     public struct JoinClause

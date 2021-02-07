@@ -13,7 +13,7 @@ namespace Basique.Flattening
     {
         public static MethodInfo Where = new Func<IAsyncQueryable<object>, System.Linq.Expressions.Expression<System.Func<object, bool>>, IAsyncQueryable<object>>(AsyncQueryable.Where).GetMethodInfo().GetGenericMethodDefinition();
         public static MethodInfo Take = new Func<IAsyncQueryable<object>, int, IAsyncQueryable<object>>(AsyncQueryable.Take).GetMethodInfo().GetGenericMethodDefinition();
-        public static MethodInfo Select = new Func<IAsyncQueryable<object>, System.Linq.Expressions.Expression<System.Func<object, object>>, IAsyncQueryable<object>>(AsyncQueryable.Select).GetMethodInfo().GetGenericMethodDefinition();
+        public static MethodInfo SelectQueryable = new Func<IAsyncQueryable<object>, System.Linq.Expressions.Expression<System.Func<object, object>>, IAsyncQueryable<object>>(AsyncQueryable.Select).GetMethodInfo().GetGenericMethodDefinition();
         public static MethodInfo ToListAsync = new Func<IAsyncQueryable<object>, CancellationToken, ValueTask<List<object>>>(AsyncQueryable.ToListAsync).GetMethodInfo().GetGenericMethodDefinition();
         public static MethodInfo ToArrayAsync = new Func<IAsyncQueryable<object>, CancellationToken, ValueTask<object[]>>(AsyncQueryable.ToArrayAsync).GetMethodInfo().GetGenericMethodDefinition();
         public static MethodInfo OrderBy = new Func<IAsyncQueryable<object>, Expression<Func<object, object>>, IAsyncQueryable<object>>(AsyncQueryable.OrderBy).GetMethodInfo().GetGenericMethodDefinition();
@@ -83,10 +83,14 @@ namespace Basique.Flattening
         };
         #endregion
 
-        public static MethodInfo CreateAsyncInternal = new Func<Table<object>, Expression<Func<object>>, CancellationToken, ValueTask<object>>(BasiqueExtensions.CreateAsyncInternal).GetMethodInfo().GetGenericMethodDefinition();
+        public static MethodInfo Create = new Func<Table<object>, Expression<Func<object>>, ISingleQuery<object>>(BasiqueExtensions.Create).GetMethodInfo().GetGenericMethodDefinition();
         public static MethodInfo DeleteAsync = new Func<IAsyncQueryable<object>, CancellationToken, ValueTask>(BasiqueExtensions.DeleteAsync).GetMethodInfo().GetGenericMethodDefinition();
+        public static MethodInfo VoidAsync = new Func<ISingleQuery<object>, CancellationToken, ValueTask>(BasiqueExtensions.VoidAsync).GetMethodInfo().GetGenericMethodDefinition();
+        public static MethodInfo SelectSingle = new Func<ISingleQuery<object>, Expression<System.Func<object, object>>, ISingleQuery<object>>(BasiqueExtensions.Select).GetMethodInfo().GetGenericMethodDefinition();
+        public static MethodInfo RunAsync = new Func<ISingleQuery<object>, CancellationToken, ValueTask<object>>(BasiqueExtensions.RunAsync).GetMethodInfo().GetGenericMethodDefinition();
         public static MethodInfo ApplyAsync = new Func<IAsyncQueryable<object>, UpdateContext<object>, CancellationToken, ValueTask>(UpdateQueryableExtensions.ApplyAsync).GetMethodInfo().GetGenericMethodDefinition();
-        public static MethodInfo WithTransaction = new Func<RelationBase<object>, BasiqueTransaction, IAsyncQueryable<object>>(BasiqueExtensions.WithTransaction).GetMethodInfo().GetGenericMethodDefinition();
+        public static MethodInfo WithTransactionQueryable = new Func<IAsyncQueryable<object>, BasiqueTransaction, IAsyncQueryable<object>>(BasiqueExtensions.WithTransaction).GetMethodInfo().GetGenericMethodDefinition();
+        public static MethodInfo WithTransactionSingle = new Func<ISingleQuery<object>, BasiqueTransaction, ISingleQuery<object>>(BasiqueExtensions.WithTransaction).GetMethodInfo().GetGenericMethodDefinition();
 
         public static MethodInfo StartsWith = typeof(string).GetMethod("StartsWith", new[] { typeof(string) });
         public static MethodInfo ReplaceString = typeof(string).GetMethod("Replace", new[] { typeof(string), typeof(string) });

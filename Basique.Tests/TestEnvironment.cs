@@ -124,12 +124,12 @@ namespace Basique.Tests
                 await trans.Commit();
             }
 
-            await Db.TestObjects.CreateAsync(() => new TestObject() { Value = 0, Test = "oof" });
-            await Db.TestObjects.CreateAsync(() => new TestObject() { Value = 1, Test = "foo" });
-            await Db.TestObjects.CreateAsync(() => new TestObject() { Value = 2, Test = "bar" });
-            await Db.TestObjects.CreateAsync(() => new TestObject() { Value = 3, Test = "baz" });
-            await Db.TestObjects.CreateAsync(() => new TestObject() { Value = 4, Test = "qux" });
-            await Db.TestObjects.CreateAsync(() => new TestObject() { Value = 5, Test = "quux" });
+            await Db.TestObjects.Create(() => new TestObject() { Value = 0, Test = "oof" }).VoidAsync();
+            await Db.TestObjects.Create(() => new TestObject() { Value = 1, Test = "foo" }).VoidAsync();
+            await Db.TestObjects.Create(() => new TestObject() { Value = 2, Test = "bar" }).VoidAsync();
+            await Db.TestObjects.Create(() => new TestObject() { Value = 3, Test = "baz" }).VoidAsync();
+            await Db.TestObjects.Create(() => new TestObject() { Value = 4, Test = "qux" }).VoidAsync();
+            await Db.TestObjects.Create(() => new TestObject() { Value = 5, Test = "quux" }).VoidAsync();
         }
 
         public async Task DisposeAsync()

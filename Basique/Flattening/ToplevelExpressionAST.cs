@@ -116,6 +116,24 @@ namespace Basique.Flattening
         }
     }
 
+    public class VoidExpressionNode : ExpressionNode
+    {
+        public override void Dump(IBasiqueLogger log)
+        {
+            Parent.Dump(log);
+            log.Log(LogLevel.Trace, $"Void");
+        }
+    }
+
+    public class RunExpressionNode : ExpressionNode
+    {
+        public override void Dump(IBasiqueLogger log)
+        {
+            Parent.Dump(log);
+            log.Log(LogLevel.Trace, $"Run");
+        }
+    }
+
     public class PullSingleExpressionNode : ExpressionNode
     {
         public enum PullType

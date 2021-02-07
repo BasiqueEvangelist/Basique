@@ -17,6 +17,8 @@ namespace Basique.Modeling
     public interface IRelation : IAsyncQueryable, IRelationLike
     {
         BasiqueSchema Schema { get; }
+        IAsyncQueryProvider IAsyncQueryable.Provider => Provider;
+        public new IAsyncSingleQueryProvider Provider { get; }
     }
 
     public abstract class RelationBase<T> : IRelation, IAsyncQueryable<T>
@@ -33,7 +35,7 @@ namespace Basique.Modeling
 
         public Expression Expression => Expression.Constant(this);
 
-        public IAsyncQueryProvider Provider => new BasiqueQueryProvider(this);
+        public IAsyncSingleQueryProvider Provider => new BasiqueQueryProvider(this);
 
         public IAsyncEnumerator<T> GetAsyncEnumerator(CancellationToken cancellationToken = default)
             => new BasiqueQueryable<T>(this, Expression).GetAsyncEnumerator(cancellationToken);

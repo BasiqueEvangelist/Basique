@@ -12,7 +12,7 @@ namespace Basique.Tests
         [Fact]
         public async Task Basic()
         {
-            await Db.TestObjects.CreateAsync(() => new TestObject() { Test = "beep", Value = 100 });
+            await Db.TestObjects.Create(() => new TestObject() { Test = "beep", Value = 100 }).VoidAsync();
 
             TestObject[] objects = await Db.TestObjects.ToArrayAsync();
 
@@ -31,15 +31,31 @@ namespace Basique.Tests
         public async Task WithTransaction()
         {
             await using var transaction = await Db.MintTransaction();
-            await Db.TestObjects.CreateAsync(() => new TestObject() { Test = "beep", Value = 100 }, default, transaction);
+            await Db.TestObjects
+                .Create(() => new TestObject() { Test = "beep", Value = 100 })
+                .WithTransaction(transaction)
+                .VoidAsync();
             await transaction.Commit();
         }
 
         [Fact]
         public async Task ReturningCreate()
         {
-            var obj = await Db.TestObjects.CreateAsync(() => new TestObject() { Test = "beep", Value = 100 });
+            var obj = await Db.TestObjects
+                .Create(() => new TestObject() { Test = "beep", Value = 100 })
+                .RunAsync();
             Assert.Equal(obj, new TestObject() { Test = "beep", Value = 100 });
+        }
+
+        [Fact]
+        public async Task ReturningCreateSelect()
+        {
+            var obj = await Db.TestObjects
+                .Create(() => new TestObject() { Test = "beep", Value = 100 })
+                .Select(x => new { AnonTest = x.Test, AnonValue = x.Value })
+                .RunAsync();
+            Assert.Equal("beep", obj.AnonTest);
+            Assert.Equal(100, obj.AnonValue);
         }
     }
 }

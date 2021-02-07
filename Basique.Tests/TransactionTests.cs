@@ -14,7 +14,10 @@ namespace Basique.Tests
         {
             await using (var transaction = await Db.MintTransaction())
             {
-                await Db.TestObjects.CreateAsync(() => new TestObject() { Test = "beep", Value = 100 }, default, transaction);
+                await Db.TestObjects
+                    .Create(() => new TestObject() { Test = "beep", Value = 100 })
+                    .WithTransaction(transaction)
+                    .VoidAsync();
                 // await transaction.Commit();
             }
 

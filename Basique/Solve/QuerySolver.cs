@@ -126,33 +126,34 @@ namespace Basique.Solve
 
         public static async ValueTask<object> SolveCreateQuery(List<ExpressionNode> pn, CancellationToken token, IRelation tab)
         {
-            CreateExpressionNode create = pn.Last() as CreateExpressionNode;
+            CreateExpressionNode create = pn.OfType<CreateExpressionNode>().Single();
             DbTransaction trans = pn.OfType<TransactionExpressionNode>().SingleOrDefault()?.Transaction?.wrapping;
             DbConnection conn = trans == null ? await tab.Schema.MintConnection() : trans.Connection;
             await using (new DisposePredicate(conn, trans == null))
             {
-                var set = LinqVM.BuildSimpleColumnSet(tab);
+                var startSet = LinqVM.BuildSimpleColumnSet(tab);
                 await using DbCommand command = conn.CreateCommand();
                 command.Transaction = pn.OfType<TransactionExpressionNode>().SingleOrDefault()?.Transaction?.wrapping;
-                SqlBuilder.WriteSqlCreate(set, create, tab, command);
-                if (!set.WalkValues().Any(x => x.Value.Column.IsId))
+                SqlBuilder.WriteSqlCreate(startSet, create, tab, command);
+                if (pn[^1] is VoidExpressionNode)
                 {
                     tab.Schema.Logger.Log(LogLevel.Debug, $"Running SQL: {command.CommandText}");
                     await command.ExecuteNonQueryAsync(token);
                     return null;
                 }
-                SqlBuilder.WriteSqlPullCreated(set, tab, command);
+                var data = LinqVM.BuildCreateData(pn, new());
+                SqlBuilder.WriteSqlPullCreated(startSet, data, tab, command);
                 tab.Schema.Logger.Log(LogLevel.Debug, $"Running SQL: {command.CommandText}");
                 await using var reader = await command.ExecuteReaderAsync(token);
                 var newSet = new PathTree<object>();
                 await reader.ReadAsync(token);
-                foreach (var (path, column) in set.WalkValues())
+                foreach (var (path, column) in data.Columns.WalkValues())
                 {
                     object orig = reader.GetValue(column.NamedAs);
                     if (!tab.Schema.Converter.TryConvert(orig, column.Column.Type, out var val)) throw new InvalidOperationException($"Could not translate {orig.GetType()} to {column.Column.Type}");
                     newSet.Set(path, val);
                 }
-                return ObjectFactory.Create(create.OfType, newSet);
+                return ObjectFactory.Create(data.RequestedType, newSet);
             }
         }
 
