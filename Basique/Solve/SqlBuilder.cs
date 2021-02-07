@@ -214,18 +214,6 @@ namespace Basique.Solve
                 param.Value = con.Data ?? DBNull.Value;
                 cmd.Parameters.Add(param);
             }
-            else if (node is SubPredicate sub)
-            {
-                if (sub.From is ContextPredicate)
-                {
-                    var column = set.GetByPath(sub.Path).Value;
-                    into.Append(column.From.NamedAs);
-                    into.Append(".");
-                    into.Append(column.Column.Name);
-                }
-                else
-                    throw new NotImplementedException();
-            }
             else if (node is ColumnPredicate col)
             {
                 into.Append(col.Column.From.NamedAs);
