@@ -27,6 +27,17 @@ namespace Basique.Tests
         }
 
         [Fact]
+        public async Task Limit()
+        {
+            TestObject[] objects = await Db.TestObjects.Take(2).ToArrayAsync();
+
+            Assert.Equal(objects, new TestObject[] {
+                new TestObject() { Value = 0, Test = "oof" },
+                new TestObject() { Value = 1, Test = "foo" },
+            });
+        }
+
+        [Fact]
         public async Task FullTableEnumerable()
         {
             TestObject[] objects = await Db.TestObjects.AsAsyncEnumerable().ToArrayAsync();

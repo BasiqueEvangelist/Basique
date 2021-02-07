@@ -37,6 +37,14 @@ namespace Basique.Tests
         }
 
         [Fact]
+        public async Task WithOrderBy()
+        {
+            TestObject obj = await Db.TestObjects.OrderByDescending(x => x.Value).FirstAsync();
+
+            Assert.Equal(obj, new TestObject() { Value = 5, Test = "quux" });
+        }
+
+        [Fact]
         public async Task BasicSingle()
         {
             await Assert.ThrowsAsync<InvalidOperationException>(async () => await Db.TestObjects.SingleAsync());
