@@ -39,7 +39,7 @@ namespace Basique.Modeling
             Left.FillSet(leftSet, ctx);
             Right.FillSet(rightSet, ctx);
 
-            LinqVM.DoSelect(set, new[] { leftSet, rightSet }, factory.Parameters, factory.Body);
+            LinqVM.DoSelect(new PathTreeElement<BasiqueColumn>(set), new PathTreeElement<BasiqueColumn>[] { new(leftSet), new(rightSet) }, factory.Parameters, factory.Body);
         }
         public override QueryRelation MintLogical() => throw new InvalidOperationException();
     }

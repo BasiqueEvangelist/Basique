@@ -5,9 +5,9 @@ namespace Basique.Solve
 {
     public class PredicateLinker : PredicateTreeTransformer
     {
-        public IList<PathTree<BasiqueColumn>> Contexts { get; set; }
+        public IList<PathTreeElement<BasiqueColumn>> Contexts { get; set; }
 
-        public PredicateLinker(IList<PathTree<BasiqueColumn>> ctxs)
+        public PredicateLinker(IList<PathTreeElement<BasiqueColumn>> ctxs)
         {
             Contexts = ctxs;
         }

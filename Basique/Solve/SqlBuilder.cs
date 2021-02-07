@@ -142,7 +142,7 @@ namespace Basique.Solve
             cmd.CommandText = s.ToString();
         }
 
-        public static int WriteSqlPredicate(IRelation tab, PathTree<BasiqueColumn> set, FlatPredicateNode node, DbCommand cmd, int prefix, StringBuilder into)
+        public static int WriteSqlPredicate(IRelation tab, PathTreeElement<BasiqueColumn> set, FlatPredicateNode node, DbCommand cmd, int prefix, StringBuilder into)
         {
             if (node is BinaryPredicate bin)
             {
@@ -267,7 +267,7 @@ namespace Basique.Solve
             {
                 if (!isFirst)
                     s.Append(", ");
-                prefix = WriteSqlPredicate(tab, set, ConstantFolder.Instance.TransformNode(expr), command, prefix, s);
+                prefix = WriteSqlPredicate(tab, new(set), ConstantFolder.Instance.TransformNode(expr), command, prefix, s);
                 isFirst = false;
             }
             s.Append(");");

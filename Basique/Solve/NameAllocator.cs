@@ -14,7 +14,7 @@ namespace Basique.Solve
             this.logger = logger;
         }
 
-        public void NameRelations(PathTree<BasiqueColumn> set)
+        public void NameRelations(PathTreeElement<BasiqueColumn> set)
         {
             foreach (var pair in set.WalkValues())
             {
@@ -36,32 +36,37 @@ namespace Basique.Solve
             }
         }
 
-        public void NameVariables(PathTree<BasiqueColumn> set)
+        public void NameVariables(PathTreeElement<BasiqueColumn> set)
         {
-            foreach (var composite in set.WalkTrees())
+            if (!set.IsTree)
             {
-                foreach (var (_, field) in composite)
+                set.Value.NamedAs = set.Value.Column.Name;
+            }
+            else
+                foreach (var composite in set.WalkTrees())
                 {
-                    if (!field.IsTree)
+                    foreach (var (_, field) in composite)
                     {
-                        var column = field.Value;
-                        var suffix = 0;
-
-                        if (column.NamedAs == null)
+                        if (!field.IsTree)
                         {
-                            column.NamedAs = column.Column.Name;
-                            while (columns.ContainsKey(column.NamedAs))
+                            var column = field.Value;
+                            var suffix = 0;
+
+                            if (column.NamedAs == null)
                             {
-                                column.NamedAs = column.Column.Name + "_" + suffix++;
+                                column.NamedAs = column.Column.Name;
+                                while (columns.ContainsKey(column.NamedAs))
+                                {
+                                    column.NamedAs = column.Column.Name + "_" + suffix++;
+                                }
+
+                                logger.Log(LogLevel.Trace, $"Named {column.Column.Name} as {column.NamedAs}");
+
+                                columns[column.NamedAs] = column;
                             }
-
-                            logger.Log(LogLevel.Trace, $"Named {column.Column.Name} as {column.NamedAs}");
-
-                            columns[column.NamedAs] = column;
                         }
                     }
                 }
-            }
         }
 
         protected override FlatPredicateNode TransformColumnPredicate(ColumnPredicate col)

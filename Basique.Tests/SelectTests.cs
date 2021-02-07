@@ -19,6 +19,14 @@ namespace Basique.Tests
         }
 
         [Fact]
+        public async Task BasicSelectOne()
+        {
+            var obj = await Db.TestObjects.Select(x => x.Test).FirstAsync();
+
+            Assert.Equal("oof", obj);
+        }
+
+        [Fact]
         public async Task SelectPull()
         {
             var arr = await Db.TestObjects.Select(x => new { AnonValue = x.Value, AnonTest = x.Test }).Where(x => x.AnonValue == 0).ToArrayAsync();

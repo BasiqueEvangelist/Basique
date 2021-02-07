@@ -13,6 +13,11 @@ namespace Basique.Solve
 {
     public static class QuerySolver
     {
+        public static PathTreeElement<T> CreateTreeElement<T>(bool isTree)
+        {
+            return isTree ? new PathTreeElement<T>(new PathTree<T>()) : new PathTreeElement<T>(default(T));
+        }
+
         public static async ValueTask<object> SolvePullQuery(List<ExpressionNode> expr, CancellationToken token, IRelation table)
         {
             SqlSelectorData data = LinqVM.BuildSelectorData(expr, new SqlSelectorData());
@@ -37,7 +42,7 @@ namespace Basique.Solve
                 if (reader.HasRows)
                     while (await reader.ReadAsync(token))
                     {
-                        var newSet = new PathTree<object>();
+                        var newSet = CreateTreeElement<object>(data.Columns.IsTree);
                         foreach (var (path, column) in data.Columns.WalkValues())
                         {
                             object orig = reader.GetValue(column.NamedAs);
@@ -92,7 +97,7 @@ namespace Basique.Solve
                     else
                         throw new InvalidOperationException("The source sequence is empty.");
                 }
-                var newSet = new PathTree<object>();
+                var newSet = CreateTreeElement<object>(data.Columns.IsTree);
                 await reader.ReadAsync(token);
                 foreach (var (path, column) in data.Columns.WalkValues())
                 {
@@ -145,7 +150,7 @@ namespace Basique.Solve
                 SqlBuilder.WriteSqlPullCreated(startSet, data, tab, command);
                 tab.Schema.Logger.Log(LogLevel.Debug, $"Running SQL: {command.CommandText}");
                 await using var reader = await command.ExecuteReaderAsync(token);
-                var newSet = new PathTree<object>();
+                var newSet = CreateTreeElement<object>(data.Columns.IsTree);
                 await reader.ReadAsync(token);
                 foreach (var (path, column) in data.Columns.WalkValues())
                 {

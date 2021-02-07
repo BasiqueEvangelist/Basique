@@ -12,8 +12,8 @@ namespace Basique.Solve
         {
             data.Context = new QueryContext();
             data.Relation = ((FinalExpressionNode)nodes[0]).Table;
-            data.Columns = new PathTree<BasiqueColumn>();
-            data.Relation.FillSet(data.Columns, data.Context);
+            data.Columns = new(new PathTree<BasiqueColumn>());
+            data.Relation.FillSet(data.Columns.Tree, data.Context);
             PredicateLinker linker = new(new[] { data.Columns });
             NameAllocator alloc = new(data.Relation.Schema.Logger);
             StackTransformer stack = new(new PredicateTreeTransformer[] { ConstantFolder.Instance, linker, alloc });
@@ -81,8 +81,8 @@ namespace Basique.Solve
                         throw new NotImplementedException();
                 else if (node is SelectExpressionNode select)
                 {
-                    var newSet = new PathTree<BasiqueColumn>();
-                    DoSelect(newSet, new PathTree<BasiqueColumn>[] { data.Columns }, select.Via.Parameters, select.Via.Body);
+                    var newSet = new PathTreeElement<BasiqueColumn>(new PathTree<BasiqueColumn>());
+                    DoSelect(newSet, new PathTreeElement<BasiqueColumn>[] { data.Columns }, select.Via.Parameters, select.Via.Body);
                     currentType = select.To;
                     linker.Contexts = new[] { newSet };
                     data.Columns = newSet;
@@ -100,8 +100,8 @@ namespace Basique.Solve
         {
             data.Context = new QueryContext();
             data.Relation = ((FinalExpressionNode)nodes[0]).Table;
-            data.Columns = new PathTree<BasiqueColumn>();
-            data.Relation.FillSet(data.Columns, data.Context);
+            data.Columns = new(new PathTree<BasiqueColumn>());
+            data.Relation.FillSet(data.Columns.Tree, data.Context);
             NameAllocator alloc = new(data.Relation.Schema.Logger);
             Type currentType = data.Relation.ElementType;
 
@@ -113,11 +113,15 @@ namespace Basique.Solve
                     data.Transaction = trans.Transaction;
                 else if (node is SelectExpressionNode select)
                 {
-                    var newSet = new PathTree<BasiqueColumn>();
-                    DoSelect(newSet, new PathTree<BasiqueColumn>[] { data.Columns }, select.Via.Parameters, select.Via.Body);
+                    PathTreeElement<BasiqueColumn> el;
+                    if (select.Via.Body is MemberExpression)
+                        el = new PathTreeElement<BasiqueColumn>(default(BasiqueColumn));
+                    else
+                        el = new PathTreeElement<BasiqueColumn>(new PathTree<BasiqueColumn>());
+                    DoSelect(el, new PathTreeElement<BasiqueColumn>[] { data.Columns }, select.Via.Parameters, select.Via.Body);
                     currentType = select.To;
                     // linker.Contexts = new[] { newSet };
-                    data.Columns = newSet;
+                    data.Columns = el;
                 }
             }
 
@@ -143,12 +147,12 @@ namespace Basique.Solve
             var set = new PathTree<BasiqueColumn>();
             relation.FillSet(set, ctx);
             var alloc = new NameAllocator(relation.Schema.Logger);
-            alloc.NameRelations(set);
-            alloc.NameVariables(set);
+            alloc.NameRelations(new(set));
+            alloc.NameVariables(new(set));
             return set;
         }
 
-        public static void DoSelect(PathTree<BasiqueColumn> to, IList<PathTree<BasiqueColumn>> contexts, IList<ParameterExpression> parameters, Expression expr)
+        public static void DoSelect(PathTreeElement<BasiqueColumn> to, IList<PathTreeElement<BasiqueColumn>> contexts, IList<ParameterExpression> parameters, Expression expr)
         {
             foreach (var (path, setter) in InitList.GetInitList(parameters, expr).WalkValues())
             {
@@ -180,7 +184,7 @@ namespace Basique.Solve
         public List<JoinClause> Joins = new();
         public IRelation Relation;
         public QueryContext Context;
-        public PathTree<BasiqueColumn> Columns;
+        public PathTreeElement<BasiqueColumn> Columns;
     }
 
     public class SqlCreateData
@@ -188,7 +192,7 @@ namespace Basique.Solve
         public BasiqueTransaction Transaction;
         public IRelation Relation;
         public QueryContext Context;
-        public PathTree<BasiqueColumn> Columns;
+        public PathTreeElement<BasiqueColumn> Columns;
         public Type RequestedType;
     }
 

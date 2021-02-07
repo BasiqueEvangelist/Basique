@@ -7,6 +7,6 @@ namespace Basique.Solve
 {
     public interface IMethodWriter
     {
-        int WriteMethod(CallPredicate call, IRelation mainTable, PathTree<BasiqueColumn> tree, DbCommand cmd, int prefix, StringBuilder into);
+        int WriteMethod(CallPredicate call, IRelation mainTable, PathTreeElement<BasiqueColumn> tree, DbCommand cmd, int prefix, StringBuilder into);
     }
 }

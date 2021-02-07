@@ -8,8 +8,16 @@ namespace Basique.Services
 {
     public static class ObjectFactory
     {
-        public static object Create(Type type, PathTree<object> values)
+        public static object Create(Type type, PathTreeElement<object> values)
         {
+            if (!values.IsTree)
+            {
+                if (!type.IsAssignableFrom(values.Value.GetType()))
+                    throw new InvalidOperationException();
+
+                return values.Value;
+            }
+
             object instance;
             if (values.WalkValues().All(x => x.Key.CanFollowType(type)))
             {
@@ -25,7 +33,7 @@ namespace Basique.Services
                 }
             }
 
-            instance = TryCreateAnonymous(type, values);
+            instance = TryCreateAnonymous(type, values.Tree);
             if (instance != null) return instance;
 
             throw new NotImplementedException();
@@ -70,12 +78,7 @@ namespace Basique.Services
 
                 int indexSorted = Array.IndexOf(properties, prop);
                 int indexNeeded = Array.IndexOf(origArgs, arguments[indexSorted]);
-                if (obj.IsTree)
-                {
-                    neededArgs[indexNeeded] = Create(prop.PropertyType, obj.Tree);
-                }
-                else
-                    neededArgs[indexNeeded] = obj.Value;
+                neededArgs[indexNeeded] = Create(prop.PropertyType, obj);
             }
             return firstFoundConstructor.Invoke(neededArgs);
         }

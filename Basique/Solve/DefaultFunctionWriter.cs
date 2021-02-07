@@ -21,7 +21,7 @@ namespace Basique.Solve
             return false;
         }
 
-        public int WriteMethod(CallPredicate call, IRelation mainTable, PathTree<BasiqueColumn> tree, DbCommand cmd, int prefix, StringBuilder into)
+        public int WriteMethod(CallPredicate call, IRelation mainTable, PathTreeElement<BasiqueColumn> tree, DbCommand cmd, int prefix, StringBuilder into)
         {
             if (call.Method == KnownMethods.StartsWith)
             {

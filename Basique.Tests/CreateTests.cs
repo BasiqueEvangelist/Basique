@@ -57,5 +57,15 @@ namespace Basique.Tests
             Assert.Equal("beep", obj.AnonTest);
             Assert.Equal(100, obj.AnonValue);
         }
+
+        [Fact]
+        public async Task ReturningOneCreateSelect()
+        {
+            var obj = await Db.TestObjects
+                .Create(() => new TestObject() { Test = "beep", Value = 100 })
+                .Select(x => x.Value)
+                .RunAsync();
+            Assert.Equal(100, obj);
+        }
     }
 }

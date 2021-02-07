@@ -124,10 +124,10 @@ namespace Basique.Solve
         IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
     }
 
-    public struct PathTreeElement<T>
+    public class PathTreeElement<T>
     {
-        private readonly PathTree<T> tree;
-        private readonly T value;
+        private PathTree<T> tree;
+        private T value;
 
         public PathTreeElement(PathTree<T> subtree)
         {
@@ -150,6 +150,11 @@ namespace Basique.Solve
                 if (!IsTree) throw new InvalidOperationException();
                 return tree;
             }
+            set
+            {
+                if (!IsTree) throw new InvalidOperationException();
+                tree = value;
+            }
         }
 
         public T Value
@@ -159,6 +164,11 @@ namespace Basique.Solve
                 if (IsTree) throw new InvalidOperationException();
                 return value;
             }
+            set
+            {
+                if (IsTree) throw new InvalidOperationException();
+                this.value = value;
+            }
         }
 
         public IEnumerable<KeyValuePair<MemberPath, T>> WalkValues()
@@ -166,5 +176,37 @@ namespace Basique.Solve
             if (IsTree) return Tree.WalkValues();
             else return new[] { KeyValuePair.Create(MemberPath.Empty, Value) };
         }
+
+        public IEnumerable<PathTree<T>> WalkTrees()
+        {
+            if (IsTree) return Tree.WalkTrees();
+            else return Array.Empty<PathTree<T>>();
+        }
+
+        public PathTreeElement<T> GetByPath(MemberPath path)
+        {
+            if (path.Members.Length == 0) return this;
+            return Tree.GetByPath(path);
+        }
+
+        public void Set(MemberPath path, PathTreeElement<T> el)
+        {
+            if (path.Members.Length == 0)
+            {
+                if (el.IsTree)
+                {
+                    value = default;
+                    tree = el.Tree;
+                }
+                else
+                {
+                    tree = null;
+                    value = el.Value;
+                }
+            }
+            else Tree.Set(path, el);
+        }
+
+        public void Set(MemberPath path, T value) => Set(path, new PathTreeElement<T>(value));
     }
 }

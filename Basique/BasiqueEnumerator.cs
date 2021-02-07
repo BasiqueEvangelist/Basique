@@ -16,10 +16,10 @@ namespace Basique
         private readonly DbDataReader reader;
         private readonly CancellationToken token;
         private readonly DbConnection connection;
-        private readonly PathTree<BasiqueColumn> columns;
+        private readonly PathTreeElement<BasiqueColumn> columns;
         private readonly bool disposeConnection;
 
-        public BasiqueEnumerator(BasiqueSchema schema, DbDataReader reader, CancellationToken token, DbConnection connection, PathTree<BasiqueColumn> columns, bool disposeConnection)
+        public BasiqueEnumerator(BasiqueSchema schema, DbDataReader reader, CancellationToken token, DbConnection connection, PathTreeElement<BasiqueColumn> columns, bool disposeConnection)
         {
             this.schema = schema;
             this.reader = reader;
@@ -43,7 +43,7 @@ namespace Basique
             if (!reader.HasRows) return false;
             if (!await reader.ReadAsync(token))
                 return false;
-            var newSet = new PathTree<object>();
+            var newSet = QuerySolver.CreateTreeElement<object>(columns.IsTree);
             foreach (var (path, column) in columns.WalkValues())
             {
                 object orig = reader.GetValue(column.NamedAs);
